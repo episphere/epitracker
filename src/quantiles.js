@@ -172,8 +172,8 @@ function dataLoaded(loadedData, causeDictData) {
 
   dataOptionsState.selectCause = diseaseSelect.value // TODO: Fix hack
 
-  // document.getElementById("loader-container").setAttribute("class", "d-none")
-  // document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
+  document.getElementById("loader-container").setAttribute("class", "d-none")
+  document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
 }
 
 function unique(data, accessor) {

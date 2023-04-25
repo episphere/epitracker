@@ -96,7 +96,13 @@
           </ul>
           <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active px-3 py-5" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
-              <div class="d-flex flex-row">
+             
+              <div id="loader-container" class="d-flex flex-row justify-content-center">
+                <div class="spinner-border" role="status">
+                </div>
+              </div>
+             
+              <div id="plots-container" class="d-flex flex-row">
                 <div id="plot-quantiles"></div>
               </div>
               
