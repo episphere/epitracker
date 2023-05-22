@@ -78,8 +78,15 @@ function plotQuantilePlot(data) {
   }
 
   marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField}))
-  marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, r:4, fill: "white"}))
-
+  marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, r:10, fill: "white",
+  title: (d) => {
+    const display = Object.entries(d).reduce((pv, cv, ci) => {
+      return (ci ? `${pv}\n` : pv) + `${cv[0]}: ${cv[1]}`
+    }, '')
+    return display
+  }
+}))
+ 
   const options = {
     style: {fontSize: "14px"},
     color: {legend: true},
