@@ -1,0 +1,11 @@
+{ "CARET": { "name": "CARET", "numWomen": 5487, "numPatients": 606}, 
+  "CPS2": { "name": "CPS2", "numWomen": 97782, "numPatients": 7871}, 
+"CPS3": { "name": "CPS3", "numWomen": 232920, "numPatients": 2488},
+"CSDLH": { "name": "CSDLH", "numWomen": 11189, "numPatients": 1097},
+"CTS": { "name": "CTS", "numWomen": 125138, "numPatients": 10190},
+"NHS": { "name": "NHS", "numWomen": 121531, "numPatients": 13902}, 
+"NHS2": { "name": "NHS2", "numWomen": 116412, "numPatients": 6258},
+"PLCO": { "name": "PLCO", "numWomen": 76115, "numPatients": 6600},
+"SNMC": { "name": "SNMC", "numWomen": 28155, "numPatients": 2069},        
+"WHI": { "name": "WHI", "numWomen": 156380, "numPatients": 11140}, 
+"dataModifiedAt": "2022-10-19T19:58:02.989Z" }

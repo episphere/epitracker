@@ -1,0 +1,4 @@
+dsmp	cas	study	date	journal_name	journal_acro	title	author	nores	hmb	ngm	gru	dsr	dsr_value	nfp
+"dsmp008.v1"	"3152"	"AARP prospective study of diet and cancer"	"2023-03"	"Nature Cancer"	"Nat Cancer"	"Testing the manuscript"	"Ben P Kopchick"	false	true	false	true	false	""	true
+"dsmp0012.v4"	"10410"	"Effects of germline genetic variation and somatic mutations on cancer risk"	"2023-03"	"Nature Cancer"	"Nat Cancer"	"Testing the manuscript"	"Ben P Kopchick"	false	false	false	false	true	"Breast Cancer"	false
+"dsmp0015.v3"	"3031"	"ATBC Study"	"2021-01"	"Journal of infectious diseases and epidemiology"	"J Infect Dis Epidemiol"	"Testing the manuscript 2"	"Name O Author"	true	false	false	false	true	"Lung Cancer"	false
