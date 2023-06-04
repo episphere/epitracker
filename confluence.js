@@ -79,7 +79,9 @@ import { renderDescription } from "./src/pages/description.js";
 import { dataDictionaryTemplate } from "./src/pages/dictionary.js";
 import { showPreview } from "./src/components/boxPreview.js";
 import { uploadData, dataUploadForm, approvedFormSelect, populateApprovedSelect, showTab, addStudiesInput } from "./src/pages/uploaddata.js";
+import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
+
 import {loadData, dataLoaded} from "./src/utils/quantiles.js"
 /**
  * 1. add Scientifix comitte to menu
@@ -148,6 +150,7 @@ export const confluence = async () => {
     const studyAcceptedElement = document.getElementById("studyAccepted");
     const chairViewElement = document.getElementById("chairView");
     const daccViewElement = document.getElementById("daccView");
+    const QuantileVisualizationElement = document.getElementById("quantile-visualization");
     const MapVisualizationElement = document.getElementById("map-visualization");
     // const ConsortiaPageElement = document.getElementById("data2");
     // const PublicationPageElement = document.getElementById("publicationID");
@@ -525,7 +528,17 @@ const manageRouter = async () => {
     assignNavbarActive(element);
     aboutConfluence("overview");
     renderOverView();
-  } else if (hash === "#map-visualization") {
+  } else if (hash === "#quantile-visualization") {
+    const element = document.getElementById("quantile-visualization");
+    if (!element) return;
+    if (element.classList.contains("navbar-active")) return;
+    document.title = "Sahar";
+    assignNavbarActive(element);
+
+    confluenceDiv.innerHTML = renderQuantileVisualizationPage()
+    loadData().then((datas => dataLoaded(...datas)))
+  } 
+  else if (hash === "#map-visualization") {
     const element = document.getElementById("map-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
@@ -710,8 +723,8 @@ const manageHash = async () => {
     if (!element) return;
     element.click();
   } 
-  else if (hash === "#map-visualization") {
-    const element = document.getElementById("map-visualization");
+  else if (hash === "#quantile-visualization") {
+    const element = document.getElementById("quantile-visualization");
     element.click();
   } 
   else if (hash === "#map-visualization") {
@@ -805,6 +818,15 @@ const manageHash = async () => {
   //   confluenceContactPage();
   //   hideAnimation();
   } 
+  else if (hash === "#quantile-visualization") {
+    const element = document.getElementById("quantile-visualization");
+    if (!element) return;
+    assignNavbarActive(element);
+    document.title = "Quantile Visualization";
+    // aboutConfluence("overview");
+    // renderOverView();
+    hideAnimation();
+  }
   else if (hash === "#map-visualization") {
     const element = document.getElementById("map-visualization");
     if (!element) return;

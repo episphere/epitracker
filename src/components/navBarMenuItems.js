@@ -14,10 +14,15 @@ export const navBarMenutemplate = () => {
             </a>            
         </div>
         <div class="grid-elements">
-           <a class="nav-link nav-menu-links white-font" href="#map-visualization" title="Map Visualization" id="map-visualization">
-           Map Visualization
+           <a class="nav-link nav-menu-links white-font" href="#quantile-visualization" title="Quantile Visualization" id="quantile-visualization">
+           Quantile Visualization
            </a>
          </div>
+         <div class="grid-elements">
+         <a class="nav-link nav-menu-links white-font" href="#map-visualization" title="Map Visualization" id="map-visualization">
+         Quantile Visualization
+         </a>
+       </div>
          <!---<div class="grid-elements">
              <a class="nav-link nav-menu-links white-font" href="#data_access/overview" title="Consortia" id="dataRequest">
                  Consortia
