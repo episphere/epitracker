@@ -20,7 +20,7 @@ export const infoDeck = () => {
                 </div>
             </div>
             <div class="container align-middle text-center" style="margin-top: 70px;">
-                <div class="card-deck" id="infoDeck" style="min-height: 200px;">`;
+                <div class="card-deck d-flex" id="infoDeck" style="min-height: 200px;">`;
   template += cardContents({
     header: "Information on Accessing DCEG Data",
     button: "Information on Accessing DCEG Data",
@@ -106,7 +106,7 @@ export const infoDeckAfterLoggedIn = async () => {
                 </div>
             </div>
             <div class="container align-middle text-center" style="margin-top: 70px;">
-                <div class="card-deck" id="infoDeck" style="min-height: 200px;">`;
+                <div class="card-deck  d-flex" id="infoDeck" style="min-height: 200px;">`;
   if (studyDescription)
     template += cardContents({
       header: "Study Description",

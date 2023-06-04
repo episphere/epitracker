@@ -1,8 +1,8 @@
-h4 {
+/* h4 {
   color: gray;
-  /* font-family:sans-serif; */
+  /* font-family:sans-serif; //
   font-family: "Montserrat";
-}
+} */
 
 .fa-copy,
 .getAllFileversions,
@@ -350,9 +350,9 @@ body {
   background-color: #fff;
 }
 
-label {
+/* label {
   margin: 0 !important;
-}
+} */
 
 .chk-box-margin {
   margin-right: 0.35rem;
@@ -362,11 +362,11 @@ label {
   padding-top: 15px;
 }
 
-#confluenceDiv {
+/* #confluenceDiv {
   height: inherit;
   width: inherit;
   text-align: center;
-}
+} */
 
 .data-summary-label {
   color: #000;
@@ -1249,12 +1249,12 @@ label {
   text-decoration: none;
 }
 
-.card-header {
+/* .card-header {
   background-color: #ffffff !important;
   border-bottom: 0px !important;
   padding-top: 10px !important;
   padding-bottom: 0px !important;
-}
+} */
 
 .general-bg {
   background-color: #f0f0f7 !important;
@@ -2229,11 +2229,11 @@ ul.about-consortia {
   word-break: break-all;
 }
 
-label h4{
+/* label h4{
   display: inline-block;
   vertical-align: middle;
   margin: 0;
-}
+} */
 
 /* .inline-field input {
   width: 15px;
