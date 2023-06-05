@@ -82,7 +82,8 @@ import { uploadData, dataUploadForm, approvedFormSelect, populateApprovedSelect,
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 
-import {loadData, dataLoaded} from "./src/utils/quantiles.js"
+import {loadData as loadQuantileData, dataLoaded as quantileDataLoaded} from "./src/utils/quantiles.js"
+import {loadData as loadMapData, dataLoaded as mapDataLoaded} from "./src/utils/map.js"
 /**
  * 1. add Scientifix comitte to menu
  * 2. add corresponsing page
@@ -346,7 +347,6 @@ export const confluence = async () => {
     //   if (element.classList.contains("navbar-active")) return;
     //   document.title = "Map Visualization";
     //   assignNavbarActive(element);
-    //   // console.log('sahar: ', {confluenceDiv})
     //   confluenceDiv.innerHTML = testPage2();
     //   hideAnimation();
     // });
@@ -536,7 +536,7 @@ const manageRouter = async () => {
     assignNavbarActive(element);
 
     confluenceDiv.innerHTML = renderQuantileVisualizationPage()
-    loadData().then((datas => dataLoaded(...datas)))
+    loadQuantileData().then((data => quantileDataLoaded(...data)))
   } 
   else if (hash === "#map-visualization") {
     const element = document.getElementById("map-visualization");
@@ -546,7 +546,7 @@ const manageRouter = async () => {
     assignNavbarActive(element);
 
     confluenceDiv.innerHTML = renderMapVisualizationPage()
-    loadData().then((datas => dataLoaded(...datas)))
+    loadMapData().then(mapDataLoaded)
   } 
   // else if (hash === "#join") {
   //   const element = document.getElementById("resourcesBCRPP");
