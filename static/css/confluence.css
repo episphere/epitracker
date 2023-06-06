@@ -1370,7 +1370,9 @@ span.icon {
 .selection-group {
   margin-bottom: 30px;
 }
-
+.svg-tooltip {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
 .footer-links {
   color: #ffffff !important;
   text-decoration: none !important;
