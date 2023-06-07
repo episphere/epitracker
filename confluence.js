@@ -187,7 +187,7 @@ const manageHash = async () => {
     if (element.classList.contains("navbar-active")) return;
     assignNavbarActive(element);
     document.title = "Epitracker";
-    infoDeckAfterLoggedIn();
+    //infoDeckAfterLoggedIn();
     hideAnimation();
   } else if (hash === "#about/overview") {
     const element = document.getElementById("aboutDCEG");
