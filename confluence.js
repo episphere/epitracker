@@ -1,44 +1,4 @@
-import { navBarMenutemplate } from "./src/components/navBarMenuItems.js";
 import { infoDeck, infoDeckAfterLoggedIn } from "./src/pages/homePage.js";
-// import { testPage2 } from "./src/pages/researchStudies.js";
-import { publication } from "./src/pages/publicationpage.js";
-import { myDCEGpublication } from "./src/pages/myDCEG.js";
-import { instruction } from "./src/pages/uploadinstruction.js";
-import { dataSubmissionTemplate,
-  lazyload,
-  userSubmissionsView,
-  userSubmissionTemplate,
-} from "./src/pages/dataSubmission.js";
-import {
-  dataSummary,
-  dataSummaryMissingTemplate,
-  dataSummaryStatisticsTemplate,
-} from "./src/pages/dataExploration.js";
-import {
-  dataAccess as dataRequestTemplate,
-  dataAccessNotSignedIn,
-  dataForm,
-  dataApproval,
-  formSection,
-  approveRejectSection,
-  daccSection,
-  chairSection,
-  chairFileView,
-  daccFileView,
-  formSectionOther,
-  formFunctions,
-  importDictVars,
-  amendFormSelect,
-  populateAmendSelect,
-} from "./src/pages/dataRequest.js";
-import {
-  checkAccessTokenValidity,
-  // loginAppDev,
-  // loginObs,
-  // loginAppEpisphere,
-  logOut,
-  // loginAppProd,
-} from "./src/manageAuthentication.js";
 import {
   storeAccessToken,
   removeActiveClass,
@@ -61,24 +21,9 @@ import {
   uploadWordFile,
   getFile,
 } from "./src/shared.js";
-import {
-  addEventConsortiaSelect,
-  addEventUploadStudyForm,
-  addEventStudyRadioBtn,
-  addEventDataGovernanceNavBar,
-  addEventMyProjects,
-  addEventUpdateSummaryStatsData,
-} from "./src/event.js";
-import { dataAnalysisTemplate } from "./src/pages/dataAnalysis.js";
-import { getFileContent, getFileContentCases } from "./src/visualization.js";
 import { aboutConfluence, renderOverView } from "./src/pages/about.js";
-import { confluenceResources } from "./src/pages/join.js";
-import { confluenceContactPage } from "./src/pages/contact.js";
 import { footerTemplate } from "./src/components/footer.js";
 import { renderDescription } from "./src/pages/description.js";
-import { dataDictionaryTemplate } from "./src/pages/dictionary.js";
-import { showPreview } from "./src/components/boxPreview.js";
-import { uploadData, dataUploadForm, approvedFormSelect, populateApprovedSelect, showTab, addStudiesInput } from "./src/pages/uploaddata.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 
