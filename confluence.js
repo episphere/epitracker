@@ -532,7 +532,7 @@ const manageRouter = async () => {
     const element = document.getElementById("quantile-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
-    document.title = "Sahar";
+    document.title = "quantile-visualization";
     assignNavbarActive(element);
 
     confluenceDiv.innerHTML = renderQuantileVisualizationPage()
@@ -542,7 +542,7 @@ const manageRouter = async () => {
     const element = document.getElementById("map-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
-    document.title = "Sahar";
+    document.title = "map-visualization";
     assignNavbarActive(element);
 
     confluenceDiv.innerHTML = renderMapVisualizationPage()
