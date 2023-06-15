@@ -86,7 +86,6 @@ function plotQuantilePlot(data) {
     return display
   }
 }))
- 
   const options = {
     style: {fontSize: "14px"},
     color: {legend: true},
@@ -140,7 +139,6 @@ export async function loadData() {
 export function dataLoaded(loadedData, causeDictData) {
   data = loadedData
   data.forEach(row => {
-
     row.age_adjusted_rate = parseFloat(row.age_adjusted_rate)
     row.crude_rate = parseFloat(row.crude_rate)
   })
