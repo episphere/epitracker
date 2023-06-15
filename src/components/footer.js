@@ -6,7 +6,7 @@ export const footerTemplate = () => {
                     <span class="division-of-cancer-e align-left">Division of Cancer Epidemiology and Genetics</span>
                 </div>
                 <div class="row">
-                    <span class="at-the-national-canc">at the National Cancer Institute</span>
+                    <span class="at-the-national-canc align-left">at the National Cancer Institute</span>
                 </div>
                 <div class="row align-left">
                     <div class="col-md-4 zero-padding">

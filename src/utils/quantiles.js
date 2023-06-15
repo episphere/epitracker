@@ -107,7 +107,6 @@ function plotQuantilePlot(data) {
 
   const quantileDetails = quantileDetailsMap.get(otherOptions.quantileField)
   const xTicks = quantileDetailsToTicks(quantileDetails)
- 
   const options = {
     style: {fontSize: "14px"},
     color: {legend: true},
@@ -148,7 +147,6 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
   quantileDetailsMap = d3.index(quantileDetails, d => d.field)
 
   data.forEach(row => {
-
     row.age_adjusted_rate = parseFloat(row.age_adjusted_rate)
     row.crude_rate = parseFloat(row.crude_rate)
   })
