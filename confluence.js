@@ -15,6 +15,7 @@ export const confluence = async () => {
   if ("serviceWorker" in navigator) {
     try {
       navigator.serviceWorker.register("./serviceWorker.js");
+      console.log("Service Worker");
     } catch (error) {}
   }
   manageRouter();
