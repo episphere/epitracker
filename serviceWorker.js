@@ -23,22 +23,8 @@ registerRoute(/\.(?:png|jpg|jpeg|svg|gif|ico|webp)$/,
     })
 );
 
-registerRoute(
-    new RegExp('https://api.box.com/.+'),
-    new NetworkFirst({
-        cacheName: 'api-cache',
-        plugins: [
-            new CacheableResponsePlugin({
-                statuses: [200],
-            }),
-            new ExpirationPlugin({
-                maxAgeSeconds: 7 * 24 * 60 * 60,
-            })
-        ]
-    })
-);
-
 workbox.precaching.precacheAndRoute([
-        {url: 'index.html', revision: 'v0.0.5'},
+        {url: '/index.html', revision: '100000'},
+        {url: '/src/pages/homePage.js', revision: '100000'}
     ]
 );
