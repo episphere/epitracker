@@ -151,8 +151,8 @@ function plotQuantilePlot(data) {
     marginLeft: 80,
     marginTop: 50,
     marginBottom: 110,
-    width: 820,
-    height: 520,
+    width: 1200,
+    height: 720,
     marks: marks
   }
 
