@@ -24,7 +24,7 @@ registerRoute(/\.(?:png|jpg|jpeg|svg|gif|ico|webp)$/,
 );
 
 workbox.precaching.precacheAndRoute([
-        {url: '/index.html', revision: '100000'},
-        {url: '/src/pages/homePage.js', revision: '100000'}
+        {url: '/index.html', revision: '100001'},
+        {url: '/src/pages/homePage.js', revision: '100001'}
     ]
 );

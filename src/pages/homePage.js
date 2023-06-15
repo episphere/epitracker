@@ -27,24 +27,24 @@ export const infoDeck = () => {
                     template += cardContents({
                         header: "Geographic Visualization",
                         button: "Geographic Visualization",
-                        href: "#data_access/overview",
+                        href: "#map-visualization",
                         icon: "fa-folder-open",
                         explanation: "",
                     });
                     template += cardContents({
                         header: "Quintiles",
                         button: " Quintiles",
-                        href: "#researchStudies",
+                        href: "#quantile-visualization",
                         icon: "fa-layer-group",
                         explanation: "",
                     });
-                    template += cardContents({
-                        header: "Death Rate",
-                        button: "Death Rate",
-                        href: "#publicationpage",
-                        icon: "fa-database",
-                        explanation: "",
-                    });
+                    // template += cardContents({
+                    //     header: "Death Rate",
+                    //     button: "Death Rate",
+                    //     href: "#publicationpage",
+                    //     icon: "fa-database",
+                    //     explanation: "",
+                    // });
   template += `</div>
             </div>
         </div>
