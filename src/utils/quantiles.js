@@ -135,9 +135,9 @@ function plotQuantilePlot(data) {
     }
   }))
 
-  let gridFalse = true;
+  let gridFalse = false;
   if (document.getElementById("gridFalse").checked){
-    gridFalse = false;
+    gridFalse = true;
   };
 
   const quantileDetails = quantileDetailsMap.get(otherOptions.quantileField)
