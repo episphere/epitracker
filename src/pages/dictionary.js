@@ -445,7 +445,40 @@ const renderDataDictionary = (dictionary, pageSize, headers) => {
   addEventSortColumn(dictionary, pageSize, headers);
 };
 
+const downloadDictionaryCallback = (e) => (data, headers, fileName, isTsv = false) => {
+  e.stopPropagation();
+  const type = isTsv ? 'tsv' : 'csv';
+  const content =
+    `data:text/${type};charset=utf-8,`+
+    json2other(data, headers, isTsv).replace(/(<b>)|(<\/b>)/g, "");
+  const encodedUri = encodeURI(content);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `${fileName}.${type}`);
+  console.log('sahar 3', {data,headers, link, content})
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+const downloadRef = {
+  csvButton: null, 
+  csvCallback: null,
+  tsvButton: null, 
+  tsvCallback: null
+}
+
+const removeDownloadEventListeners = () => {
+  if (downloadRef.csvButton) {
+    downloadRef.csvButton.removeEventListener('click', downloadRef.csvCallback)
+  }
+  if (downloadRef.tsvButton) {
+    downloadRef.tsvButton.removeEventListener('click', downloadRef.tsvCallback)
+  }
+}
+
 export const downloadFiles = (data, headers, fileName, studyDescription) => {
+  removeDownloadEventListeners()
   if (studyDescription) {
     let flatArray = [];
     headers.splice(headers.indexOf("PI"), 1);
@@ -469,37 +502,19 @@ export const downloadFiles = (data, headers, fileName, studyDescription) => {
     });
     data = flatArray;
   }
-  const downloadDictionaryCSV = document.getElementById(
+  const downloadDictionaryCSVButton = document.getElementById(
     "downloadDictionaryCSV"
   );
-  downloadDictionaryCSV.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      json2other(data, headers).replace(/(<b>)|(<\/b>)/g, "");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${fileName}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  const downloadDictionaryCSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, false)
+  const downloadDictionaryTSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, true)
+  downloadDictionaryCSVButton.addEventListener("click", downloadDictionaryCSV);
+  downloadRef.csvButton = downloadDictionaryCSVButton
+  downloadRef.csvCallback = downloadDictionaryCSV
 
-  const downloadDictionaryTSV = document.getElementById(
+  const downloadDictionaryTSVButton = document.getElementById(
     "downloadDictionaryTSV"
   );
-  downloadDictionaryTSV.addEventListener("click", (e) => {
-    e.stopPropagation();
-    let tsvContent =
-      "data:text/tsv;charset=utf-8," +
-      json2other(data, headers, true).replace(/(<b>)|(<\/b>)/g, "");
-    const encodedUri = encodeURI(tsvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${fileName}.tsv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  downloadDictionaryTSVButton.addEventListener("click", downloadDictionaryTSV);
+  downloadRef.tsvButton = downloadDictionaryTSVButton
+  downloadRef.tsvCallback = downloadDictionaryTSV
 };

@@ -4,6 +4,7 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 import { DynamicState } from "./DynamicState.js"
 import { configureSelect } from './input.js'
 import { addTooltip } from "./helper.js";
+import {downloadFiles} from '../pages/dictionary.js'
  
 console.log('loadData: 1')
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
@@ -29,6 +30,30 @@ const otherOptions = new DynamicState({
   nQuantiles: 8
 })
 
+const updateQuantileTable = (data) => {
+  if (!data.length) return
+
+  const dataTableEl = document.querySelector('#quantile-table')
+  if (dataTableEl) {
+    const headerEl = dataTableEl.querySelector('thead > tr')
+    const bodyEl = dataTableEl.querySelector('tbody')
+    const headers = Object.keys(data[0])
+    headerEl.innerHTML = ''
+    bodyEl.innerHTML = ''
+    headers.forEach(item => {
+      headerEl.innerHTML += `<th scope="col">${item}</th>`
+    })
+
+    data.forEach(item => {
+      let rowData = ''
+      headers.forEach(key => {
+        rowData += `<td>${item[key]}</td>`
+      })
+      bodyEl.innerHTML += `<tr>${rowData}</tr>`
+    })
+  }
+} 
+
 // Global state fields 
 let data = null 
 let quantileDetailsMap = null 
@@ -40,6 +65,8 @@ dataOptionsState.addListener((field, value) => {
 otherOptions.addListener((field, value) => {
    update()
 })
+
+let lastData = {current: null}
 
 function update() {
   const dataState = dataOptionsState
@@ -61,7 +88,10 @@ function update() {
     row.age_adjusted_low = row.age_adjusted_rate - 1.96*se 
     row.age_adjusted_high = row.age_adjusted_rate + 1.96*se 
   })
-
+  lastData.current = quantileData
+  const headers = Object.keys(quantileData[0])
+  downloadFiles(quantileData, headers, "first_data", true);
+  updateQuantileTable(quantileData)
   plotQuantilePlot(quantileData) 
 }
 
@@ -105,13 +135,19 @@ function plotQuantilePlot(data) {
     }
   }))
 
+  let gridFalse = true;
+  if (document.getElementById("gridFalse").checked){
+    gridFalse = false;
+  };
+
   const quantileDetails = quantileDetailsMap.get(otherOptions.quantileField)
   const xTicks = quantileDetailsToTicks(quantileDetails)
+ 
   const options = {
     style: {fontSize: "14px"},
     color: {legend: true},
     x: {type: "point", label: otherOptions.quantileField + " (quantile)", tickFormat: d => xTicks[d], tickRotate: -45},
-    y: {ticks: 8, grid: true, label: otherOptions.measureField + " ↑"},
+    y: {ticks: 8, grid: gridFalse, label: otherOptions.measureField + " ↑"},
     marginLeft: 80,
     marginTop: 50,
     marginBottom: 110,
@@ -147,6 +183,7 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
   quantileDetailsMap = d3.index(quantileDetails, d => d.field)
 
   data.forEach(row => {
+
     row.age_adjusted_rate = parseFloat(row.age_adjusted_rate)
     row.crude_rate = parseFloat(row.crude_rate)
   })
@@ -185,6 +222,9 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
 
   document.getElementById("loader-container").setAttribute("class", "d-none")
   document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
+
+  let checkbox = document.getElementById("gridFalse");                    
+  checkbox.addEventListener('change', function(){  update()})  
 }
 
 function unique(data, accessor) {
