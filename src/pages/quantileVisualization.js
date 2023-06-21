@@ -66,7 +66,7 @@ export const renderQuantileVisualizationPage = () => {
               </select>
             </div>
 
-            <h4>Graph Setting</h4>
+            <h4>Settings</h4>
             <label for = "falseGrid">Grid lines</label>
             <input type="checkbox" id="gridFalse" name="falseGrid" value="false">
           

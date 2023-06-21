@@ -41,6 +41,7 @@ export const renderMapVisualizationPage = () => {
               <select id="raceSelectSelect" class="form-select mb-2" disabled aria-label="Race select">
                 <option hidden >Awaiting data...</option>
               </select>
+              
     
             </div>
           </div>
@@ -67,9 +68,37 @@ export const renderMapVisualizationPage = () => {
               </div>
             </div>
           </div>
+
+          <div class="card rounded-1 mt-3">
+            <div class="card-header">
+              Settings
+            </div>
+            <div class="card-body">
+              <div id="">
+                <label for="show-hide-table">Show/Hide Table</label>
+                <input type="checkbox" id="show-hide-table" name="show-hide-table" value="false">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="col-md-10 px-3">
+        <div class="d-flex flex-row justify-content-between">
+        <div></div>
+          <div class="ml-auto" id="downloadContainer">
+                <div class="col-md-12 p-0 dropdown">
+                    <div class="grid-elements ">
+                        <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" data-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
+                            Download <i class="fas fa-download" style="color:#000000 !important"></i>
+                        </button>
+                        <div class="dropdown-menu navbar-dropdown show" aria-labelledby="downloadDictionary">
+                            <button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as csv" id="downloadDictionaryCSV">CSV</button>
+                            <button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as tsv" id="downloadDictionaryTSV">TSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
           <div class="tab-pane fade show active px-3 py-5" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
 
             <div id="loader-container" class="d-flex flex-row justify-content-center">
@@ -88,13 +117,21 @@ export const renderMapVisualizationPage = () => {
             
           </div>
 
-          <div class="tab-pane fade" id="plot-quantile-pane" role="tabpanel" aria-labelledby="plot-quantile-tab">
-            
+          <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
           </div>
-
-        </div>
-      </div> 
-    </div>
+          <div class="row" id="map-table-wrapper" style="display: none;">
+            <div class="table-responsive">
+              <table class="table" id="map-table"></table>
+            </div>
+            <div>
+              <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
+              <div class="ml-auto mt-3 mb-3 mr-2" id="page-size-container"></div>
+            </div>
+          </div>
+          </div>
+        </div> 
+      </div>
+    </body>
   `;
   return template;
 };
