@@ -113,9 +113,10 @@ export const renderMapVisualizationPage = () => {
             </div>
             
           </div>
-          <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
-          <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
+          
           <div class="row" id="map-table-wrapper" style="display: none;">
+            <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
+            <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
             <div class="table-responsive">
               <table class="table" id="map-table"></table>
             <div>
