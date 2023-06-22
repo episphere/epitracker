@@ -158,6 +158,22 @@ function plotQuantilePlot(data) {
       x: dataState.compareSecondary
     }
   }
+  if (document.getElementById("show-hide-table").checked){
+    console.log('show table: ', true)
+  } else {
+    console.log('show table: ', false)
+  }
+
+  let checkbox = document.getElementById("show-hide-table");                    
+  checkbox.addEventListener('change', (event) => {
+    const isChecked = event.target.checked
+    const tableWrapper = document.querySelector('#quantile-table-wrapper')
+    if (tableWrapper) {
+        tableWrapper.style.display = isChecked ? 'block' : 'none'
+    }
+    console.log('show table: ', {event: event.target.checked})
+  })  
+
 
   const plot = Plot.plot(options)
 

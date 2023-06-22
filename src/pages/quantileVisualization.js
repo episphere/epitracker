@@ -80,6 +80,11 @@ export const renderQuantileVisualizationPage = () => {
               <label for="scatter">Scatter</label><br>
               <input type="radio" id="line" name="graph-type" value="line">
               <label for="line">Line</label>
+              <div id="">
+                <label for="show-hide-table">Show/Hide Table</label>
+                <input type="checkbox" id="show-hide-table" name="show-hide-table" value="false">
+          
+              </div>
             </div>
           </div>
         </div>
