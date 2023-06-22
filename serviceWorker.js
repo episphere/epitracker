@@ -24,7 +24,7 @@ registerRoute(/\.(?:png|jpg|jpeg|svg|gif|ico|webp)$/,
 );
 
 workbox.precaching.precacheAndRoute([
-        {url: '/index.html', revision: '100001'},
-        {url: '/src/pages/homePage.js', revision: '100001'}
+        {url: 'epitracker/index.html', revision: '100001'},
+        {url: 'epitracker/src/pages/homePage.js', revision: '100001'}
     ]
 );
