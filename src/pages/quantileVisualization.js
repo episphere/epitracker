@@ -59,17 +59,28 @@ export const renderQuantileVisualizationPage = () => {
               </select>
             </div>
           
-            <div >
+            <div>
               <label for="quantileNumSelect">Quantiles</label>
               <select id="quantileNumSelect" class="form-select mb-2" aria-label="Quantile num select" disabled>
                 <option hidden >Awaiting data...</option>
               </select>
             </div>
-
-            <h4>Settings</h4>
-            <label for = "falseGrid">Grid lines</label>
-            <input type="checkbox" id="gridFalse" name="falseGrid" value="false">
           
+          </div>
+        </div>
+
+        <div class="card rounded-1 mt-3">
+          <div class="card-header">
+            Settings
+          </div>
+          <div class="card-body">
+            <div id="">
+              <h6>Graph Types</h6>
+              <input type="radio" id="scatter" name="graph-type" value="scatter">
+              <label for="scatter">Scatter</label><br>
+              <input type="radio" id="line" name="graph-type" value="line">
+              <label for="line">Line</label>
+            </div>
           </div>
         </div>
       </div>

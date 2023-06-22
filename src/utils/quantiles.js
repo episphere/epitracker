@@ -120,12 +120,13 @@ function plotQuantilePlot(data) {
 
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
-    marks.push(Plot.areaY(data,
-       {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
+    // marks.push(Plot.areaY(data,
+    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
+    marks.push(Plot.link("age_adjusted_rate", {x1: '0.013 - 0.027', x2: 0, y1: 800, y2: (data) => console.log({y2: data})}))
     
   }
 
-  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField}))
+  // marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: 'none'}))
   marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, r:10, fill: "white",
   title: (d) => {
       const display = Object.entries(d).reduce((pv, cv, ci) => {
@@ -135,11 +136,6 @@ function plotQuantilePlot(data) {
     }
   }))
 
-  let gridFalse = false;
-  if (document.getElementById("gridFalse").checked){
-    gridFalse = true;
-  };
-
   const quantileDetails = quantileDetailsMap.get(otherOptions.quantileField)
   const xTicks = quantileDetailsToTicks(quantileDetails)
  
@@ -147,7 +143,7 @@ function plotQuantilePlot(data) {
     style: {fontSize: "14px"},
     color: {legend: true},
     x: {type: "point", label: otherOptions.quantileField + " (quantile)", tickFormat: d => xTicks[d], tickRotate: -45},
-    y: {ticks: 8, grid: gridFalse, label: otherOptions.measureField + " ↑"},
+    y: {ticks: 8, grid: true, label: otherOptions.measureField + " ↑"},
     marginLeft: 80,
     marginTop: 50,
     marginBottom: 110,
@@ -222,9 +218,6 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
 
   document.getElementById("loader-container").setAttribute("class", "d-none")
   document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
-
-  let checkbox = document.getElementById("gridFalse");                    
-  checkbox.addEventListener('change', function(){  update()})  
 }
 
 function unique(data, accessor) {
