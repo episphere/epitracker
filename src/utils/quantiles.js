@@ -120,7 +120,6 @@ function plotQuantilePlot(data) {
 
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
-    console.log("Adding links", data)
     // marks.push(Plot.areaY(data,
     //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
     marks.push(Plot.link(data, {
