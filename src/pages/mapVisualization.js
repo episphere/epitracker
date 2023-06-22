@@ -83,19 +83,16 @@ export const renderMapVisualizationPage = () => {
         </div>
 
         <div class="col-md-10 px-3">
-        <div class="d-flex flex-row justify-content-between">
-        <div></div>
-          <div class="ml-auto" id="downloadContainer">
+          <div class="d-flex flex-row-reverse justify-content-between">
+            <div class="ml-auto mt-3 mb-3" id="downloadContainer">
                 <div class="col-md-12 p-0 dropdown">
-                    <div class="grid-elements ">
-                        <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" data-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
-                            Download <i class="fas fa-download" style="color:#000000 !important"></i>
-                        </button>
-                        <div class="dropdown-menu navbar-dropdown show" aria-labelledby="downloadDictionary">
-                            <button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as csv" id="downloadDictionaryCSV">CSV</button>
-                            <button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as tsv" id="downloadDictionaryTSV">TSV</button>
-                        </div>
-                    </div>
+                    <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
+                        Download <i class="fas fa-download" style="color:#000000 !important"></i>
+                    </button>
+                    <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as csv" id="downloadDictionaryCSV">CSV</button></li>
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as tsv" id="downloadDictionaryTSV">TSV</button></li>
+                    </ul>
                 </div>
             </div>
           </div>
@@ -117,8 +114,7 @@ export const renderMapVisualizationPage = () => {
             
           </div>
 
-          <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
-          </div>
+          <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
           <div class="row" id="map-table-wrapper" style="display: none;">
             <div class="table-responsive">
               <table class="table" id="map-table"></table>
@@ -128,10 +124,9 @@ export const renderMapVisualizationPage = () => {
               <div class="ml-auto mt-3 mb-3 mr-2" id="page-size-container"></div>
             </div>
           </div>
-          </div>
-        </div> 
-      </div>
-    </body>
+        </div>
+      </div> 
+    </div>
   `;
   return template;
 };

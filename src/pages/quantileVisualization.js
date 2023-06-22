@@ -124,14 +124,12 @@ export const renderQuantileVisualizationPage = () => {
                 <tr></tr>
               </thead>
               <tbody></tbody>
-          </table>
-        </div>
+            </table>
+          </div>
         </div>
       </div>
-
-      
     </div>
-  </body>
-    `;
+  </div>
+  `;
   return template;
 };
