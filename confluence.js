@@ -12,12 +12,6 @@ import {loadData as loadQuantileData, dataLoaded as quantileDataLoaded} from "./
 import {loadData as loadMapData, dataLoaded as mapDataLoaded} from "./src/utils/map.js"
 
 export const confluence = async () => {
-  // if ("serviceWorker" in navigator) {
-  //   try {
-  //     navigator.serviceWorker.register("./serviceWorker.js");
-  //     console.log("Service Worker");
-  //   } catch (error) {}
-  // }
   if(window.navigator && navigator.serviceWorker) {
     navigator.serviceWorker.getRegistrations()
     .then(function(registrations) {
@@ -27,6 +21,12 @@ export const confluence = async () => {
       }
     });
   }
+  // if ("serviceWorker" in navigator) {
+  //   try {
+  //     navigator.serviceWorker.register("./serviceWorker.js");
+  //     console.log("Service Worker");
+  //   } catch (error) {}
+  // }
   manageRouter();
 };
 
@@ -63,7 +63,6 @@ const manageRouter = async () => {
     if (element.classList.contains("navbar-active")) return;
     document.title = "quantile-visualization";
     assignNavbarActive(element);
-
     confluenceDiv.innerHTML = renderQuantileVisualizationPage()
     loadQuantileData().then((data => quantileDataLoaded(...data)))
   } 
