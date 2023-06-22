@@ -85,8 +85,8 @@ function update() {
   quantileData = quantileData.map(d => ({...d}))
   quantileData.forEach(row => {
     const se = row.age_adjusted_rate / Math.sqrt(row.count)
-    row.age_adjusted_low = row.age_adjusted_rate - 1.96*se 
-    row.age_adjusted_high = row.age_adjusted_rate + 1.96*se 
+    row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
+    row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
   })
   lastData.current = quantileData
   const headers = Object.keys(quantileData[0])
@@ -120,14 +120,18 @@ function plotQuantilePlot(data) {
 
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
+    console.log("Adding links", data)
     // marks.push(Plot.areaY(data,
     //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
-    marks.push(Plot.link("age_adjusted_rate", {x1: '0.013 - 0.027', x2: 0, y1: 800, y2: (data) => console.log({y2: data})}))
+    marks.push(Plot.link(data, {
+      x: "quantile", y1: otherOptions.measureField + "_low", y2: otherOptions.measureField + "_high", 
+      stroke: colorField, strokeWidth: 2
+    }))
     
   }
 
-  // marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: 'none'}))
-  marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, r:10, fill: "white",
+  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, strokeDasharray: "2,6"}))
+  marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, fill: colorField, r:4, strokeWidth:3,
   title: (d) => {
       const display = Object.entries(d).reduce((pv, cv, ci) => {
         return (ci ? `${pv}\n` : pv) + `${cv[0]}: ${cv[1]}`
@@ -147,7 +151,7 @@ function plotQuantilePlot(data) {
     marginLeft: 80,
     marginTop: 50,
     marginBottom: 110,
-    width: 1200,
+    width: 900,
     height: 720,
     marks: marks
   }
