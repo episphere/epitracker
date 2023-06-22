@@ -85,7 +85,21 @@ export const renderQuantileVisualizationPage = () => {
         </div>
       </div>
 
-
+      <div class="col-md-10 px-3">
+        <div class="d-flex flex-row-reverse justify-content-between">
+            <div class="ml-auto mt-3 mb-3" id="downloadContainer">
+                <div class="col-md-12 p-0 dropdown">
+                      <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
+                          Download <i class="fas fa-download" style="color:#000000 !important"></i>
+                      </button>
+                      <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
+                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as csv" id="downloadDictionaryCSV">CSV</button></li>
+                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as tsv" id="downloadDictionaryTSV">TSV</button></li>
+                      </ul>
+                </div>
+            </div>
+          </div>
+        <div>
           <div class="tab-pane fade show active px-10 py-10" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
           
             <div id="loader-container" class="d-flex flex-row justify-content-center">
