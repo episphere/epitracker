@@ -5,12 +5,14 @@ import { DynamicState } from "./DynamicState.js"
 import { configureSelect } from './input.js'
 import { addTooltip } from "./helper.js";
 import {downloadFiles} from '../pages/dictionary.js'
+import {paginationHandler, dataPagination} from '../components/pagination.js'
+import {renderTable} from '../components/table.js'
  
 console.log('loadData: 1')
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
 const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
-
+let graphMode = 'scatter'
 function stateName(operation, field) {
   return operation + field[0].toUpperCase() + field.slice(1)
 }
@@ -91,6 +93,8 @@ function update() {
   lastData.current = quantileData
   const headers = Object.keys(quantileData[0])
   downloadFiles(quantileData, headers, "first_data", true);
+  renderTable("quantile-table", dataPagination(0, 200, quantileData), headers);
+  paginationHandler(quantileData, 200, headers);
   updateQuantileTable(quantileData)
   plotQuantilePlot(quantileData) 
 }
@@ -121,15 +125,15 @@ function plotQuantilePlot(data) {
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
     // marks.push(Plot.areaY(data,
-    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
+    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_rate_high", fill: colorField, fillOpacity: 0.2}))
     marks.push(Plot.link(data, {
-      x: "quantile", y1: otherOptions.measureField + "_low", y2: otherOptions.measureField + "_high", 
+      x: "quantile", y1: 'age_adjusted_rate_low', y2: 'age_adjusted_rate_high', 
       stroke: colorField, strokeWidth: 2
     }))
     
   }
 
-  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, strokeDasharray: "2,6"}))
+  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: graphMode === 'line' ? colorField : 'none', strokeDasharray: "2,6"}))
   marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, fill: colorField, r:4, strokeWidth:3,
   title: (d) => {
       const display = Object.entries(d).reduce((pv, cv, ci) => {
@@ -161,11 +165,6 @@ function plotQuantilePlot(data) {
       x: dataState.compareSecondary
     }
   }
-  if (document.getElementById("show-hide-table").checked){
-    console.log('show table: ', true)
-  } else {
-    console.log('show table: ', false)
-  }
 
   let checkbox = document.getElementById("show-hide-table");                    
   checkbox.addEventListener('change', (event) => {
@@ -174,9 +173,19 @@ function plotQuantilePlot(data) {
     if (tableWrapper) {
         tableWrapper.style.display = isChecked ? 'block' : 'none'
     }
-    console.log('show table: ', {event: event.target.checked})
-  })  
+  }) 
+  
+  let scatterRadio = document.getElementById("scatter");
+  let lineRadio = document.getElementById("line");
 
+  scatterRadio.addEventListener('change', (event) => {
+    graphMode = 'scatter'
+    console.log('radio: scatter', {checked: event.target.checked})
+  }) 
+  lineRadio.addEventListener('change', (event) => {
+    graphMode = 'line'
+    console.log('radio: line', {checked: event.target.checked})
+  }) 
 
   const plot = Plot.plot(options)
 

@@ -156,12 +156,6 @@ function plotDemographic(data, highlightData = null) {
     highlightData = data;
   }
 
-  if (document.getElementById("show-hide-table").checked){
-    console.log('show table: ', true)
-  } else {
-    console.log('show table: ', false)
-  }
-
   let checkbox = document.getElementById("show-hide-table");                    
   checkbox.addEventListener('change', (event) => {
     const isChecked = event.target.checked
@@ -169,7 +163,6 @@ function plotDemographic(data, highlightData = null) {
     if (tableWrapper) {
         tableWrapper.style.display = isChecked ? 'block' : 'none'
     }
-    console.log('show table: ', {event: event.target.checked})
   })  
 
   // const filterLabels = [state.filter.disease, state.filter.decedent_sex, state.filter.decedent_race].filter(d => d != "All")
