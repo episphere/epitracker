@@ -1,5 +1,7 @@
+import { renderSettingsVisualization, SETTINGS } from "../components/visualization/settingsVisualization.js"
+
 export const renderMapVisualizationPage = () => {
-  const template = `
+  let template = `
     <div class="container-fluid p-5">
       <div class="row">
         <h1 class="mb-4">EpiTracker Cancer</h1> 
@@ -68,18 +70,10 @@ export const renderMapVisualizationPage = () => {
               </div>
             </div>
           </div>
-
-          <div class="card rounded-1 mt-3">
-            <div class="card-header">
-              Settings
-            </div>
-            <div class="card-body">
-              <div id="">
-                <label for="show-hide-table">Show/Hide Table</label>
-                <input type="checkbox" id="show-hide-table" name="show-hide-table" value="false">
-              </div>
-            </div>
-          </div>
+  `
+  template += renderSettingsVisualization([SETTINGS.SHOW_HIDE_TABLE])
+        
+  template += `
         </div>
 
         <div class="col-md-10 px-3">

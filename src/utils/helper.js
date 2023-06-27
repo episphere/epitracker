@@ -63,3 +63,21 @@ export function addTooltip(svgSelect, elementSelect=null) {
   
     return {show, hide}
   }
+
+export function showTable(checkboxId, tableId) {
+    let checkbox = document.getElementById(checkboxId);                    
+    checkbox.addEventListener('change', (event) => {
+      const isChecked = event.target.checked
+      const tableWrapper = document.querySelector(`#${tableId}`)
+      if (tableWrapper) {
+          tableWrapper.style.display = isChecked ? 'block' : 'none'
+      }
+    }) 
+}
+
+export function changeGraphType(types = [], callback) {
+    types.forEach((type) => {
+        let typeRadioElement = document.getElementById(`${type}-graph`);
+        typeRadioElement.addEventListener('change', () => callback(type)) 
+    })
+}

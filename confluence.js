@@ -57,7 +57,7 @@ const manageRouter = async () => {
     assignNavbarActive(element);
     aboutConfluence("overview");
     renderOverView();
-  } else if (hash === "#quantile-visualization") {
+  } else if (hash === "#visualization/quantile") {
     const element = document.getElementById("quantile-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
@@ -66,7 +66,7 @@ const manageRouter = async () => {
     confluenceDiv.innerHTML = renderQuantileVisualizationPage()
     loadQuantileData().then((data => quantileDataLoaded(...data)))
   } 
-  else if (hash === "#map-visualization") {
+  else if (hash === "#visualization/map") {
     const element = document.getElementById("map-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;

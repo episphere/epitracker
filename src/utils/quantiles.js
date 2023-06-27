@@ -3,10 +3,10 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 
 import { DynamicState } from "./DynamicState.js"
 import { configureSelect } from './input.js'
-import { addTooltip } from "./helper.js";
 import {downloadFiles} from '../pages/dictionary.js'
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
+import {showTable, changeGraphType} from '../utils/helper.js'
  
 console.log('loadData: 1')
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
@@ -68,9 +68,9 @@ otherOptions.addListener((field, value) => {
    update()
 })
 
-let lastData = {current: null}
+// let lastData = {current: null}
 
-function update() {
+function updateGraph() {
   const dataState = dataOptionsState
 
   let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
@@ -90,13 +90,38 @@ function update() {
     row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
     row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
   })
-  lastData.current = quantileData
+  plotQuantilePlot(quantileData) 
+  return quantileData
+}
+
+function update() {
+  // const dataState = dataOptionsState
+
+  // let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
+  // const stratifySet = new Set([dataState.comparePrimary, dataState.compareSecondary].filter(d => d != "none"))
+
+  // SELECTABLE_FIELDS.forEach(field => {
+  //   if (stratifySet.has(field)) {
+  //     quantileData = quantileData.filter(row => row[field] != "All")
+  //   } else {
+  //     quantileData = quantileData.filter(row => row[field] == dataState[stateName("select", field)])
+  //   }
+  // })
+
+  // quantileData = quantileData.map(d => ({...d}))
+  // quantileData.forEach(row => {
+  //   const se = row.age_adjusted_rate / Math.sqrt(row.count)
+  //   row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
+  //   row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
+  // })
+  // lastData.current = quantileData
+  const quantileData = updateGraph()
   const headers = Object.keys(quantileData[0])
   downloadFiles(quantileData, headers, "first_data", true);
   renderTable("quantile-table", dataPagination(0, 200, quantileData), headers);
   paginationHandler(quantileData, 200, headers);
   updateQuantileTable(quantileData)
-  plotQuantilePlot(quantileData) 
+  // plotQuantilePlot(quantileData) 
 }
 
 function quantileDetailsToTicks(quantileDetails) {
@@ -166,27 +191,6 @@ function plotQuantilePlot(data) {
     }
   }
 
-  let checkbox = document.getElementById("show-hide-table");                    
-  checkbox.addEventListener('change', (event) => {
-    const isChecked = event.target.checked
-    const tableWrapper = document.querySelector('#quantile-table-wrapper')
-    if (tableWrapper) {
-        tableWrapper.style.display = isChecked ? 'block' : 'none'
-    }
-  }) 
-  
-  let scatterRadio = document.getElementById("scatter");
-  let lineRadio = document.getElementById("line");
-
-  scatterRadio.addEventListener('change', (event) => {
-    graphMode = 'scatter'
-    console.log('radio: scatter', {checked: event.target.checked})
-  }) 
-  lineRadio.addEventListener('change', (event) => {
-    graphMode = 'line'
-    console.log('radio: line', {checked: event.target.checked})
-  }) 
-
   const plot = Plot.plot(options)
 
   const div = document.getElementById("plot-quantiles")
@@ -194,6 +198,10 @@ function plotQuantilePlot(data) {
   div.appendChild(plot)
 }
 
+function handleChangeGraphType(type) {
+  graphMode = type
+  updateGraph()
+}
 
 export async function loadData() {
   const data = await d3.csv("data/quantile_test_data_morecauses.csv")
@@ -246,6 +254,22 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
 
   document.getElementById("loader-container").setAttribute("class", "d-none")
   document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
+
+  showTable('show-hide-table', 'quantile-table-wrapper')
+  changeGraphType(['scatter', 'line'], handleChangeGraphType)
+  // let scatterRadio = document.getElementById("scatter");
+  // let lineRadio = document.getElementById("line");
+
+  // scatterRadio.addEventListener('change', (event) => {
+  //   graphMode = 'scatter'
+  //   updateGraph()
+  //   console.log('radio: scatter', {checked: event.target.checked})
+  // }) 
+  // lineRadio.addEventListener('change', (event) => {
+  //   graphMode = 'line'
+  //   updateGraph()
+  //   console.log('radio: line', {checked: event.target.checked})
+  // }) 
 }
 
 function unique(data, accessor) {

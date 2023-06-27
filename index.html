@@ -141,35 +141,30 @@
                   >About
                 </a>
               </div>
-              <div class="grid-elements">
-                <a
-                  class="nav-link nav-menu-links white-font"
-                  href="#quantile-visualization"
-                  id="quantile-visualization"
-                  title="Quantile Visualization"
-                  >Quantile Visualization</a
-                >
-              </div>
-              <div class="grid-elements">
-                <a
-                  class="nav-link nav-menu-links white-font"
-                  href="#map-visualization"
-                  id="map-visualization"
-                  title="Map Visualization"
-                  >Map Visualization</a
-                >
-              </div>
-              <div class="grid-elements">
-                <a
-                  class="nav-link nav-menu-links white-font"
-                  rel="noopener"
-                  target="_blank"
-                  href="https://github.com/episphere/epitracker/issues"
-                  title="Epitracker github issues"
-                >
-                  Report issue
-                </a>
-              </div>
+              <div class="grid-elements dropdown">
+                <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Visualization
+                </button>
+                <ul class="dropdown-menu navbar-dropdown">
+                  <li>
+                    <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#visualization/quantile" id="quantile-visualization" title="Quantile Visualization">Quantile</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#visualization/map" id="map-visualization" title="Map Visualization">Map</a>
+                  </li>
+                </ul>
+            </div>
+            <div class="grid-elements">
+              <a
+                class="nav-link nav-menu-links white-font"
+                rel="noopener"
+                target="_blank"
+                href="https://github.com/episphere/epitracker/issues"
+                title="Epitracker github issues"
+              >
+                Report issue
+              </a>
+            </div>
               <!-- <div class="grid-elements">
                 <a
                   class="nav-link nav-menu-links white-font"

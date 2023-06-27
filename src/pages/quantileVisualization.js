@@ -1,5 +1,7 @@
+import { renderSettingsVisualization, SETTINGS } from "../components/visualization/settingsVisualization.js"
+
 export const renderQuantileVisualizationPage = () => {
-  const template = `
+  let template = `
   <div class="container-fluid p-5">
     <div class="row">
       <h1 class="mb-4">EpiTracker Cancer</h1>
@@ -68,26 +70,11 @@ export const renderQuantileVisualizationPage = () => {
           
           </div>
         </div>
+  `
 
-        <div class="card rounded-1 mt-3">
-          <div class="card-header">
-            Settings
-          </div>
-          <div class="card-body">
-            <div id="">
-              <h6>Graph Types</h6>
-              <input type="radio" id="scatter" name="graph-type" value="scatter">
-              <label for="scatter">Scatter</label><br>
-              <input type="radio" id="line" name="graph-type" value="line">
-              <label for="line">Line</label>
-              <div id="">
-                <label for="show-hide-table">Show/Hide Table</label>
-                <input type="checkbox" id="show-hide-table" name="show-hide-table" value="false">
-          
-              </div>
-            </div>
-          </div>
-        </div>
+  template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.SHOW_HIDE_TABLE])
+
+  template += `
       </div>
 
       <div class="col-md-10 px-3">
@@ -122,16 +109,15 @@ export const renderQuantileVisualizationPage = () => {
           </div>
 
         </div>
-        <div class="row">
-          <div class="table-responsive">
-            <table class="table" id="quantile-table">
-              <thead>
-                <tr></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+
+        <div class="row" id="quantile-table-wrapper" style="display: none;">
+            <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
+            <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
+            <div class="table-responsive">
+              <table class="table" id="quantile-table"></table>
+            <div>
+              <div class="ml-auto mt-3 mb-3 mr-2" id="page-size-container"></div>
           </div>
-        </div>
       </div>
     </div>
   </div>
