@@ -26,7 +26,7 @@ let dictionary = null;
 let causeDict = null;
 
 let tab = "map"; // TODO: Implement proper tab switching structure. For now, just loading new page.
-let maplastData = { current: null };
+// let maplastData = { current: null };
 function l(word, sub = null) {
   if (sub == null) {
     for (const key of Object.keys(dictionary)) {
@@ -75,7 +75,7 @@ function update() {
   );
 
   demographicData = getDemographicData(data, dataOptionsState);
-  maplastData.current = spatialData;
+  // maplastData.current = spatialData;
   const headers = Object.keys(spatialData[0]);
   downloadFiles(spatialData, headers, "first_data", true);
   renderTable("map-table", dataPagination(0, 200, spatialData), headers);
@@ -154,23 +154,7 @@ function plotDemographic(data, highlightData = null) {
 
   if (!highlightData) {
     highlightData = data;
-  }
-
-  if (document.getElementById("show-hide-table").checked){
-    console.log('show table: ', true)
-  } else {
-    console.log('show table: ', false)
-  }
-
-  let checkbox = document.getElementById("show-hide-table");                    
-  checkbox.addEventListener('change', (event) => {
-    const isChecked = event.target.checked
-    const tableWrapper = document.querySelector('#map-table-wrapper')
-    if (tableWrapper) {
-        tableWrapper.style.display = isChecked ? 'block' : 'none'
-    }
-    console.log('show table: ', {event: event.target.checked})
-  })  
+  } 
 
   // const filterLabels = [state.filter.disease, state.filter.decedent_sex, state.filter.decedent_race].filter(d => d != "All")
   // let valueLabel = `${dictionary.fields.get(state.valueField)}`
@@ -493,6 +477,15 @@ export function dataLoaded(loadedData) {
   document
     .getElementById("plots-container")
     .setAttribute("class", "d-flex flex-row");
+
+  let checkbox = document.getElementById("show-hide-table");                    
+  checkbox.addEventListener('change', (event) => {
+    const isChecked = event.target.checked
+    const tableWrapper = document.querySelector('#map-table-wrapper')
+    if (tableWrapper) {
+        tableWrapper.style.display = isChecked ? 'block' : 'none'
+    }
+  }) 
 }
 
 // === Helper ===

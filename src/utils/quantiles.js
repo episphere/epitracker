@@ -3,14 +3,16 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 
 import { DynamicState } from "./DynamicState.js"
 import { configureSelect } from './input.js'
-import { addTooltip } from "./helper.js";
 import {downloadFiles} from '../pages/dictionary.js'
+import {paginationHandler, dataPagination} from '../components/pagination.js'
+import {renderTable} from '../components/table.js'
+import {showTable, changeGraphType} from '../utils/helper.js'
  
 console.log('loadData: 1')
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
 const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
-
+let graphMode = 'scatter'
 function stateName(operation, field) {
   return operation + field[0].toUpperCase() + field.slice(1)
 }
@@ -66,9 +68,9 @@ otherOptions.addListener((field, value) => {
    update()
 })
 
-let lastData = {current: null}
+// let lastData = {current: null}
 
-function update() {
+function updateGraph() {
   const dataState = dataOptionsState
 
   let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
@@ -88,11 +90,38 @@ function update() {
     row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
     row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
   })
-  lastData.current = quantileData
+  plotQuantilePlot(quantileData) 
+  return quantileData
+}
+
+function update() {
+  // const dataState = dataOptionsState
+
+  // let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
+  // const stratifySet = new Set([dataState.comparePrimary, dataState.compareSecondary].filter(d => d != "none"))
+
+  // SELECTABLE_FIELDS.forEach(field => {
+  //   if (stratifySet.has(field)) {
+  //     quantileData = quantileData.filter(row => row[field] != "All")
+  //   } else {
+  //     quantileData = quantileData.filter(row => row[field] == dataState[stateName("select", field)])
+  //   }
+  // })
+
+  // quantileData = quantileData.map(d => ({...d}))
+  // quantileData.forEach(row => {
+  //   const se = row.age_adjusted_rate / Math.sqrt(row.count)
+  //   row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
+  //   row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
+  // })
+  // lastData.current = quantileData
+  const quantileData = updateGraph()
   const headers = Object.keys(quantileData[0])
   downloadFiles(quantileData, headers, "first_data", true);
+  renderTable("quantile-table", dataPagination(0, 200, quantileData), headers);
+  paginationHandler(quantileData, 200, headers);
   updateQuantileTable(quantileData)
-  plotQuantilePlot(quantileData) 
+  // plotQuantilePlot(quantileData) 
 }
 
 function quantileDetailsToTicks(quantileDetails) {
@@ -121,15 +150,15 @@ function plotQuantilePlot(data) {
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
     // marks.push(Plot.areaY(data,
-    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_high", fill: colorField, fillOpacity: 0.2}))
+    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_rate_high", fill: colorField, fillOpacity: 0.2}))
     marks.push(Plot.link(data, {
-      x: "quantile", y1: otherOptions.measureField + "_low", y2: otherOptions.measureField + "_high", 
+      x: "quantile", y1: 'age_adjusted_rate_low', y2: 'age_adjusted_rate_high', 
       stroke: colorField, strokeWidth: 2
     }))
     
   }
 
-  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, strokeDasharray: "2,6"}))
+  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: graphMode === 'line' ? colorField : 'none', strokeDasharray: "2,6"}))
   marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, fill: colorField, r:4, strokeWidth:3,
   title: (d) => {
       const display = Object.entries(d).reduce((pv, cv, ci) => {
@@ -161,22 +190,6 @@ function plotQuantilePlot(data) {
       x: dataState.compareSecondary
     }
   }
-  if (document.getElementById("show-hide-table").checked){
-    console.log('show table: ', true)
-  } else {
-    console.log('show table: ', false)
-  }
-
-  let checkbox = document.getElementById("show-hide-table");                    
-  checkbox.addEventListener('change', (event) => {
-    const isChecked = event.target.checked
-    const tableWrapper = document.querySelector('#quantile-table-wrapper')
-    if (tableWrapper) {
-        tableWrapper.style.display = isChecked ? 'block' : 'none'
-    }
-    console.log('show table: ', {event: event.target.checked})
-  })  
-
 
   const plot = Plot.plot(options)
 
@@ -185,6 +198,10 @@ function plotQuantilePlot(data) {
   div.appendChild(plot)
 }
 
+function handleChangeGraphType(type) {
+  graphMode = type
+  updateGraph()
+}
 
 export async function loadData() {
   const data = await d3.csv("data/quantile_test_data_morecauses.csv")
@@ -237,6 +254,22 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
 
   document.getElementById("loader-container").setAttribute("class", "d-none")
   document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
+
+  showTable('show-hide-table', 'quantile-table-wrapper')
+  changeGraphType(['scatter', 'line'], handleChangeGraphType)
+  // let scatterRadio = document.getElementById("scatter");
+  // let lineRadio = document.getElementById("line");
+
+  // scatterRadio.addEventListener('change', (event) => {
+  //   graphMode = 'scatter'
+  //   updateGraph()
+  //   console.log('radio: scatter', {checked: event.target.checked})
+  // }) 
+  // lineRadio.addEventListener('change', (event) => {
+  //   graphMode = 'line'
+  //   updateGraph()
+  //   console.log('radio: line', {checked: event.target.checked})
+  // }) 
 }
 
 function unique(data, accessor) {
