@@ -13,6 +13,10 @@ const SELECTABLE_FIELDS = ["cause", "sex", "race"];
 //const MEASURES = ["count", "population", "crude_rate", "age_adjusted_rate"]
 const MEASURES = ["crude_rate", "age_adjusted_rate"];
 const LEVELS = ["county", "state"];
+const PLOT_DIAGRAM_SIZE = {
+  width: 440,
+  height: 360
+}
 
 function stateName(operation, field) {
   return operation + field[0].toUpperCase() + field.slice(1);
@@ -175,8 +179,7 @@ function plotDemographic(data, highlightData = null) {
   }
 
   const options = {
-    width: 340,
-    height: 280,
+    ...PLOT_DIAGRAM_SIZE,
     //y: {grid: true, label: valueLabel, axis: "right"},
     marginTop: 30,
     marginRight: 60,
@@ -348,9 +351,9 @@ function plotHistogram(data, highlight = []) {
     tickFormat = (d) => d.toExponential();
   }
 
+  console.log('data: ', {data})
   const plot = Plot.plot({
-    width: 340,
-    height: 260,
+    ...PLOT_DIAGRAM_SIZE,
     color: {
       scheme: "rdylbu",
       type: "diverging",
@@ -486,6 +489,15 @@ export function dataLoaded(loadedData) {
         tableWrapper.style.display = isChecked ? 'block' : 'none'
     }
   }) 
+
+  const mapButton = document.querySelector('#map-download')
+  mapButton.addEventListener('click', () => {
+    const html = document.querySelector("#plot-map")
+    if (html) {
+      downloadHtmlAsImage(html)
+    }
+  })
+  
 }
 
 // === Helper ===
@@ -493,3 +505,47 @@ export function dataLoaded(loadedData) {
 function unique(data, accessor) {
   return [...new Set(data.map(accessor))];
 }
+
+
+function downloadHtmlAsImage(html) {
+  const {offsetWidth:width, offsetHeight: height} = html
+
+  var data = `
+    data:image/svg+xml;charset=utf-8, 
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <foreignObject width="100%" height="100%">
+  ` +
+  htmlToXml(html.innerHTML) +
+  `</foreignObject></svg>`;
+
+  var img = new Image();
+  img.src = data;
+
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.height = height
+    canvas.width = width
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    downloadImage(canvas, 'map')
+  }
+}
+
+function htmlToXml(html) {
+  var doc = document.implementation.createHTMLDocument('');
+  doc.write(html);
+
+  doc.documentElement.setAttribute('xmlns', doc.documentElement.namespaceURI);
+
+  html = (new XMLSerializer).serializeToString(doc.body);
+  return html;
+}
+
+function downloadImage(image, fileName) {
+  var dataUrl = image.toDataURL();
+  var link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = `${fileName}.jpg`;
+  link.click();
+}
+
+

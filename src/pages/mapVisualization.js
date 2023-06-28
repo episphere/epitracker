@@ -98,8 +98,12 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-none flex-row">
-              <div id="plot-map"></div>
-              <div class="d-flex flex-column gap-4">
+              <div class="position-relative">
+                <button class="position-absolute top-0 end-0" id="map-download">Download Image</button>
+                <div id="plot-map"></div>
+              </div>
+              
+              <div class="d-flex flex-column gap-5">
                 <div id="plot-histogram"></div>
                 <div id="plot-demographic"></div>
               </div>
