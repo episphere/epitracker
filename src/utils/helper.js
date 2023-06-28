@@ -1,3 +1,6 @@
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+
 export function addTooltip(svgSelect, elementSelect=null) {
     const mouseOffset = [10,10]
   
@@ -80,4 +83,112 @@ export function changeGraphType(types = [], callback) {
         let typeRadioElement = document.getElementById(`${type}-graph`);
         typeRadioElement.addEventListener('change', () => callback(type)) 
     })
+}
+
+export function colorRampLegend(colorScale, valueExtent, label="", tickValues=null, size=null) {
+    const nGrad = 16
+    const margin = 30 
+
+    if (size == null) {
+        size = label ? [400, 60] : [400, 40]
+    }
+    const startY = label ? 20 : 0
+
+    const svg = d3.create("svg")
+        .attr("width", size[0])
+        .attr("height", size[1])
+
+    // Gradient
+
+    // This is a terrible way to generate a unique ID, but it's unlikely to cause a problem.
+    const gradientId = "ramp-gradient-"+Math.floor(Math.random()*10000000)
+
+    const defs = svg.append("defs")
+    const gradient = defs.append("linearGradient")
+        .attr("id", gradientId)
+        .attr("x1", "0%")
+        .attr("x2", "100%")
+
+    const pScale = d3.scaleLinear()
+        .domain([0,nGrad])
+        .range(valueExtent)
+
+    gradient.append("stop")
+        .attr("class", "start")
+        .attr("offset", `0%`)
+        .attr("stop-color", colorScale(valueExtent[0]))
+
+    for (let i = 1; i < nGrad-1; i++) {
+        gradient.append("stop")
+        .attr("offset", `${100*i/nGrad}%`)
+        .attr("stop-color", colorScale(pScale(i)))
+    }
+
+    gradient.append("stop")
+        .attr("class", "end")
+        .attr("offset", `100%`)
+        .attr("stop-color", colorScale(valueExtent[1]))
+
+    svg.append("rect")
+        .attr("x", margin)
+        .attr("y", startY)
+        .attr("width", size[0]-margin*2)
+        .attr("height", size[1]-23-startY)
+        .attr("fill", `url(#${gradientId})`)
+
+
+
+    // Ticks 
+
+    const scale = d3.scaleLinear()
+        .domain(valueExtent)
+        .range([0, size[0]-margin*2])
+
+    const axis = d3.axisBottom(scale)
+        .tickSize(size[1]-15-startY)
+        .tickSizeOuter(0)
+
+    if (tickValues != null) {
+        axis.tickValues(tickValues)
+    } else {
+        axis.ticks(5)
+    }
+
+    svg.append("g")
+        .attr("transform", `translate(${margin},${startY})`)
+        .style("font-size", 13)
+        .style("color", "#424242")
+        .style("stroke-width", "1px")
+        .call(axis)
+
+    svg.selectAll(".tick")
+        .selectAll("line")
+        .attr("stroke", "#424242")
+
+
+    // Label
+
+    if (label) {
+        svg.append("g")
+        .style("font-family", "sans-serif")
+        .style("font-size", "12px")
+        .append("text")
+            .attr("x", margin)
+            .attr("y", 15)
+            .text(label)
+    }
+
+
+    return svg.node()
+}
+
+export function colorRampLegendMeanDiverge(values, schemeName, label=null, size=null, reverse=false) {
+    const mean = d3.mean(values) 
+    const extent = d3.extent(values) 
+    const maxSide = Math.max(mean-extent[0], extent[1]-mean)
+
+    const colorScale = d3.scaleSequential(d3["interpolate"+schemeName])
+        .domain(reverse ? [mean+maxSide, mean-maxSide] : [mean-maxSide, mean+maxSide])
+
+    return colorRampLegend(colorScale, extent, label, [extent[0], mean, extent[1]], size)
 }

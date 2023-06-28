@@ -7,6 +7,7 @@ import { addTooltip } from "./helper.js";
 import { downloadFiles } from "../pages/dictionary.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
+import { colorRampLegendMeanDiverge } from "./helper.js";
 
 const COMPARABLE_FIELDS = ["none", "sex", "race"];
 const SELECTABLE_FIELDS = ["cause", "sex", "race"];
@@ -156,13 +157,17 @@ function plotDemographic(data, highlightData = null) {
     highlightData = data;
   } 
 
-  // const filterLabels = [state.filter.disease, state.filter.decedent_sex, state.filter.decedent_race].filter(d => d != "All")
-  // let valueLabel = `${dictionary.fields.get(state.valueField)}`
-  // if (filterLabels.length > 0) {
-  //   valueLabel = valueLabel + ` (${filterLabels.join(",")})`
-  // }
+  let checkbox = document.getElementById("show-hide-table");                    
+  checkbox.addEventListener('change', (event) => {
+    const isChecked = event.target.checked
+    const tableWrapper = document.querySelector('#map-table-wrapper')
+    if (tableWrapper) {
+        tableWrapper.style.display = isChecked ? 'block' : 'none'
+    }
+  })  
 
   const domainValues = data.map((d) => d[mainField]);
+  const facetDomainValues = data.map((d) => d[otherField]);
   const colorScheme = d3
     .scaleOrdinal()
     .domain(domainValues)
@@ -173,12 +178,61 @@ function plotDemographic(data, highlightData = null) {
   if (extent.some((d) => Math.abs(d) >= 100000)) {
     tickFormat = (d) => d.toExponential();
   }
+  
+  const highlightExtent = d3.extent(highlightData, (d) => d[otherOptions.measureField]);
+  const maxValue = Math.max(highlightExtent[1], extent[1])
+
+  // Make missing data explicitx
+  const missingData = []
+  const keys = otherField != "none" ? [mainField, otherField] : [mainField]
+  const presentKeys = new Set(highlightData.map(row => keys.map(key => row[key]).join("_")))
+  for (const mainValue of new Set(domainValues)) {
+    for (const otherValue of new Set(facetDomainValues)) {
+      const key = [mainValue,otherValue].filter(d => d != null).join("_")
+      if (!presentKeys.has(key)) {
+        missingData.push({[mainField]: mainValue, [otherField]: otherValue})
+      }
+    }
+  }
+  const textPos = maxValue/2
+
+  const barOptions = {
+    x: mainField, 
+    y: otherOptions.measureField, 
+    fill: (d) => colorScheme(d[mainField])
+  }
+  const refTickOptions = {
+    x: mainField,
+    y: otherOptions.measureField,
+    strokeWidth: 2,
+    strokeDasharray: "3,2",
+  }
+  const missingBarOptions = {
+    x: mainField, 
+    y: maxValue,
+    fill: "#f5f5f5"
+  }
+  const textOptions = {
+    x: mainField, 
+    y: () => textPos, 
+    text: () => "N/A", 
+    fontSize: 14, 
+    fill: "#dedede", 
+    pointerEvents: "none"
+  }
+
+  if (otherField != "none") {
+    barOptions.fx = otherField
+    refTickOptions.fx = otherField
+    missingBarOptions.fx = otherField
+    textOptions.fx = otherField
+  }
 
   const options = {
     width: 340,
     height: 280,
     //y: {grid: true, label: valueLabel, axis: "right"},
-    marginTop: 30,
+    marginTop: 40,
     marginRight: 60,
     y: {
       grid: true,
@@ -187,35 +241,15 @@ function plotDemographic(data, highlightData = null) {
       tickFormat: tickFormat,
     },
     x: { domain: domainValues, tickFormat: (d) => l(d) },
+    fx: { tickFormat: (d) => l(d) },
     marks: [
-      Plot.barY(highlightData, {
-        x: mainField,
-        y: otherOptions.measureField,
-        fill: (d) => colorScheme(d[mainField]),
-        facet: true,
-      }),
-      Plot.tickY(data, {
-        x: mainField,
-        y: otherOptions.measureField,
-        strokeWidth: 2,
-        strokeDasharray: "3,2",
-      }),
+      Plot.barY(missingData, missingBarOptions),
+      Plot.text(missingData, textOptions),
+      Plot.barY(highlightData, barOptions),
+      Plot.tickY(data, refTickOptions),
     ],
   };
-
-  // TODO: Fix secondary tick lookup
-  if (otherField != "none") {
-    //plotOptions.facet = {data: data, x: otherField, label: dictionary.fields.get(otherField)}
-    options.facet = {
-      data: data,
-      x: otherField,
-      transform: (d) => {
-        console.log(d);
-        return l(d);
-      },
-    };
-    options.fx = { tickFormat: (d) => l(d) };
-  }
+  
 
   //return plotOptions
   const div = document.getElementById("plot-demographic");
@@ -232,14 +266,15 @@ function plotChoropleth(spatialData) {
   const spatialDataMap = d3.index(spatialData, (d) => d[indexField]);
 
   const meanValue = d3.mean(spatialData, (d) => d[otherOptions.measureField]);
-  console.log(meanValue);
+  const maxValue = d3.max(spatialData, (d) => d[otherOptions.measureField]);
   const color = {
     scheme: "rdylbu",
-    type: "diverging",
+    //type: "diverging",
     pivot: meanValue,
     symmetric: true,
     reverse: true,
-    legend: "ramp",
+    //domain: [0,maxValue*2],
+    //legend: "ramp",
     label: otherOptions.measureField,
   };
   //const color = {scheme: "rdylbu", type: "diverging"}//, pivot: meanValue, symmetric: true, reverse: true}
@@ -274,13 +309,20 @@ function plotChoropleth(spatialData) {
     marks: marks,
   };
 
+  const colorLegend = colorRampLegendMeanDiverge(spatialData.map((d) => d[otherOptions.measureField]), 
+    "RdYlBu", otherOptions.measureField, null, true)
+
+  const figure = document.createElement("figure")
   const plot = Plot.plot(options);
+  figure.appendChild(colorLegend)
+  figure.appendChild(plot)
 
   const mainGeo = otherOptions.geoLevel == "county" ? countyGeo : stateGeo;
-  const plotSelect = d3.select(d3.select(plot).selectAll("svg").nodes()[1]);
+  const plotSelect = d3.select(d3.select(figure).selectAll("svg").nodes().at(-1));
   const geoSelect = d3
     .select(plotSelect.selectAll("g[aria-label='geo'").nodes()[0])
     .selectAll("path");
+
 
   // TODO: Re-add when I find out how to get the browser to ignore default title display
   const tooltip = addTooltip(plotSelect);
@@ -334,7 +376,7 @@ function plotChoropleth(spatialData) {
   //plot.legend("color", {label: "All Cause Mortality"})
 
   div.innerHTML = "";
-  div.appendChild(plot);
+  div.appendChild(figure);
 }
 
 function plotHistogram(data, highlight = []) {
