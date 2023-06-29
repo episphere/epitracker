@@ -86,7 +86,7 @@ function updateGraph() {
 
   quantileData = quantileData.map(d => ({...d}))
   quantileData.forEach(row => {
-    const se = row.age_adjusted_rate / Math.sqrt(row.count)
+    const se = row.age_adjusted_rate / Math.sqrt(row.deaths)
     row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
     row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
   })
@@ -147,6 +147,8 @@ function plotQuantilePlot(data) {
 
   const colorField = dataState.comparePrimary == "none" ? "slateblue" : dataState.comparePrimary
 
+  console.log(data)
+
   const marks = []
   if (otherOptions.measureField == "age_adjusted_rate") {
     // marks.push(Plot.areaY(data,
@@ -204,7 +206,7 @@ function handleChangeGraphType(type) {
 }
 
 export async function loadData() {
-  const data = await d3.csv("data/quantile_test_data_morecauses.csv")
+  const data = await d3.csv("data/quantile_data_2020.csv")
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
   const quantileDetails = await d3.json("data/quantile_details.json")
   return [data, causeDictData, quantileDetails] 
@@ -213,6 +215,8 @@ export async function loadData() {
 export function dataLoaded(loadedData, causeDictData, quantileDetails) {
   data = loadedData
   quantileDetailsMap = d3.index(quantileDetails, d => d.field)
+
+  data.sort((a,b) => a.quantile - b.quantile)
 
   data.forEach(row => {
 
@@ -225,7 +229,7 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
   const races = unique(data, d => d.race)
 
   const quantileFields = unique(data, d => d.quantile_field)
-  const quantileNums = unique(data, d => d.quantile_count)
+  const quantileNums = ["8"] //unique(data, d => d.quantile_count) // TODO: Support more quantile counts.
 
   const icd10Map = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
   diseases = ["All", ...diseases.sort().filter(d => d != "All")]

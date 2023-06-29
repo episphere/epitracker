@@ -438,7 +438,8 @@ function plotHistogram(data, highlight = []) {
 
 // TODO: Split the load data into separate functions, handle asycnhronously
 export async function loadData() {
-  const data = await d3.csv("data/test_race5_sex_state_county_aa.csv");
+  //const data = await d3.csv("data/test_race5_sex_state_county_aa.csv");
+  const data = await d3.csv("data/age_adjusted_data_2020.csv");
   data.forEach((row) => {
     MEASURES.forEach((field) => (row[field] = parseFloat(row[field])));
   });
