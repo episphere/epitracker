@@ -21,21 +21,21 @@ export const infoDeck = () => {
                         header: "About Epitracker",
                         button: "Information on Epitracker Dataplatfrom",
                         href: "#about/overview",
-                        icon: "fa-info",
+                        icon: "fa-circle-info",
                         explanation: "",
                     });
                     template += cardContents({
                         header: "Geographic Visualization",
-                        button: "Geographic Visualization",
-                        href: "#map-visualization",
-                        icon: "fa-folder-open",
+                        button: "Interact with Geographic Visualization",
+                        href: "#visualization/map",
+                        icon: "fa-map",
                         explanation: "",
                     });
                     template += cardContents({
-                        header: "Quintiles",
-                        button: " Quintiles",
-                        href: "#quantile-visualization",
-                        icon: "fa-layer-group",
+                        header: "Quantile Graphs",
+                        button: "Interact with Quantile Graphs",
+                        href: "#visualization/quantile",
+                        icon: "fa-chart-line",
                         explanation: "",
                     });
                     // template += cardContents({
