@@ -9,7 +9,7 @@ export const renderMapVisualizationPage = () => {
 
       
       <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2" id="sidebar">
           <div class="card rounded-1">
             <div class="card-header">
               Demographic Options
@@ -76,7 +76,8 @@ export const renderMapVisualizationPage = () => {
   template += `
         </div>
 
-        <div class="col-md-10 px-3">
+        <div class="col-md-10 px-3 position-relative" id="main-content">
+          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i class="fas fa-lg fa-caret-left"></i></button>
           <div class="d-flex flex-row-reverse justify-content-between">
             <div class="ml-auto mt-3 mb-3" id="downloadContainer">
                 <div class="col-md-12 p-0 dropdown">
@@ -98,14 +99,26 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-none flex-row">
-              <div class="position-relative">
-                <button class="position-absolute top-0 end-0" id="map-download">Download Image</button>
+              <div class="position-relative graph">
+                <span class="icon-download position-absolute top-0 end-0" id="map-download" title="Download chart as image">
+                  <i class="fas fa-download" style="color:#000000 !important"></i>
+                </span>
                 <div id="plot-map"></div>
               </div>
               
               <div class="d-flex flex-column gap-5">
-                <div id="plot-histogram"></div>
-                <div id="plot-demographic"></div>
+                <div class="position-relative graph">
+                  <span class="icon-download position-absolute top-0 end-0" id="histogram-download" title="Download chart as image">
+                    <i class="fas fa-download" style="color:#000000 !important"></i>
+                  </span>
+                  <div id="plot-histogram"></div>
+                </div>
+                <div class="position-relative graph">
+                  <span class="icon-download position-absolute top-0 end-0" id="demographic-download" title="Download chart as image">
+                    <i class="fas fa-download" style="color:#000000 !important"></i>
+                  </span>
+                  <div id="plot-demographic"></div>
+                </div>
               </div>
             
             </div>

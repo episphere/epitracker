@@ -12,7 +12,7 @@ function getGraphType() {
   return `
     <div id="graph-type-wrapper">
       <h6>Graph Types</h6>
-      <input type="radio" id="scatter-graph" name="graph-type" value="scatter">
+      <input type="radio" id="scatter-graph" name="graph-type" value="scatter" checked="checked">
       <label for="scatter-graph">Scatter</label><br>
       <input type="radio" id="line-graph" name="graph-type" value="line">
       <label for="line-graph">Line</label>

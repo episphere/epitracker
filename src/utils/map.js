@@ -7,7 +7,8 @@ import { addTooltip } from "./helper.js";
 import { downloadFiles } from "../pages/dictionary.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
-import { colorRampLegendMeanDiverge } from "./helper.js";
+import { colorRampLegendMeanDiverge, toggleSidebar } from "./helper.js";
+import { downloadHtmlAsImage }  from "./download.js"
 
 const COMPARABLE_FIELDS = ["none", "sex", "race"];
 const SELECTABLE_FIELDS = ["cause", "sex", "race"];
@@ -532,14 +533,21 @@ export function dataLoaded(loadedData) {
     }
   }) 
 
-  const mapButton = document.querySelector('#map-download')
+  toggleSidebar('plot-map')
+  downloadGraph('map-download', 'plot-map', 'map')
+  downloadGraph('histogram-download', 'plot-histogram', 'histogram')
+  downloadGraph('demographic-download', 'plot-demographic', 'demographic')
+}
+
+function downloadGraph(downloadId, graphId, fileName) {
+  const mapButton = document.querySelector(`#${downloadId}`)
   mapButton.addEventListener('click', () => {
-    const html = document.querySelector("#plot-map")
+    const html = document.querySelector(`#${graphId}`)
+    
     if (html) {
-      downloadHtmlAsImage(html)
+      downloadHtmlAsImage(html, fileName)
     }
   })
-  
 }
 
 // === Helper ===
@@ -547,47 +555,4 @@ export function dataLoaded(loadedData) {
 function unique(data, accessor) {
   return [...new Set(data.map(accessor))];
 }
-
-
-function downloadHtmlAsImage(html) {
-  const {offsetWidth:width, offsetHeight: height} = html
-
-  var data = `
-    data:image/svg+xml;charset=utf-8, 
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-    <foreignObject width="100%" height="100%">
-  ` +
-  htmlToXml(html.innerHTML) +
-  `</foreignObject></svg>`;
-
-  var img = new Image();
-  img.src = data;
-
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    canvas.height = height
-    canvas.width = width
-    canvas.getContext('2d').drawImage(img, 0, 0);
-    downloadImage(canvas, 'map')
-  }
-}
-
-function htmlToXml(html) {
-  var doc = document.implementation.createHTMLDocument('');
-  doc.write(html);
-
-  doc.documentElement.setAttribute('xmlns', doc.documentElement.namespaceURI);
-
-  html = (new XMLSerializer).serializeToString(doc.body);
-  return html;
-}
-
-function downloadImage(image, fileName) {
-  var dataUrl = image.toDataURL();
-  var link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = `${fileName}.jpg`;
-  link.click();
-}
-
 
