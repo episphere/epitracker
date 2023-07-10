@@ -82,11 +82,11 @@ export const renderQuantileVisualizationPage = () => {
             <div class="ml-auto mt-3 mb-3" id="downloadContainer">
                 <div class="col-md-12 p-0 dropdown">
                       <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
-                          Download <i class="fas fa-download" style="color:#000000 !important"></i>
+                          Download Graph<i class="fas fa-download" style="color:#000000 !important"></i>
                       </button>
                       <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as csv" id="downloadDictionaryCSV">CSV</button></li>
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download dictionary as tsv" id="downloadDictionaryTSV">TSV</button></li>
+                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="download figure 1 as PNG" id="quantileDownloadFigureOnePNG">Figure 1</button></li>
+                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="download figure 2 as PNG" id="quantileDownloadFigureTwoPNG">Figure 2</button></li>
                       </ul>
                 </div>
             </div>
@@ -100,8 +100,23 @@ export const renderQuantileVisualizationPage = () => {
             </div>
           
             <div id="plots-container" class="d-flex flex-row">
+               <div class="position-relative graph">
               <div id="plot-quantiles"></div>
             </div>
+            <div class="row" id="map-table-wrapper" style="display: none;">
+            <div class="d-flex flex-row-reverse justify-content-between">
+              <div class="ml-auto mt-3 mb-3" id="downloadContainer">
+                  <div class="col-md-12 p-0 dropdown">
+                      <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
+                          Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
+                      </button>
+                      <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv" id="download-table-csv-Quantile">CSV</button></li>
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv" id="download-table-tsv-Qunatile">TSV</button></li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
             
           </div>
 
@@ -121,6 +136,7 @@ export const renderQuantileVisualizationPage = () => {
       </div>
     </div>
   </div>
+  
   `;
   return template;
 };

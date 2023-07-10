@@ -394,7 +394,6 @@ function plotHistogram(data, highlight = []) {
     tickFormat = (d) => d.toExponential();
   }
 
-  console.log('data: ', {data})
   const plot = Plot.plot({
     ...PLOT_DIAGRAM_SIZE,
     color: {
@@ -535,20 +534,6 @@ export function dataLoaded(loadedData) {
   }) 
 
   toggleSidebar('plot-map')
-  downloadGraph('map-download', 'plot-map', 'map')
-  downloadGraph('histogram-download', 'plot-histogram', 'histogram')
-  downloadGraph('demographic-download', 'plot-demographic', 'demographic')
-}
-
-function downloadGraph(downloadId, graphId, fileName) {
-  const mapButton = document.querySelector(`#${downloadId}`)
-  mapButton.addEventListener('click', () => {
-    const html = document.querySelector(`#${graphId}`)
-    
-    if (html) {
-      downloadHtmlAsImage(html, fileName)
-    }
-  })
 }
 
 // === Helper ===

@@ -1,7 +1,6 @@
 //Changes required regarding dictionary
 import { addEventFilterBarToggle } from "../event.js";
 import {
-  getFile,
   hideAnimation,
   shortenText,
   tsv2Json,
@@ -13,6 +12,7 @@ import {
   dataPagination,
   paginationTemplate,
 } from "./description.js";
+import {downloadHtmlAsImage} from '../utils/download.js'
 let previousValue = "";
 
 export const dataDictionaryTemplate = async () => {
@@ -445,7 +445,7 @@ const renderDataDictionary = (dictionary, pageSize, headers) => {
   addEventSortColumn(dictionary, pageSize, headers);
 };
 
-const downloadDictionaryCallback = (e) => (data, headers, fileName, isTsv = false) => {
+const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
   e.stopPropagation();
   const type = isTsv ? 'tsv' : 'csv';
   const content =
@@ -455,7 +455,6 @@ const downloadDictionaryCallback = (e) => (data, headers, fileName, isTsv = fals
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("download", `${fileName}.${type}`);
-  console.log('sahar 3', {data,headers, link, content})
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -465,7 +464,13 @@ const downloadRef = {
   csvButton: null, 
   csvCallback: null,
   tsvButton: null, 
-  tsvCallback: null
+  tsvCallback: null,
+  pngFigureOneButton: null, 
+  pngFigureOneCallback: null,
+  pngFigureTwoButton: null, 
+  pngFigureTwoCallback: null,
+  pngFigureThreeButton: null, 
+  pngFigureThreeCallback: null
 }
 
 const removeDownloadEventListeners = () => {
@@ -474,6 +479,17 @@ const removeDownloadEventListeners = () => {
   }
   if (downloadRef.tsvButton) {
     downloadRef.tsvButton.removeEventListener('click', downloadRef.tsvCallback)
+  }
+  if (downloadRef.pngFigureOneButton) {
+    downloadRef.pngFigureOneButton.removeEventListener('click', downloadRef.pngFigureOneCallback)
+  }
+
+  if (downloadRef.pngFigureTwoButton) {
+    downloadRef.pngFigureTwoButton.removeEventListener('click', downloadRef.pngFigureTwoCallback)
+  }
+
+  if (downloadRef.pngFigureTreeButton) {
+    downloadRef.pngFigureTreeButton.removeEventListener('click', downloadRef.pngFigureTreeCallback)
   }
 }
 
@@ -502,19 +518,100 @@ export const downloadFiles = (data, headers, fileName, studyDescription) => {
     });
     data = flatArray;
   }
-  const downloadDictionaryCSVButton = document.getElementById(
-    "downloadDictionaryCSV"
-  );
-  const downloadDictionaryCSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, false)
-  const downloadDictionaryTSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, true)
-  downloadDictionaryCSVButton.addEventListener("click", downloadDictionaryCSV);
-  downloadRef.csvButton = downloadDictionaryCSVButton
-  downloadRef.csvCallback = downloadDictionaryCSV
+  
+  const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
+  const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
+  const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
+  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
+  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
 
-  const downloadDictionaryTSVButton = document.getElementById(
-    "downloadDictionaryTSV"
+  const downloadCSVButton = document.getElementById(
+    "download-table-csv"
   );
-  downloadDictionaryTSVButton.addEventListener("click", downloadDictionaryTSV);
-  downloadRef.tsvButton = downloadDictionaryTSVButton
-  downloadRef.tsvCallback = downloadDictionaryTSV
+
+  if (downloadCSVButton) {
+    downloadCSVButton.addEventListener("click", downloadTableCSV);
+    downloadRef.csvButton = downloadCSVButton
+    downloadRef.csvCallback = downloadTableCSV
+  }
+  
+
+  const downloadTSVButton = document.getElementById(
+    "download-table-tsv"
+  );
+
+  if (downloadTSVButton) {
+    downloadTSVButton.addEventListener("click", downloadTableTSV);
+    downloadRef.tsvButton = downloadTSVButton
+    downloadRef.tsvCallback = downloadTableTSV
+  }
+  
+
+  const downloadFigureOneButton = document.getElementById(
+    "downloadFigureOnePNG"
+  );
+  downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+  downloadRef.pngFigureOneButton = downloadFigureOneButton
+  downloadRef.pngFigureOneCallback = downloadFigureOnePNG
+
+  const downloadFigureTwoButton = document.getElementById(
+    "downloadFigureTwoPNG"
+  );
+  downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
+  downloadRef.pngFigureTwoButton = downloadFigureTwoButton
+  downloadRef.pngFigureTwoCallback = downloadFigureTwoPNG
+
+  const downloadFigureThreeButton = document.getElementById(
+    "downloadFigureThreePNG"
+  );
+  downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
+  downloadRef.pngFigureThreeButton = downloadFigureThreeButton
+  downloadRef.pngFigureThreeCallback = downloadFigureThreePNG
 };
+
+function downloadGraph(graphId, fileName) {
+  const html = document.querySelector(`#${graphId}`)
+  if (html) {
+    downloadHtmlAsImage(html, fileName)
+  }
+}
+
+// //for quantile page
+// const downloadFigureOnePNGQuantile= () => downloadGraphQuantile('plot-quantiles', 'line')
+// const downloadFigureTwoPNGQuantile = () => downloadGraphQuantile('plot-quantiles', 'scatter')
+// const downloadCSVButtonQuantile = document.getElementById(
+//   "download-table-csv-Quantile"
+// );
+
+// if (downloadCSVButtonQuantile) {
+//   downloadCSVButtonQuantile.addEventListener("click", downloadTableCSV);
+//   downloadRef.csvButton = downloadCSVButtonQuantile
+//   downloadRef.csvCallback = downloadTableCSV
+// }
+
+
+// const downloadTSVButtonQuantile = document.getElementById(
+//   "download-table-tsv-Quantile"
+// );
+
+// if (downloadTSVButtonQuantile) {
+//   downloadTSVButtonQuantile.addEventListener("click", downloadTableTSV);
+//   downloadRef.tsvButton = downloadTSVButtonQuantile
+//   downloadRef.tsvCallback = downloadTableTSV
+// }
+
+
+// const downloadFigureOneButtonQuantile = document.getElementById(
+//   "quantileDownloadFigureOnePNG"
+// );
+// downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+// downloadRef.pngFigureOneButton = downloadFigureOneButtonQuantile
+// downloadRef.pngFigureOneCallback = downloadFigureOnePNG
+
+// const downloadFigureTwoButtonQuantile = document.getElementById(
+//   "quantileDownloadFigureTwoPNG"
+// );
+// downloadFigureTwoButtonQuantile.addEventListener("click", downloadFigureTwoPNG);
+// downloadRef.pngFigureTwoButton = downloadFigureTwoButtonQuantile
+// downloadRef.pngFigureTwoCallback = quantileDownloadFigureTwoPNG
+// };

@@ -8,7 +8,6 @@ import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {showTable, changeGraphType} from '../utils/helper.js'
  
-console.log('loadData: 1')
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
 const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
@@ -261,19 +260,6 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
 
   showTable('show-hide-table', 'quantile-table-wrapper')
   changeGraphType(['scatter', 'line'], handleChangeGraphType)
-  // let scatterRadio = document.getElementById("scatter");
-  // let lineRadio = document.getElementById("line");
-
-  // scatterRadio.addEventListener('change', (event) => {
-  //   graphMode = 'scatter'
-  //   updateGraph()
-  //   console.log('radio: scatter', {checked: event.target.checked})
-  // }) 
-  // lineRadio.addEventListener('change', (event) => {
-  //   graphMode = 'line'
-  //   updateGraph()
-  //   console.log('radio: line', {checked: event.target.checked})
-  // }) 
 }
 
 function unique(data, accessor) {
