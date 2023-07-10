@@ -4,6 +4,10 @@
   font-family: "Montserrat";
 } */
 
+li {
+  list-style: none;
+}
+
 .fa-copy,
 .getAllFileversions,
 .fa-folder-minus {
