@@ -11,3 +11,10 @@ function downloadImage(image, fileName) {
   link.download = `${fileName}.jpg`;
   link.click();
 }
+
+export function downloadGraph(graphId, fileName) {
+  const html = document.querySelector(`#${graphId}`)
+  if (html) {
+    downloadHtmlAsImage(html, fileName)
+  }
+}

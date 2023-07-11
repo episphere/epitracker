@@ -7,7 +7,7 @@ export const renderQuantileVisualizationPage = () => {
       <h1 class="mb-4">EpiTracker Cancer</h1>
     </div>
     <div class="row">
-      <div class="col-md-2">
+      <div class="col-md-2" id="sidebar">
         <div class="card rounded-1">
           <div class="card-header">
             Demographic Options
@@ -75,64 +75,64 @@ export const renderQuantileVisualizationPage = () => {
   template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.SHOW_HIDE_TABLE])
 
   template += `
+    </div>
+    <div class="col-md-10 px-3 position-relative" id="main-content">
+      <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i class="fas fa-lg fa-caret-left"></i></button> 
+    <div class="d-flex flex-row-reverse justify-content-between">
+      <div class="ml-auto mt-3 mb-3" id="downloadContainer">
+        <div class="col-md-12 p-0 dropdown">
+          <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+            data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
+            Download Graph<i class="fas fa-download" style="color:#000000 !important"></i>
+          </button>
+          <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
+            <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="download figure 1 as PNG"
+                id="downloadFigureOnePNG">Figure 1</button></li>
+          </ul>
+        </div>
       </div>
-
-      <div class="col-md-10 px-3">
-        <div class="d-flex flex-row-reverse justify-content-between">
-            <div class="ml-auto mt-3 mb-3" id="downloadContainer">
-                <div class="col-md-12 p-0 dropdown">
-                      <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
-                          Download Graph<i class="fas fa-download" style="color:#000000 !important"></i>
-                      </button>
-                      <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="download figure 1 as PNG" id="quantileDownloadFigureOnePNG">Figure 1</button></li>
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="download figure 2 as PNG" id="quantileDownloadFigureTwoPNG">Figure 2</button></li>
-                      </ul>
-                </div>
-            </div>
+    </div>
+    <div>
+      <div class="tab-pane fade show active px-10 py-10" id="plot-map-pane" role="tabpanel"
+        aria-labelledby="plot-map-tab">
+  
+        <div id="loader-container" class="d-flex flex-row justify-content-center">
+          <div class="spinner-border" role="status">
           </div>
-        <div>
-          <div class="tab-pane fade show active px-10 py-10" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
-          
-            <div id="loader-container" class="d-flex flex-row justify-content-center">
-              <div class="spinner-border" role="status">
-              </div>
-            </div>
-          
-            <div id="plots-container" class="d-flex flex-row">
-               <div class="position-relative graph">
-              <div id="plot-quantiles"></div>
-            </div>
-            <div class="row" id="map-table-wrapper" style="display: none;">
+        </div>
+  
+        <div id="plots-container" class="d-flex flex-column">
+          <div class="position-relative graph">
+            <div id="plot-quantiles"></div>
+          </div>
+  
+  
+          <div class="row" id="quantile-table-wrapper" style="display: none;">
             <div class="d-flex flex-row-reverse justify-content-between">
               <div class="ml-auto mt-3 mb-3" id="downloadContainer">
-                  <div class="col-md-12 p-0 dropdown">
-                      <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
-                          Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
-                      </button>
-                      <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
-                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv" id="download-table-csv-Quantile">CSV</button></li>
-                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv" id="download-table-tsv-Qunatile">TSV</button></li>
-                      </ul>
-                  </div>
+                <div class="col-md-12 p-0 dropdown">
+                  <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+                    data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
+                    Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
+                  </button>
+                  <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
+                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                        id="download-table-csv">CSV</button></li>
+                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                        id="download-table-tsv">TSV</button></li>
+                  </ul>
+                </div>
               </div>
               <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
-            
-          </div>
-
-          <div class="tab-pane fade" id="plot-quantile-pane" role="tabpanel" aria-labelledby="plot-quantile-tab">
-          </div>
-
-        </div>
-
-        <div class="row" id="quantile-table-wrapper" style="display: none;">
-            <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
-            <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
+            </div>
+  
             <div class="table-responsive">
               <table class="table" id="quantile-table"></table>
-            <div>
-              <div class="ml-auto mt-3 mb-3 mr-2" id="page-size-container"></div>
+              <div>
+              </div>
+            </div>
           </div>
+        </div>
       </div>
     </div>
   </div>

@@ -77,19 +77,24 @@ export const renderMapVisualizationPage = () => {
         </div>
 
         <div class="col-md-10 px-3 position-relative" id="main-content">
-          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i class="fas fa-lg fa-caret-left"></i></button>
+          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i
+              class="fas fa-lg fa-caret-left"></i></button>
           <div class="d-flex flex-row-reverse justify-content-between">
             <div class="ml-auto mt-3 mb-3" id="downloadContainer">
-                <div class="col-md-12 p-0 dropdown">
-                    <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
-                        Download Graph <i class="fas fa-download" style="color:#000000 !important"></i>
-                    </button>
-                    <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
-                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 1 as PNG" id="downloadFigureOnePNG">Figure 1</button></li>
-                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 2 as PNG" id="downloadFigureTwoPNG">Figure 2</button></li>
-                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 3 as PNG" id="downloadFigureThreePNG">Figure 3</button></li>
-                    </ul>
-                </div>
+              <div class="col-md-12 p-0 dropdown">
+                <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+                  data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
+                  Download Graph <i class="fas fa-download" style="color:#000000 !important"></i>
+                </button>
+                <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
+                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 1 as PNG"
+                      id="downloadFigureOnePNG">Figure 1</button></li>
+                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 2 as PNG"
+                      id="downloadFigureTwoPNG">Figure 2</button></li>
+                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 3 as PNG"
+                      id="downloadFigureThreePNG">Figure 3</button></li>
+                </ul>
+              </div>
             </div>
           </div>
           <div class="tab-pane fade show active px-3 py-5" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
@@ -104,7 +109,7 @@ export const renderMapVisualizationPage = () => {
                 <div id="plot-map"></div>
                 <h1>Figure 1. Map</h1>
               </div>
-              
+
               <div class="d-flex flex-column gap-5">
                 <div class="position-relative graph">
                   <div id="plot-histogram"></div>
@@ -113,39 +118,40 @@ export const renderMapVisualizationPage = () => {
                 <div class="position-relative graph">
                   <div id="plot-demographic"></div>
                 </div>
-              <h1>Figure 3. Bar  </h1>
+                <h1>Figure 3. Bar </h1>
               </div>
-            
+
             </div>
-            
+
           </div>
-          
+
           <div class="row" id="map-table-wrapper" style="display: none;">
             <div class="d-flex flex-row-reverse justify-content-between">
               <div class="ml-auto mt-3 mb-3" id="downloadContainer">
-                  <div class="col-md-12 p-0 dropdown">
-                      <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button" data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
-                          Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
-                      </button>
-                      <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
-                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv" id="download-table-csv">CSV</button></li>
-                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv" id="download-table-tsv">TSV</button></li>
-                      </ul>
-                  </div>
+                <div class="col-md-12 p-0 dropdown">
+                  <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+                    data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
+                    Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
+                  </button>
+                  <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
+                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                        id="download-table-csv">CSV</button></li>
+                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                        id="download-table-tsv">TSV</button></li>
+                  </ul>
+                </div>
               </div>
               <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
             </div>
 
 
-            <div class="tab-pane fade" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab"></div>
             <div class="table-responsive">
               <table class="table" id="map-table"></table>
-            <div>
-              <div class="ml-auto mt-3 mb-3 mr-2" id="page-size-container"></div>
+              <div>
+              </div>
+            </div>
           </div>
         </div>
-      </div> 
-    </div>
   `;
   return template;
 };

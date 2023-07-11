@@ -6,7 +6,8 @@ import { configureSelect } from './input.js'
 import {downloadFiles} from '../pages/dictionary.js'
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
-import {showTable, changeGraphType} from '../utils/helper.js'
+import {showTable, changeGraphType, toggleSidebar} from '../utils/helper.js'
+import {downloadGraph} from './download.js'
  
 const COMPARABLE_FIELDS = ["none", "sex", "race"]
 const SELECTABLE_FIELDS = ["cause", "sex", "race"]
@@ -116,11 +117,39 @@ function update() {
   // lastData.current = quantileData
   const quantileData = updateGraph()
   const headers = Object.keys(quantileData[0])
-  downloadFiles(quantileData, headers, "first_data", true);
+  downloadFiles(quantileData, headers, "first_data");
+  downloadQuantileGraphs()
   renderTable("quantile-table", dataPagination(0, 200, quantileData), headers);
   paginationHandler(quantileData, 200, headers);
   updateQuantileTable(quantileData)
   // plotQuantilePlot(quantileData) 
+}
+
+const downloadGraphRef = {
+  pngFigureOneButton: null, 
+  pngFigureOneCallback: null,
+}
+
+const removeDownloadGraphEventListeners = () => {
+  if (downloadGraphRef.pngFigureOneButton) {
+    downloadGraphRef.pngFigureOneButton.removeEventListener('click', downloadGraphRef.pngFigureOneCallback)
+  }
+}
+
+function downloadQuantileGraphs() {
+  removeDownloadGraphEventListeners()
+
+  const downloadFigureOnePNG = () => downloadGraph('plot-quantiles', 'quantile')
+
+  const downloadFigureOneButton = document.getElementById(
+    "downloadFigureOnePNG"
+  );
+
+  if (downloadFigureOneButton) {
+    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+    downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
+    downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+  }
 }
 
 function quantileDetailsToTicks(quantileDetails) {
@@ -256,10 +285,12 @@ export function dataLoaded(loadedData, causeDictData, quantileDetails) {
   dataOptionsState.selectCause = diseaseSelect.value // TODO: Fix hack
 
   document.getElementById("loader-container").setAttribute("class", "d-none")
-  document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
+  document.getElementById("plots-container").setAttribute("class", "d-flex flex-column")
 
   showTable('show-hide-table', 'quantile-table-wrapper')
   changeGraphType(['scatter', 'line'], handleChangeGraphType)
+
+  toggleSidebar('plot-quantiles')
 }
 
 function unique(data, accessor) {
