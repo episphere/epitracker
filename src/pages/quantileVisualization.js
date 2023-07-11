@@ -99,7 +99,7 @@ export const renderQuantileVisualizationPage = () => {
               </div>
             </div>
           
-            <div id="plots-container" class="d-flex flex-row">
+            <div id="plots-container" class="d-flex flex-row mb-4 mx-3">
               <div id="plot-quantiles"></div>
             </div>
             
