@@ -42,3 +42,17 @@ export function hookCheckbox(query, state, checkedProperty) {
     element.checked = state[checkedProperty]
   }, checkedProperty)
 }
+
+export function hookInputActivation(inputQueries, state, activeProperty) {
+  state.defineDynamicProperty(activeProperty) 
+
+  state.addListener(() => {
+    for (const query of inputQueries) {
+      if (state[activeProperty]) {
+        document.querySelector(query).removeAttribute("disabled")
+      } else {
+        document.querySelector(query).setAttribute("disabled", "")
+      }
+    }
+  }, activeProperty)
+}

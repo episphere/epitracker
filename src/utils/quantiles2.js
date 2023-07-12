@@ -1,6 +1,7 @@
 import { State } from "./DynamicState2.js"
-import { hookSelect, hookCheckbox } from "./input2.js"
+import { hookSelect, hookCheckbox, hookInputActivation } from "./input2.js"
 import { quantilePlot } from "./quantilePlots.js"
+import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {downloadFiles} from '../pages/dictionary.js'
 import {renderTable} from '../components/table.js'
@@ -8,8 +9,6 @@ import {renderTable} from '../components/table.js'
 // ===== Global stuff =====
 
 // Static
-const COMPARABLE_FIELDS = ["none", "sex", "race"]
-const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
 
 // Note: Using standard object properties unless listeners required
@@ -28,7 +27,7 @@ export async function start() {
   // We have to define this after data is loaded, or it will run multiple times on set-up
   state.addListener(() => {
       queryData()
-      syncDataDependentInputs()
+      syncDataDependentInputs(state)
       update()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
@@ -38,41 +37,17 @@ export async function start() {
 }
 
 function hookInputs() {
-  state.defineDynamicProperty("comparePrimaryOptions", COMPARABLE_FIELDS)
-
-  state.defineDynamicProperty("comparePrimary", null)//"none")
-  state.defineDynamicProperty("compareSecondary", null)//"none")
-  state.defineDynamicProperty("selectCause", "All")
-  state.defineDynamicProperty("selectRace", "All")
-  state.defineDynamicProperty("selectSex", "All")
-  state.defineDynamicProperty("showLines", true)
-
-  hookSelect("#comparePrimarySelect", state, "comparePrimaryOptions", "comparePrimary")
-  hookSelect("#compareSecondarySelect", state, "compareSecondaryOptions", "compareSecondary")
-  hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause")
-  hookSelect("#sexSelectSelect", state, "selectSexOptions", "selectSex")
-  hookSelect("#raceSelectSelect", state, "selectRaceOptions", "selectRace")
+  hookDemographicInputs(state)
+  
   hookSelect("#measureSelect", state, "measureOptions", "measure")
   hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField")
   hookSelect("#quantileNumSelect", state, "quantileNumOptions", "quantileNum")
   hookCheckbox("#showLinesCheck", state, "showLines")
   hookCheckbox("#showTableCheck", state, "showTable")
 
+  hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect",
+   "#raceSelectSelect","#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, "inputsActive")
 
-  state.addListener(() => {
-    state.compareSecondaryOptions = unique(["none", ...COMPARABLE_FIELDS.filter(d => d != state.comparePrimary)])
-    state.comparePrimaryOptions = unique(["none", ...COMPARABLE_FIELDS.filter(d => d != state.compareSecondary)])
-
-    for (const field of SELECTABLE_FIELDS) {
-      const element = document.getElementById(field + "SelectSelect")
-      if (state.comparePrimary == field || state.compareSecondary == field) {
-        element.setAttribute("disabled", "")
-      } else {
-        element.removeAttribute("disabled")
-      }
-    }
-  }, "comparePrimary", "compareSecondary")
-  
   state.addListener(() => {
     update()
   }, "showLines")
@@ -80,15 +55,6 @@ function hookInputs() {
   state.addListener(() => {
     document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
   }, "showTable")
-}
-
-function syncDataDependentInputs() {
-  state.selectCauseOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.race == state.selectRace),
-    d => d.cause) 
-  state.selectSexOptions = unique(state.data.filter(d => d.cause == state.selectCause &&  d.race == state.selectRace),
-    d => d.sex) 
-  state.selectRaceOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.cause == state.selectCause),
-    d => d.race) 
 }
 
 function queryData() {
@@ -151,14 +117,14 @@ async function loadData() {
 
 
   //  Update the input state 
-
   state.measureOptions = MEASURES
   state.quantileFieldOptions = unique(quantileDetails, d => d.field)
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
 
   queryData()
-  syncDataDependentInputs()
-  toggleInputActivation(true)
+  syncDataDependentInputs(state)
+  //toggleInputActivation(true)
+  state.inputsActive = true 
 
 }
 
@@ -187,25 +153,7 @@ const updateQuantileTable = (data) => {
 } 
 
 
-function toggleInputActivation(active) {
-  const ids =  ["comparePrimarySelect", "compareSecondarySelect", "causeSelectSelect",
-  "sexSelectSelect", "raceSelectSelect","measureSelect", "quantileFieldSelect", "quantileNumSelect"]
-  for (const id of ids) {
-    if (active) {
-      document.getElementById(id).removeAttribute("disabled")
-    } else {
-      document.getElementById(id).setAttribute("disabled", "")
-    }
-    
-  }
-}
-
-
 // ===== Helper methods =====
-
-function unique(data, accessor=d=>d) {
-  return [...new Set(data.map(accessor))]
-}
 
 function statePropertyName(operation, field) {
   return operation + field[0].toUpperCase() + field.slice(1)
@@ -227,4 +175,8 @@ function quantileDetailsToTicks(quantileDetails) {
     }
   }
   return ranges.map(d => d.join(" - "))
+}
+
+function unique(data, accessor=d=>d) {
+  return [...new Set(data.map(accessor))]
 }

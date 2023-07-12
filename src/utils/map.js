@@ -84,8 +84,8 @@ function update() {
   // maplastData.current = spatialData;
   const headers = Object.keys(spatialData[0]);
   downloadFiles(spatialData, headers, "first_data", true);
-  renderTable("map-table", dataPagination(0, 200, spatialData), headers);
-  paginationHandler(spatialData, 200, headers);
+  renderTable("map-table", dataPagination(0, 20, spatialData), headers);
+  paginationHandler(spatialData, 20, headers);
   plotChoropleth(spatialData);
   plotHistogram(spatialData);
   plotDemographic(demographicData);

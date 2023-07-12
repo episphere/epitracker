@@ -99,13 +99,15 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-none flex-row">
-              <div class="position-relative graph">
-                <span class="icon-download position-absolute top-0 end-0" id="map-download" title="Download chart as image">
-                  <i class="fas fa-download" style="color:#000000 !important"></i>
-                </span>
-                <div id="plot-map"></div>
+              <div class="d-flex flex-column gap-5 justify-content-center ">
+                <div class="position-relative graph">
+                  <span class="icon-download position-absolute top-0 end-0" id="map-download" title="Download chart as image">
+                    <i class="fas fa-download" style="color:#000000 !important"></i>
+                  </span>
+                  <div id="plot-map"></div>
+                </div>
               </div>
-              
+                
               <div class="d-flex flex-column gap-5">
                 <div class="position-relative graph">
                   <span class="icon-download position-absolute top-0 end-0" id="histogram-download" title="Download chart as image">
