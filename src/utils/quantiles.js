@@ -1,5 +1,5 @@
 import { State } from "./DynamicState2.js"
-import { hookSelect, hookCheckbox, hookInputActivation } from "./input2.js"
+import { hookSelect, hookCheckbox, hookInputActivation } from "./input.js"
 import { createQuantilePlot } from "./quantilePlots.js"
 import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'

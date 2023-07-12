@@ -1,4 +1,4 @@
-import { hookSelect } from "./input2.js"
+import { hookSelect } from "./input.js"
 
 
 export const COMPARABLE_FIELDS = ["none", "sex", "race"]

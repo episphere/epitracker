@@ -2,7 +2,7 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 import { State } from "./DynamicState2.js"
 import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
-import { hookInputActivation, hookSelect, hookCheckbox } from "./input2.js"
+import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js"
 import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } from "./mapPlots.js"
 import { addTooltip, toggleSidebar } from "./helper.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
