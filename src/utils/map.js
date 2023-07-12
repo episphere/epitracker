@@ -267,7 +267,10 @@ function plotDemographic(data, highlightData = null) {
   const barOptions = {
     x: mainField, 
     y: otherOptions.measureField, 
-    fill: (d) => colorScheme(d[mainField])
+    fill: (d) => colorScheme(d[mainField]),
+    title: (d) => {
+      return d[mainField]
+    }
   }
   const refTickOptions = {
     x: mainField,
@@ -278,7 +281,8 @@ function plotDemographic(data, highlightData = null) {
   const missingBarOptions = {
     x: mainField, 
     y: maxValue,
-    fill: "#f5f5f5"
+    fill: "#f5f5f5",
+    title: () => 'sahar'
   }
   const textOptions = {
     x: mainField, 
@@ -288,6 +292,8 @@ function plotDemographic(data, highlightData = null) {
     fill: "#dedede", 
     pointerEvents: "none"
   }
+
+  console.log('Bar: ', {mainField, domainValues, otherField})
 
   if (otherField != "none") {
     barOptions.fx = otherField
@@ -307,7 +313,7 @@ function plotDemographic(data, highlightData = null) {
       label: otherOptions.measureField + " ↑",
       tickFormat: tickFormat,
     },
-    x: { domain: domainValues, tickFormat: (d) => l(d) },
+    x: { domain: domainValues, tickFormat: (d) => l(d)},
     fx: { tickFormat: (d) => l(d) },
     marks: [
       Plot.barY(missingData, missingBarOptions),
@@ -315,6 +321,10 @@ function plotDemographic(data, highlightData = null) {
       Plot.barY(highlightData, barOptions),
       Plot.tickY(data, refTickOptions),
     ],
+    // tooltip: {
+    //   fill: "red",
+    //   stroke: "blue",
+    // }
   };
   
 
