@@ -8,7 +8,7 @@ import { downloadFiles } from "../pages/dictionary.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import { colorRampLegendMeanDiverge, toggleSidebar } from "./helper.js";
-import { downloadHtmlAsImage }  from "./download.js"
+import { downloadGraph }  from "./download.js"
 
 const COMPARABLE_FIELDS = ["none", "sex", "race"];
 const SELECTABLE_FIELDS = ["cause", "sex", "race"];
@@ -83,12 +83,75 @@ function update() {
   demographicData = getDemographicData(data, dataOptionsState);
   // maplastData.current = spatialData;
   const headers = Object.keys(spatialData[0]);
-  downloadFiles(spatialData, headers, "first_data", true);
-  renderTable("map-table", dataPagination(0, 20, spatialData), headers);
-  paginationHandler(spatialData, 20, headers);
+  downloadFiles(spatialData, headers, "first_data");
+  downloadMapGraphs()
+  renderTable("map-table", dataPagination(0, 200, spatialData), headers);
+  paginationHandler(spatialData, 200, headers);
   plotChoropleth(spatialData);
   plotHistogram(spatialData);
   plotDemographic(demographicData);
+}
+
+const downloadGraphRef = {
+  pngFigureOneButton: null, 
+  pngFigureOneCallback: null,
+  pngFigureTwoButton: null, 
+  pngFigureTwoCallback: null,
+  pngFigureThreeButton: null, 
+  pngFigureThreeCallback: null
+}
+
+const removeDownloadGraphEventListeners = () => {
+  if (downloadGraphRef.pngFigureOneButton) {
+    downloadGraphRef.pngFigureOneButton.removeEventListener('click', downloadGraphRef.pngFigureOneCallback)
+  }
+
+  if (downloadGraphRef.pngFigureTwoButton) {
+    downloadGraphRef.pngFigureTwoButton.removeEventListener('click', downloadGraphRef.pngFigureTwoCallback)
+  }
+
+  if (downloadGraphRef.pngFigureTreeButton) {
+    downloadGraphRef.pngFigureTreeButton.removeEventListener('click', downloadGraphRef.pngFigureTreeCallback)
+  }
+}
+
+function downloadMapGraphs() {
+  removeDownloadGraphEventListeners()
+
+  const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
+  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
+  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
+
+  const downloadFigureOneButton = document.getElementById(
+    "downloadFigureOnePNG"
+  );
+
+  if (downloadFigureOneButton) {
+    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+    downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
+    downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+  }
+
+
+  const downloadFigureTwoButton = document.getElementById(
+    "downloadFigureTwoPNG"
+  );
+
+  if (downloadFigureTwoButton) {
+    downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
+    downloadGraphRef.pngFigureTwoButton = downloadFigureTwoButton
+    downloadGraphRef.pngFigureTwoCallback = downloadFigureTwoPNG
+  }
+
+  const downloadFigureThreeButton = document.getElementById(
+    "downloadFigureThreePNG"
+  );
+
+  if (downloadFigureThreeButton) {
+    downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
+    downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton
+    downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG
+  }
 }
 
 // === Data handling ===
@@ -394,7 +457,6 @@ function plotHistogram(data, highlight = []) {
     tickFormat = (d) => d.toExponential();
   }
 
-  console.log('data: ', {data})
   const plot = Plot.plot({
     ...PLOT_DIAGRAM_SIZE,
     color: {
@@ -535,20 +597,6 @@ export function dataLoaded(loadedData) {
   }) 
 
   toggleSidebar('plot-map')
-  downloadGraph('map-download', 'plot-map', 'map')
-  downloadGraph('histogram-download', 'plot-histogram', 'histogram')
-  downloadGraph('demographic-download', 'plot-demographic', 'demographic')
-}
-
-function downloadGraph(downloadId, graphId, fileName) {
-  const mapButton = document.querySelector(`#${downloadId}`)
-  mapButton.addEventListener('click', () => {
-    const html = document.querySelector(`#${graphId}`)
-    
-    if (html) {
-      downloadHtmlAsImage(html, fileName)
-    }
-  })
 }
 
 // === Helper ===

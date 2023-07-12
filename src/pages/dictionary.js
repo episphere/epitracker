@@ -1,7 +1,6 @@
 //Changes required regarding dictionary
 import { addEventFilterBarToggle } from "../event.js";
 import {
-  getFile,
   hideAnimation,
   shortenText,
   tsv2Json,
@@ -445,7 +444,7 @@ const renderDataDictionary = (dictionary, pageSize, headers) => {
   addEventSortColumn(dictionary, pageSize, headers);
 };
 
-const downloadDictionaryCallback = (e) => (data, headers, fileName, isTsv = false) => {
+const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
   e.stopPropagation();
   const type = isTsv ? 'tsv' : 'csv';
   const content =
@@ -455,66 +454,117 @@ const downloadDictionaryCallback = (e) => (data, headers, fileName, isTsv = fals
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("download", `${fileName}.${type}`);
-  console.log('sahar 3', {data,headers, link, content})
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
-const downloadRef = {
+const downloadFileRef = {
   csvButton: null, 
   csvCallback: null,
   tsvButton: null, 
-  tsvCallback: null
+  tsvCallback: null,
+  // pngFigureOneButton: null, 
+  // pngFigureOneCallback: null,
+  // pngFigureTwoButton: null, 
+  // pngFigureTwoCallback: null,
+  // pngFigureThreeButton: null, 
+  // pngFigureThreeCallback: null
 }
 
 const removeDownloadEventListeners = () => {
-  if (downloadRef.csvButton) {
-    downloadRef.csvButton.removeEventListener('click', downloadRef.csvCallback)
+  if (downloadFileRef.csvButton) {
+    downloadFileRef.csvButton.removeEventListener('click', downloadFileRef.csvCallback)
   }
-  if (downloadRef.tsvButton) {
-    downloadRef.tsvButton.removeEventListener('click', downloadRef.tsvCallback)
+  if (downloadFileRef.tsvButton) {
+    downloadFileRef.tsvButton.removeEventListener('click', downloadFileRef.tsvCallback)
   }
+  // if (downloadRef.pngFigureOneButton) {
+  //   downloadRef.pngFigureOneButton.removeEventListener('click', downloadRef.pngFigureOneCallback)
+  // }
+
+  // if (downloadRef.pngFigureTwoButton) {
+  //   downloadRef.pngFigureTwoButton.removeEventListener('click', downloadRef.pngFigureTwoCallback)
+  // }
+
+  // if (downloadRef.pngFigureTreeButton) {
+  //   downloadRef.pngFigureTreeButton.removeEventListener('click', downloadRef.pngFigureTreeCallback)
+  // }
 }
 
-export const downloadFiles = (data, headers, fileName, studyDescription) => {
+export const downloadFiles = (data, headers, fileName) => {
   removeDownloadEventListeners()
-  if (studyDescription) {
-    let flatArray = [];
-    headers.splice(headers.indexOf("PI"), 1);
-    headers.splice(headers.indexOf("PI_Email"), 1);
-    data.forEach((dt) => {
-      if (dt.pis) {
-        const flatObj = {
-          ...dt,
-        };
-        dt.pis.forEach((obj, index) => {
-          const piColumnName = `PI_${index + 1}`;
-          const piEmailColumnName = `PI_Email_${index + 1}`;
-          flatObj[piColumnName] = obj.PI;
-          flatObj[piEmailColumnName] = obj.PI_Email;
-          if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
-          if (headers.indexOf(piEmailColumnName) === -1)
-            headers.push(piEmailColumnName);
-        });
-        flatArray.push(flatObj);
-      } else flatArray.push(dt);
-    });
-    data = flatArray;
-  }
-  const downloadDictionaryCSVButton = document.getElementById(
-    "downloadDictionaryCSV"
-  );
-  const downloadDictionaryCSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, false)
-  const downloadDictionaryTSV = (e) => downloadDictionaryCallback(e)(data, headers, fileName, true)
-  downloadDictionaryCSVButton.addEventListener("click", downloadDictionaryCSV);
-  downloadRef.csvButton = downloadDictionaryCSVButton
-  downloadRef.csvCallback = downloadDictionaryCSV
 
-  const downloadDictionaryTSVButton = document.getElementById(
-    "downloadDictionaryTSV"
+  let flatArray = [];
+  headers.splice(headers.indexOf("PI"), 1);
+  headers.splice(headers.indexOf("PI_Email"), 1);
+  data.forEach((dt) => {
+    if (dt.pis) {
+      const flatObj = {
+        ...dt,
+      };
+      dt.pis.forEach((obj, index) => {
+        const piColumnName = `PI_${index + 1}`;
+        const piEmailColumnName = `PI_Email_${index + 1}`;
+        flatObj[piColumnName] = obj.PI;
+        flatObj[piEmailColumnName] = obj.PI_Email;
+        if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
+        if (headers.indexOf(piEmailColumnName) === -1)
+          headers.push(piEmailColumnName);
+      });
+      flatArray.push(flatObj);
+    } else flatArray.push(dt);
+  });
+  data = flatArray;
+  
+  const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
+  const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
+
+
+  // const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
+  // const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
+  // const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
+
+  const downloadCSVButton = document.getElementById(
+    "download-table-csv"
   );
-  downloadDictionaryTSVButton.addEventListener("click", downloadDictionaryTSV);
-  downloadRef.tsvButton = downloadDictionaryTSVButton
-  downloadRef.tsvCallback = downloadDictionaryTSV
+
+  if (downloadCSVButton) {
+    downloadCSVButton.addEventListener("click", downloadTableCSV);
+    downloadFileRef.csvButton = downloadCSVButton
+    downloadFileRef.csvCallback = downloadTableCSV
+  }
+  
+
+  const downloadTSVButton = document.getElementById(
+    "download-table-tsv"
+  );
+
+  if (downloadTSVButton) {
+    downloadTSVButton.addEventListener("click", downloadTableTSV);
+    downloadFileRef.tsvButton = downloadTSVButton
+    downloadFileRef.tsvCallback = downloadTableTSV
+  }
+  
+
+  // const downloadFigureOneButton = document.getElementById(
+  //   "downloadFigureOnePNG"
+  // );
+  // downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+  // downloadRef.pngFigureOneButton = downloadFigureOneButton
+  // downloadRef.pngFigureOneCallback = downloadFigureOnePNG
+
+  // const downloadFigureTwoButton = document.getElementById(
+  //   "downloadFigureTwoPNG"
+  // );
+  // downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
+  // downloadRef.pngFigureTwoButton = downloadFigureTwoButton
+  // downloadRef.pngFigureTwoCallback = downloadFigureTwoPNG
+
+  // const downloadFigureThreeButton = document.getElementById(
+  //   "downloadFigureThreePNG"
+  // );
+  // downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
+  // downloadRef.pngFigureThreeButton = downloadFigureThreeButton
+  // downloadRef.pngFigureThreeCallback = downloadFigureThreePNG
 };

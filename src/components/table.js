@@ -24,7 +24,6 @@ export const renderTable = (tableID, data, headers) => {
   if (!data.length) return;
   
   const dataTable = document.querySelector(`#${tableID}`);
-  console.log(`render table ${tableID}`, {data, headers, dataTable})
   if (dataTable) {
     dataTable.innerHTML = renderTableHeader(headers)
     dataTable.innerHTML += renderTableBody(data, headers)
