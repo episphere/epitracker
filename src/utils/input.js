@@ -1,33 +1,58 @@
-export function configureSelect(selector, options, changeListener, value=null) {
-    if (typeof options[0] == "string") {
-        options = options.map(d => ({value: d, label: d}))
+export function hookSelect(query, state, optionsProperty, valueProperty) {
+  const select = document.querySelector(query) 
+  select.innerHTML = ''
+
+  state.defineDynamicProperty(optionsProperty, [])
+  state.defineDynamicProperty(valueProperty, null) 
+
+  function setOptions() {
+   select.innerHTML = ``
+    for (let option of state[optionsProperty]) {
+      if (typeof option == "string") {
+         option = {text: option, value: option}
+      }
+  
+      const selected = state[valueProperty] == option.value
+      select.appendChild(new Option(option.text, option.value, null, selected))
     }
+  }
 
-    const select = document.querySelector(selector)   
-    removeAllChildNodes(select)
-    updateSelect(select, options)
+  state.addListener(() => {
+    setOptions()
+    state[valueProperty] = select.value
+  }, optionsProperty)
 
-    select.addEventListener("change", () => changeListener(select.value)) 
+  state.addListener(() => {
+    select.value = state[valueProperty]
+  }, valueProperty)
 
-    if (value) {
-        select.value = value
-    }
-    return select   
+  select.addEventListener("change", () => {
+    state[valueProperty] = select.value
+  })
+
+  setOptions()
 }
 
-export function updateSelect(select, options) {
-    removeAllChildNodes(select)
-    select.removeAttribute("disabled")
-    for (const optionDetail of options) {
-        const option = document.createElement("option")
-        option.setAttribute("value", optionDetail.value)
-        option.setAttribute("label", optionDetail.label)
-        select.appendChild(option)
-    }
+export function hookCheckbox(query, state, checkedProperty) {
+  const element = document.querySelector(query) 
+  state.defineDynamicProperty(checkedProperty, element.checked)
+  element.checked = state[checkedProperty]
+  element.addEventListener("click", () => state[checkedProperty] = element.checked)
+  state.defineDynamicProperty(() => {
+    element.checked = state[checkedProperty]
+  }, checkedProperty)
 }
 
-function removeAllChildNodes(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
+export function hookInputActivation(inputQueries, state, activeProperty) {
+  state.defineDynamicProperty(activeProperty) 
+
+  state.addListener(() => {
+    for (const query of inputQueries) {
+      if (state[activeProperty]) {
+        document.querySelector(query).removeAttribute("disabled")
+      } else {
+        document.querySelector(query).setAttribute("disabled", "")
+      }
     }
+  }, activeProperty)
 }
