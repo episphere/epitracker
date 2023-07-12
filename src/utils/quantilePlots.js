@@ -1,8 +1,9 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 
-export function quantilePlot(data, options={}) {
+export function createQuantilePlot(data, options={}) {
   options = {
     valueField: null,
+    intervalFields: null,
     color: () => "slateblue",
     facet: null,
     drawLines: true,
@@ -40,6 +41,13 @@ export function quantilePlot(data, options={}) {
       return display
     }
   }))
+
+  if (options.intervalFields) {
+    marks.push(Plot.link(data, {
+      x: "quantile", y1: options.intervalFields[0], y2: options.intervalFields[1], 
+      stroke: options.color, strokeWidth: 2
+    }))
+  }
 
   const plotOptions = {
     width: 820,

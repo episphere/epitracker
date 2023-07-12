@@ -1,36 +1,155 @@
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm"
-import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-
-import { DynamicState } from "./DynamicState.js"
-import { configureSelect } from './input.js'
-import {downloadFiles} from '../pages/dictionary.js'
+import { State } from "./DynamicState2.js"
+import { hookSelect, hookCheckbox, hookInputActivation } from "./input2.js"
+import { createQuantilePlot } from "./quantilePlots.js"
+import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
+import {downloadFiles} from '../pages/dictionary.js'
 import {renderTable} from '../components/table.js'
-import {showTable, changeGraphType, toggleSidebar} from '../utils/helper.js'
 import {downloadGraph} from './download.js'
- 
-const COMPARABLE_FIELDS = ["none", "sex", "race"]
-const SELECTABLE_FIELDS = ["cause", "sex", "race"]
+import { toggleSidebar } from "./helper.js"
+
+// ===== Global stuff =====
+
+// Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
-let graphMode = 'scatter'
-function stateName(operation, field) {
-  return operation + field[0].toUpperCase() + field.slice(1)
+
+// Note: Using standard object properties unless listeners required
+const state = new State()
+
+
+export async function start() {
+  hookInputs()
+  await loadData()
+
+  state.comparePrimaryOptions = COMPARABLE_FIELDS
+  state.comparePrimary = "none"
+
+  state.downloadGraphRef = {
+    pngFigureOneButton: null, 
+    pngFigureOneCallback: null,
+  }
+
+  update()
+
+  // We have to define this after data is loaded, or it will run multiple times on set-up
+  state.addListener(() => {
+      queryData()
+      syncDataDependentInputs(state)
+      update()
+  }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
+        "measure", "quantileField", "quantileNum")
+
+  state.comparePrimary = "race"
+  document.getElementById("loader-container").setAttribute("class", "d-none")
+
+  toggleSidebar('plot-quantiles')
+
 }
 
-const dataOptionsState = new DynamicState({
-  selectCause: null, 
-  selectSex: null, 
-  selectRace: null,
+function hookInputs() {
+  hookDemographicInputs(state)
 
-  comparePrimary: null,
-  compareSecondary: null, 
-})
+  state.defineDynamicProperty("showLines", true)
+  state.defineDynamicProperty("quantileField", "unemployment")
+  state.defineDynamicProperty("measure", "age_adjusted_rate")
+  
+  hookSelect("#measureSelect", state, "measureOptions", "measure")
+  hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField")
+  hookSelect("#quantileNumSelect", state, "quantileNumOptions", "quantileNum")
+  hookCheckbox("#showLinesCheck", state, "showLines")
+  hookCheckbox("#showTableCheck", state, "showTable")
 
-const otherOptions = new DynamicState({
-  measureField: "age_adjusted_rate",
-  quantileField: "unemployment",
-  nQuantiles: 8
-})
+  hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect",
+   "#raceSelectSelect","#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, "inputsActive")
+
+  state.addListener(() => {
+    update()
+  }, "showLines")
+
+  state.addListener(() => {
+    document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
+  }, "showTable")
+}
+
+function queryData() {
+  let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
+  const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
+
+  SELECTABLE_FIELDS.forEach(field => {
+    if (stratifySet.has(field)) {
+      plotData = plotData.filter(row => row[field] != "All")
+    } else {
+      plotData = plotData.filter(row => row[field] == state[statePropertyName("select", field)])
+    }
+  })
+  state.plotData = plotData 
+}
+
+function update() {
+  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+
+  const quantileDetails = state.quantileDetailsMap.get(state.quantileField)
+  const xTicks = quantileDetailsToTicks(quantileDetails)
+  const xTickFormat = (_,i) => xTicks[i]
+
+  const xLabel = state.quantileField + " (quantile)"
+  const yLabel = state.valueField
+
+  const plotContainer = document.getElementById("plot-quantiles")
+  const plot = createQuantilePlot(state.plotData, {
+    valueField: state.measure,
+    intervalFields: [state.measure+"_low", state.measure+"_high"],
+    facet: state.compareSecondary != "none" ? state.compareSecondary : null,
+    drawLines: state.showLines,
+    xTickFormat: xTickFormat, 
+    xLabel, yLabel, color: colorField,
+
+  })
+  plotContainer.innerHTML = ''
+  plotContainer.appendChild(plot)
+
+  const headers = Object.keys(state.plotData[0])
+  downloadFiles(state.plotData, headers, "first_data", true)
+  downloadQuantileGraphs()
+  renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
+  paginationHandler(state.plotData, 200, headers)
+  updateQuantileTable(state.plotData)
+}
+
+async function loadData() {
+
+  // Load files and put processed data into state 
+ 
+  const data = await d3.csv("data/quantile_data_2020.csv")
+  data.sort((a,b) => a.quantile - b.quantile)
+  data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
+  data.forEach(row => {
+    for (const measure of ["crude_rate", "age_adjusted_rate"]) {
+      const se = row[measure] / Math.sqrt(row.deaths)
+      row[measure+"_low"] = row[measure] - 1.96*se 
+      row[measure+"_high"] = row[measure] + 1.96*se 
+    }
+  })
+  state.data = data 
+  
+  const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
+  state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
+  
+  const quantileDetails = await d3.json("data/quantile_details.json")
+  state.quantileDetailsMap = d3.index(quantileDetails, d => d.field)
+
+
+  //  Update the input state 
+  state.measureOptions = MEASURES
+  state.quantileFieldOptions = unique(quantileDetails, d => d.field)
+  state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
+
+  queryData()
+  syncDataDependentInputs(state)
+  //toggleInputActivation(true)
+  state.inputsActive = true 
+
+}
 
 const updateQuantileTable = (data) => {
   if (!data.length) return
@@ -56,104 +175,34 @@ const updateQuantileTable = (data) => {
   }
 } 
 
-// Global state fields 
-let data = null 
-let quantileDetailsMap = null 
-
-dataOptionsState.addListener((field, value) => {
-  update()
-})
-
-otherOptions.addListener((field, value) => {
-   update()
-})
-
-// let lastData = {current: null}
-
-function updateGraph() {
-  const dataState = dataOptionsState
-
-  let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
-  const stratifySet = new Set([dataState.comparePrimary, dataState.compareSecondary].filter(d => d != "none"))
-
-  SELECTABLE_FIELDS.forEach(field => {
-    if (stratifySet.has(field)) {
-      quantileData = quantileData.filter(row => row[field] != "All")
-    } else {
-      quantileData = quantileData.filter(row => row[field] == dataState[stateName("select", field)])
-    }
-  })
-
-  quantileData = quantileData.map(d => ({...d}))
-  quantileData.forEach(row => {
-    const se = row.age_adjusted_rate / Math.sqrt(row.deaths)
-    row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
-    row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
-  })
-  plotQuantilePlot(quantileData) 
-  return quantileData
-}
-
-function update() {
-  // const dataState = dataOptionsState
-
-  // let quantileData = data.filter(d => d.quantile_field == otherOptions.quantileField)
-  // const stratifySet = new Set([dataState.comparePrimary, dataState.compareSecondary].filter(d => d != "none"))
-
-  // SELECTABLE_FIELDS.forEach(field => {
-  //   if (stratifySet.has(field)) {
-  //     quantileData = quantileData.filter(row => row[field] != "All")
-  //   } else {
-  //     quantileData = quantileData.filter(row => row[field] == dataState[stateName("select", field)])
-  //   }
-  // })
-
-  // quantileData = quantileData.map(d => ({...d}))
-  // quantileData.forEach(row => {
-  //   const se = row.age_adjusted_rate / Math.sqrt(row.count)
-  //   row.age_adjusted_rate_low = row.age_adjusted_rate - 1.96*se 
-  //   row.age_adjusted_rate_high = row.age_adjusted_rate + 1.96*se 
-  // })
-  // lastData.current = quantileData
-  const quantileData = updateGraph()
-  const headers = Object.keys(quantileData[0])
-  downloadFiles(quantileData, headers, "first_data");
-  downloadQuantileGraphs()
-  renderTable("quantile-table", dataPagination(0, 200, quantileData), headers);
-  paginationHandler(quantileData, 200, headers);
-  updateQuantileTable(quantileData)
-  // plotQuantilePlot(quantileData) 
-}
-
-const downloadGraphRef = {
-  pngFigureOneButton: null, 
-  pngFigureOneCallback: null,
-}
-
 const removeDownloadGraphEventListeners = () => {
-  if (downloadGraphRef.pngFigureOneButton) {
-    downloadGraphRef.pngFigureOneButton.removeEventListener('click', downloadGraphRef.pngFigureOneCallback)
+  if (state.downloadGraphRef.pngFigureOneButton) {
+    state.downloadGraphRef.pngFigureOneButton.removeEventListener('click', state.downloadGraphRef.pngFigureOneCallback)
   }
 }
 
 function downloadQuantileGraphs() {
   removeDownloadGraphEventListeners()
-
   const downloadFigureOnePNG = () => downloadGraph('plot-quantiles', 'quantile')
-
   const downloadFigureOneButton = document.getElementById(
     "downloadFigureOnePNG"
   );
-
   if (downloadFigureOneButton) {
     downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
-    downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
-    downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
+    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
   }
 }
 
+
+// ===== Helper methods =====
+
+function statePropertyName(operation, field) {
+  return operation + field[0].toUpperCase() + field.slice(1)
+}
+
 function quantileDetailsToTicks(quantileDetails) {
-  // TODO: Automatically an appropriate value for precision.
+  // TODO: Automatically find an appropriate value for precision.
 
   // Get ticks for x-axis of quantile plot. Ticks are formatted so that if any number has a string length larger than
   // a fixed number, then all ticks are converted to scientific notation. Precision is set to fixed number.
@@ -170,129 +219,6 @@ function quantileDetailsToTicks(quantileDetails) {
   return ranges.map(d => d.join(" - "))
 }
 
-function plotQuantilePlot(data) {
-  const dataState = dataOptionsState
-
-  const colorField = dataState.comparePrimary == "none" ? "slateblue" : dataState.comparePrimary
-
-  console.log(data)
-
-  const marks = []
-  if (otherOptions.measureField == "age_adjusted_rate") {
-    // marks.push(Plot.areaY(data,
-    //    {x: "quantile", y1: "age_adjusted_low", y2: "age_adjusted_rate_high", fill: colorField, fillOpacity: 0.2}))
-    marks.push(Plot.link(data, {
-      x: "quantile", y1: 'age_adjusted_rate_low', y2: 'age_adjusted_rate_high', 
-      stroke: colorField, strokeWidth: 2
-    }))
-    
-  }
-
-  marks.push(Plot.lineY(data, {x: "quantile", y: otherOptions.measureField, stroke: graphMode === 'line' ? colorField : 'none', strokeDasharray: "2,6"}))
-  marks.push(Plot.dot(data, {x: "quantile", y: otherOptions.measureField, stroke: colorField, fill: colorField, r:4, strokeWidth:3,
-  title: (d) => {
-      const display = Object.entries(d).reduce((pv, cv, ci) => {
-        return (ci ? `${pv}\n` : pv) + `${cv[0]}: ${cv[1]}`
-      }, '')
-      return display
-    }
-  }))
-
-  const quantileDetails = quantileDetailsMap.get(otherOptions.quantileField)
-  const xTicks = quantileDetailsToTicks(quantileDetails)
- 
-  const options = {
-    style: {fontSize: "14px"},
-    color: {legend: true},
-    x: {type: "point", label: otherOptions.quantileField + " (quantile)", tickFormat: d => xTicks[d], tickRotate: -45},
-    y: {ticks: 8, grid: true, label: otherOptions.measureField + " ↑"},
-    marginLeft: 80,
-    marginTop: 50,
-    marginBottom: 110,
-    width: 900,
-    height: 720,
-    marks: marks
-  }
-
-  if (dataState.compareSecondary != "none") {
-    options.facet = {
-      data: data, 
-      x: dataState.compareSecondary
-    }
-  }
-
-  const plot = Plot.plot(options)
-
-  const div = document.getElementById("plot-quantiles")
-  div.innerHTML = '' 
-  div.appendChild(plot)
-}
-
-function handleChangeGraphType(type) {
-  graphMode = type
-  updateGraph()
-}
-
-export async function loadData() {
-  const data = await d3.csv("data/quantile_data_2020.csv")
-  const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
-  const quantileDetails = await d3.json("data/quantile_details.json")
-  return [data, causeDictData, quantileDetails] 
-}
-
-export function dataLoaded(loadedData, causeDictData, quantileDetails) {
-  data = loadedData
-  quantileDetailsMap = d3.index(quantileDetails, d => d.field)
-
-  data.sort((a,b) => a.quantile - b.quantile)
-
-  data.forEach(row => {
-
-    row.age_adjusted_rate = parseFloat(row.age_adjusted_rate)
-    row.crude_rate = parseFloat(row.crude_rate)
-  })
-
-  let diseases = unique(data, d => d.cause)
-  const sexes = unique(data, d => d.sex)
-  const races = unique(data, d => d.race)
-
-  const quantileFields = unique(data, d => d.quantile_field)
-  const quantileNums = ["8"] //unique(data, d => d.quantile_count) // TODO: Support more quantile counts.
-
-  const icd10Map = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
-  diseases = ["All", ...diseases.sort().filter(d => d != "All")]
-  const diseaseOptions = diseases.map(d => ({value: d, label: icd10Map.get(d)}))
-  const diseaseSelect = configureSelect("#causeSelectSelect", diseaseOptions, d => dataOptionsState.selectCause = d)
-  
-  const sexSelect = configureSelect("#sexSelectSelect", sexes, d => dataOptionsState.selectSex = d)
-  const raceSelect = configureSelect("#raceSelectSelect", races,d => dataOptionsState.selectRace = d)
-
-  const comparePrimarySelect = configureSelect("#comparePrimarySelect", COMPARABLE_FIELDS, d => dataOptionsState.comparePrimary = d, "race")
-  const compareSecondarySelect = configureSelect("#compareSecondarySelect", COMPARABLE_FIELDS, d => dataOptionsState.compareSecondary = d)
-
-  const measureSelect = configureSelect("#measureSelect", MEASURES, d => otherOptions.measureField = d, "age_adjusted_rate")
-  const quantileFieldSelect = configureSelect("#quantileFieldSelect", quantileFields, d => otherOptions.quantileField = d, "unemployment")  
-  const quantileNumSelect = configureSelect("#quantileNumSelect", quantileNums, d => otherOptions.quantileNum = d)
-
-  dataOptionsState.silentSet("selectCause", diseaseSelect.value)
-  dataOptionsState.silentSet("selectSex", sexSelect.value)
-  dataOptionsState.silentSet("selectRace", raceSelect.value)
-  dataOptionsState.silentSet("comparePrimary", comparePrimarySelect.value)
-  dataOptionsState.silentSet("compareSecondary", compareSecondarySelect.value)
-
-  otherOptions.silentSet("quantileField", quantileFieldSelect.value)
-
-  dataOptionsState.selectCause = diseaseSelect.value // TODO: Fix hack
-
-  document.getElementById("loader-container").setAttribute("class", "d-none")
-  document.getElementById("plots-container").setAttribute("class", "d-flex flex-column")
-
-  showTable('show-hide-table', 'quantile-table-wrapper')
-  changeGraphType(['scatter', 'line'], handleChangeGraphType)
-
-  toggleSidebar('plot-quantiles')
-}
-
-function unique(data, accessor) {
+function unique(data, accessor=d=>d) {
   return [...new Set(data.map(accessor))]
 }

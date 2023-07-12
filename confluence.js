@@ -8,8 +8,8 @@ import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 
-import {start as startQuantilePage} from "./src/utils/quantiles2.js"
-import {start as startMapPage} from "./src/utils/map2.js"
+import {start as startQuantilePage} from "./src/utils/quantiles.js"
+import {start as startMapPage} from "./src/utils/map.js"
 
 export const confluence = async () => {
   if(window.navigator && navigator.serviceWorker) {
