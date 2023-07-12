@@ -4,9 +4,11 @@ import { State } from "./DynamicState2.js"
 import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import { hookInputActivation, hookSelect, hookCheckbox } from "./input2.js"
 import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } from "./mapPlots.js"
-import { addTooltip } from "./helper.js";
+import { addTooltip, toggleSidebar } from "./helper.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
+import { downloadGraph }  from "./download.js"
+import { downloadFiles } from "../pages/dictionary.js";
 
 // Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
@@ -22,6 +24,15 @@ export async function start() {
 
   state.comparePrimaryOptions = COMPARABLE_FIELDS
 
+  state.downloadGraphRef = {
+    pngFigureOneButton: null, 
+    pngFigureOneCallback: null,
+    pngFigureTwoButton: null, 
+    pngFigureTwoCallback: null,
+    pngFigureThreeButton: null, 
+    pngFigureThreeCallback: null
+  }
+
   state.addListener(() => {
     queryData()
     syncDataDependentInputs(state)
@@ -31,12 +42,16 @@ export async function start() {
   state.inputsActive = true
   state.comparePrimary = "race"
 
+  toggleSidebar('plot-map')
+
   document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
   document.getElementById("loader-container").setAttribute("class", "d-none")
 
 }
 
 function hookInputs() {
+  state.defineDynamicProperty("level", "county")
+
   hookDemographicInputs(state)
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect", 
     "#raceSelectSelect","#measureSelect", "#levelSelect"], state, "inputsActive")
@@ -191,6 +206,8 @@ function update() {
 
 
   const headers = Object.keys(state.mapData[0])
+  downloadFiles(state.mapData, headers, "first_data");
+  downloadMapGraphs()
   renderTable("map-table", dataPagination(0, 200, state.mapData), headers);
   paginationHandler(state.mapData, 200, headers);
 }
@@ -255,6 +272,59 @@ function l(word, sub = null) {
   }
 
   return word;
+}
+
+const removeDownloadGraphEventListeners = () => {
+  if (state.downloadGraphRef.pngFigureOneButton) {
+    state.downloadGraphRef.pngFigureOneButton.removeEventListener('click', state.downloadGraphRef.pngFigureOneCallback)
+  }
+
+  if (state.downloadGraphRef.pngFigureTwoButton) {
+    state.downloadGraphRef.pngFigureTwoButton.removeEventListener('click', state.downloadGraphRef.pngFigureTwoCallback)
+  }
+
+  if (state.downloadGraphRef.pngFigureTreeButton) {
+    state.downloadGraphRef.pngFigureTreeButton.removeEventListener('click', state.downloadGraphRef.pngFigureTreeCallback)
+  }
+}
+
+function downloadMapGraphs() {
+  removeDownloadGraphEventListeners()
+
+  const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
+  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
+  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
+
+  const downloadFigureOneButton = document.getElementById(
+    "downloadFigureOnePNG"
+  );
+
+  if (downloadFigureOneButton) {
+    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
+    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+  }
+
+
+  const downloadFigureTwoButton = document.getElementById(
+    "downloadFigureTwoPNG"
+  );
+
+  if (downloadFigureTwoButton) {
+    downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
+    state.downloadGraphRef.pngFigureTwoButton = downloadFigureTwoButton
+    state.downloadGraphRef.pngFigureTwoCallback = downloadFigureTwoPNG
+  }
+
+  const downloadFigureThreeButton = document.getElementById(
+    "downloadFigureThreePNG"
+  );
+
+  if (downloadFigureThreeButton) {
+    downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
+    state.downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton
+    state.downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG
+  }
 }
 
 function statePropertyName(operation, field) {

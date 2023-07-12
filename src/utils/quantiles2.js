@@ -5,6 +5,8 @@ import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELE
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {downloadFiles} from '../pages/dictionary.js'
 import {renderTable} from '../components/table.js'
+import {downloadGraph} from './download.js'
+import { toggleSidebar } from "./helper.js"
 
 // ===== Global stuff =====
 
@@ -22,6 +24,11 @@ export async function start() {
   state.comparePrimaryOptions = COMPARABLE_FIELDS
   state.comparePrimary = "none"
 
+  state.downloadGraphRef = {
+    pngFigureOneButton: null, 
+    pngFigureOneCallback: null,
+  }
+
   update()
 
   // We have to define this after data is loaded, or it will run multiple times on set-up
@@ -34,10 +41,17 @@ export async function start() {
 
   state.comparePrimary = "race"
   document.getElementById("loader-container").setAttribute("class", "d-none")
+
+  toggleSidebar('plot-quantiles')
+
 }
 
 function hookInputs() {
   hookDemographicInputs(state)
+
+  state.defineDynamicProperty("showLines", true)
+  state.defineDynamicProperty("quantileField", "unemployment")
+  state.defineDynamicProperty("measure", "age_adjusted_rate")
   
   hookSelect("#measureSelect", state, "measureOptions", "measure")
   hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField")
@@ -95,6 +109,7 @@ function update() {
 
   const headers = Object.keys(state.plotData[0])
   downloadFiles(state.plotData, headers, "first_data", true)
+  downloadQuantileGraphs()
   renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
   paginationHandler(state.plotData, 200, headers)
   updateQuantileTable(state.plotData)
@@ -107,6 +122,13 @@ async function loadData() {
   const data = await d3.csv("data/quantile_data_2020.csv")
   data.sort((a,b) => a.quantile - b.quantile)
   data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
+  data.forEach(row => {
+    for (const measure of ["crude_rate", "age_adjusted_rate"]) {
+      const se = row[measure] / Math.sqrt(row.deaths)
+      row[measure+"_low"] = row[measure] - 1.96*se 
+      row[measure+"_high"] = row[measure] + 1.96*se 
+    }
+  })
   state.data = data 
   
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
@@ -151,6 +173,25 @@ const updateQuantileTable = (data) => {
     })
   }
 } 
+
+const removeDownloadGraphEventListeners = () => {
+  if (state.downloadGraphRef.pngFigureOneButton) {
+    state.downloadGraphRef.pngFigureOneButton.removeEventListener('click', state.downloadGraphRef.pngFigureOneCallback)
+  }
+}
+
+function downloadQuantileGraphs() {
+  removeDownloadGraphEventListeners()
+  const downloadFigureOnePNG = () => downloadGraph('plot-quantiles', 'quantile')
+  const downloadFigureOneButton = document.getElementById(
+    "downloadFigureOnePNG"
+  );
+  if (downloadFigureOneButton) {
+    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
+    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
+    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+  }
+}
 
 
 // ===== Helper methods =====
