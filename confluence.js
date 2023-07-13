@@ -8,8 +8,8 @@ import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 
-import {loadData as loadQuantileData, dataLoaded as quantileDataLoaded} from "./src/utils/quantiles.js"
-import {loadData as loadMapData, dataLoaded as mapDataLoaded} from "./src/utils/map.js"
+import {start as startQuantilePage} from "./src/utils/quantiles.js"
+import {start as startMapPage} from "./src/utils/map.js"
 
 export const confluence = async () => {
   if(window.navigator && navigator.serviceWorker) {
@@ -64,7 +64,8 @@ const manageRouter = async () => {
     document.title = "quantile-visualization";
     assignNavbarActive(element);
     confluenceDiv.innerHTML = renderQuantileVisualizationPage()
-    loadQuantileData().then((data => quantileDataLoaded(...data)))
+    //loadQuantileData().then((data => quantileDataLoaded(...data)))
+    startQuantilePage()
   } 
   else if (hash === "#visualization/map") {
     const element = document.getElementById("map-visualization");
@@ -73,7 +74,8 @@ const manageRouter = async () => {
     document.title = "map-visualization";
     assignNavbarActive(element);
     confluenceDiv.innerHTML = renderMapVisualizationPage()
-    loadMapData().then(mapDataLoaded)
+    startMapPage()
+    //loadMapData().then(mapDataLoaded)
   } else window.location.hash = "#home";
 };
 
