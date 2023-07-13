@@ -34,7 +34,6 @@ export const paginationHandler = (data, pageSize, headers) => {
   for (let i = 0; i < pages; i++) {
     array.push(i + 1);
   }
-  console.log('Sahar: ', {pages, dataLength, array, tt: document.getElementById("pages-container")})
   document.getElementById("pages-container").innerHTML = paginationTemplate(array, pageSize);
   addEventPageBTNs(pageSize, data, headers);
 };
@@ -122,7 +121,6 @@ export const paginationTemplate = (array, pageSize) => {
           </ul>
       </nav>
   `;
-  console.log('sahar: 2 ', {template})
   return template;
 };
 

@@ -16,9 +16,11 @@ const LEVELS = ["state", "county"]
 
 // Note: Using standard object properties unless listeners required
 
-const state = new State
+let state;
 
 export async function start() {
+  state = new State()
+
   hookInputs()
   await loadData()
 

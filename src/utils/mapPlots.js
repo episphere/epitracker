@@ -140,7 +140,6 @@ export function createDemographicsPlot(data, options = {}) {
     fill: "#dedede", 
     pointerEvents: "none"
   }
-  console.log('Bar: ', {mainField, domainValues, otherField})
   if (otherField != "none") {
     barOptions.fx = otherField
     refTickOptions.fx = otherField
