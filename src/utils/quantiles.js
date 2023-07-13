@@ -14,10 +14,11 @@ import { toggleSidebar } from "./helper.js"
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
 
 // Note: Using standard object properties unless listeners required
-const state = new State()
-
+let state;
 
 export async function start() {
+  state = new State()
+
   hookInputs()
   await loadData()
 
