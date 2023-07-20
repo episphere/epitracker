@@ -11,6 +11,7 @@ import { toggleSidebar, sort } from "./helper.js"
 
 // Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
+const YEARS = ["2018", "2019", "2020", "2018-2020"]
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: '#causeSelectSelect',
@@ -31,9 +32,10 @@ let state;
 
 export async function start() {
   state = new State()
+  state.defineDynamicProperty("data", null)
 
   hookInputs()
-  await loadData()
+  await initialDataLoad()
 
   state.comparePrimaryOptions = COMPARABLE_FIELDS
   state.comparePrimary = "none"
@@ -45,7 +47,15 @@ export async function start() {
 
   update()
 
-  // We have to define this after data is loaded, or it will run multiple times on set-up
+  state.addListener(() => {
+    loadData(state.selectYear)
+  }, "selectYear")
+
+  state.addListener(() => {
+    queryData()
+    update()
+  }, "data")
+
   state.addListener(() => {
       queryData()
       syncDataDependentInputs(state)
@@ -74,7 +84,8 @@ function hookInputs() {
   hookCheckbox("#showTableCheck", state, "showTable")
 
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect",
-   "#raceSelectSelect","#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, "inputsActive")
+   "#raceSelectSelect", "#yearSelectSelect", "#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, 
+   "inputsActive")
 
   state.addListener(() => {
     update()
@@ -130,11 +141,8 @@ function update() {
   updateQuantileTable(state.plotData)
 }
 
-async function loadData() {
-
-  // Load files and put processed data into state 
- 
-  const data = await d3.csv("data/quantile_data_2020.csv")
+async function loadData(year) {
+  const data = await d3.csv(`data/quantile_data/quantile_data_${year}.csv`)
   data.sort((a,b) => a.quantile - b.quantile)
   data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
   data.forEach(row => {
@@ -145,6 +153,14 @@ async function loadData() {
     }
   })
   state.data = data 
+}
+
+
+async function initialDataLoad() {
+
+  // Load files and put processed data into state 
+ 
+ loadData("2020")
   
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
@@ -157,6 +173,7 @@ async function loadData() {
   state.measureOptions = MEASURES
   state.quantileFieldOptions = unique(quantileDetails, d => d.field)
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
+  state.selectYearOptions = YEARS
 
   queryData()
   syncDataDependentInputs(state)

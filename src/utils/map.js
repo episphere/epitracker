@@ -12,6 +12,7 @@ import { downloadGraph, downloadFiles }  from "./download.js"
 // Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
 const LEVELS = ["state", "county"]
+const YEARS = ["2018", "2019", "2020", "2018-2020"]
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: '#causeSelectSelect',
@@ -42,9 +43,10 @@ let state;
 
 export async function start() {
   state = new State()
+  state.defineDynamicProperty("data", null)
 
   hookInputs()
-  await loadData()
+  await initialDataLoad()
 
   state.comparePrimaryOptions = COMPARABLE_FIELDS
 
@@ -58,10 +60,18 @@ export async function start() {
   }
 
   state.addListener(() => {
+    loadData(state.selectYear)
+  }, "selectYear")
+
+  state.addListener(() => {
+    queryData()
+    update()
+  }, "data")
+
+  state.addListener(() => {
     queryData()
     syncDataDependentInputs(state)
     update()
-    updateMapTitle()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", "measure", "level")
   
   state.inputsActive = true
@@ -98,8 +108,8 @@ function hookInputs() {
   state.defineDynamicProperty("level", "county")
 
   hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
-  hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect", 
-    "#raceSelectSelect","#measureSelect", "#levelSelect"], state, "inputsActive")
+  hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#yearSelectSelect", "#causeSelectSelect", 
+    "#sexSelectSelect", "#raceSelectSelect","#measureSelect", "#levelSelect"], state, "inputsActive")
 
   hookSelect("#measureSelect", state, "measureOptions", "measure")
   hookSelect("#levelSelect", state, "levelOptions", "level")
@@ -254,6 +264,8 @@ function update() {
   downloadMapGraphs()
   renderTable("map-table", dataPagination(0, 200, state.mapData), headers);
   paginationHandler(state.mapData, 200, headers);
+
+  updateMapTitle()
 }
 
 function updateSidePlots() {
@@ -283,15 +295,11 @@ function updateSidePlots() {
   state.histogramPlot = histogramPlot
 }
 
-async function loadData() {
-  const data = await d3.csv("data/age_adjusted_data_2020.csv")
-  data.forEach((row) => {
-    MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))
-  })
-
+async function initialDataLoad() {
+  await loadData("2020")
+ 
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
 
-  state.data = data 
   state.countyGeo =  await d3.json("data/counties.json")
   state.stateGeo = await d3.json("data/states.json") 
   state.dictionary = await d3.json("data/dictionary.json")
@@ -300,7 +308,18 @@ async function loadData() {
   //  Update the input state 
   state.measureOptions = MEASURES
   state.levelOptions = LEVELS
+  state.selectYearOptions = YEARS
 }
+
+async function loadData(year) {
+  const data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
+  data.forEach((row) => {
+    MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))
+  })
+  state.data = data
+  return data
+}
+
 
 function l(word, sub = null) {
   if (sub == null) {
