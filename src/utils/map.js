@@ -7,12 +7,34 @@ import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } fro
 import { addTooltip, toggleSidebar } from "./helper.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
-import { downloadGraph }  from "./download.js"
-import { downloadFiles } from "../pages/dictionary.js";
+import { downloadGraph, downloadFiles }  from "./download.js"
 
 // Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
 const LEVELS = ["state", "county"]
+const SEARCH_SELECT_INPUT_QUERIES = [
+  {
+    key: '#causeSelectSelect',
+    options: {
+      sorter: (items) => {
+        return items.sort((a, b) => {
+          const nameA = a.text.toUpperCase();
+          const nameB = b.text.toUpperCase();
+          if (nameA < nameB) {
+            return -1;
+          }
+          if (nameA > nameB) {
+            return 1;
+          }
+
+          // names must be equal
+          return 0;
+        });
+
+      }
+    }
+  }
+]
 
 // Note: Using standard object properties unless listeners required
 
@@ -39,6 +61,7 @@ export async function start() {
     queryData()
     syncDataDependentInputs(state)
     update()
+    updateMapTitle()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", "measure", "level")
   
   state.inputsActive = true
@@ -51,10 +74,30 @@ export async function start() {
 
 }
 
+function updateMapTitle() {
+  if (!state?.properties) return;
+  
+  const mapSelectionElements = document.querySelectorAll("[data-map-item]")
+
+  mapSelectionElements.forEach(element => {
+    const {mapItem, optionsKey} = element.dataset
+    let mapItemValue = state.properties[mapItem];
+    if (optionsKey) {
+      const options = state.properties[optionsKey];
+      const selectedOption = options.find(option => option.value === mapItemValue)
+      if (selectedOption) {
+        mapItemValue = selectedOption.text
+      }
+    }
+    
+    element.innerHTML = mapItemValue
+  })
+}
+
 function hookInputs() {
   state.defineDynamicProperty("level", "county")
 
-  hookDemographicInputs(state)
+  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect", 
     "#raceSelectSelect","#measureSelect", "#levelSelect"], state, "inputsActive")
 
@@ -94,7 +137,6 @@ function queryData() {
   // Get data for demographic plot
  
   state.demographicData = getDemographicData()
-
 } 
 
 function getDemographicData(highlight=null) {
@@ -293,9 +335,12 @@ const removeDownloadGraphEventListeners = () => {
 function downloadMapGraphs() {
   removeDownloadGraphEventListeners()
 
-  const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
-  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
-  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
+  const downloadFigureOnePNG = () => {
+    console.log('Downloading 1')
+    downloadGraph('plot-map', 'map', 'map-loading')
+  }
+  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram', 'map-loading')
+  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram', 'map-loading')
 
   const downloadFigureOneButton = document.getElementById(
     "downloadFigureOnePNG"

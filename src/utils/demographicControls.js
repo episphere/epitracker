@@ -4,7 +4,14 @@ import { hookSelect } from "./input.js"
 export const COMPARABLE_FIELDS = ["none", "sex", "race"]
 export const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 
-export function hookDemographicInputs(state) {
+function initSearchSelectInputs(selectInputQueries = []) {
+  selectInputQueries.forEach(({key, options}) => {
+    $(key).select2(options);
+  })
+}
+
+export function hookDemographicInputs(state, searchSelectInputQueries) {
+  initSearchSelectInputs(searchSelectInputQueries)
   state.defineDynamicProperty("comparePrimaryOptions", COMPARABLE_FIELDS)
 
   state.defineDynamicProperty("comparePrimary", null)
@@ -15,7 +22,7 @@ export function hookDemographicInputs(state) {
 
   hookSelect("#comparePrimarySelect", state, "comparePrimaryOptions", "comparePrimary")
   hookSelect("#compareSecondarySelect", state, "compareSecondaryOptions", "compareSecondary")
-  hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause")
+  hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause", true)
   hookSelect("#sexSelectSelect", state, "selectSexOptions", "selectSex")
   hookSelect("#raceSelectSelect", state, "selectRaceOptions", "selectRace")
 

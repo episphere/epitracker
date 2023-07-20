@@ -2,6 +2,10 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { colorRampLegendMeanDiverge } from "./helper.js";
 
+const dic = {
+  crude_rate: 'Crude Rate', age_adjusted_rate:'Age Adjsuted Rate' 
+}
+
 
 // Just the static plot.
 export function createChoroplethPlot(spatialData, featureCollection, options={}) {
@@ -155,7 +159,8 @@ export function createDemographicsPlot(data, options = {}) {
     y: {
       grid: true,
       axis: "right",
-      label: options.measureField + " ↑",
+      // label: options.measureField + " ↑",
+      label: 'Count',
       tickFormat: tickFormat,
     },
     x: { domain: domainValues, tickFormat: options.xTickFormat },
@@ -199,8 +204,8 @@ export function createHistogramPlot(data, options={}) {
       reverse: true,
     },
     marginBottom: 40,
-    x: { label: options.measureField + " →", tickFormat: tickFormat },
-    y: { label: null },
+    x: { label: dic[options.measureField] + " →", tickFormat: tickFormat },
+    y: { label: 'count' },
     marks: [
       Plot.rectY(
         data,

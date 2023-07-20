@@ -1,7 +1,6 @@
-export function hookSelect(query, state, optionsProperty, valueProperty) {
+export function hookSelect(query, state, optionsProperty, valueProperty, isSelect2) {
   const select = document.querySelector(query) 
   select.innerHTML = ''
-
   state.defineDynamicProperty(optionsProperty, [])
   state.defineDynamicProperty(valueProperty, null) 
 
@@ -26,9 +25,17 @@ export function hookSelect(query, state, optionsProperty, valueProperty) {
     select.value = state[valueProperty]
   }, valueProperty)
 
-  select.addEventListener("change", () => {
-    state[valueProperty] = select.value
-  })
+  if (isSelect2) {
+    const select = $(query);
+    select.on("change", ({target}) => {
+      state[valueProperty] = target.value
+    });
+  } else {
+    select.addEventListener("change", () => {
+      console.log({select, valueProperty, value: select.value})
+      state[valueProperty] = select.value
+    })
+  }
 
   setOptions()
 }

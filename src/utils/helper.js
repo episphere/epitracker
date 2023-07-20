@@ -235,3 +235,19 @@ export function toggleSidebar(graphId) {
         }
     })
 }
+
+export function sort(items, key) {
+    return items.sort((a, b) => {
+        const nameA = a[key].toUpperCase();
+        const nameB = b[key].toUpperCase();
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+
+        // names must be equal
+        return 0;
+      });
+}

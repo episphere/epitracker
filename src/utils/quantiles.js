@@ -3,15 +3,28 @@ import { hookSelect, hookCheckbox, hookInputActivation } from "./input.js"
 import { createQuantilePlot } from "./quantilePlots.js"
 import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
-import {downloadFiles} from '../pages/dictionary.js'
 import {renderTable} from '../components/table.js'
-import {downloadGraph} from './download.js'
-import { toggleSidebar } from "./helper.js"
+import {downloadGraph, downloadFiles} from './download.js'
+import { toggleSidebar, sort } from "./helper.js"
 
 // ===== Global stuff =====
 
 // Static
 const MEASURES = ["crude_rate", "age_adjusted_rate"]
+const SEARCH_SELECT_INPUT_QUERIES = [
+  {
+    key: '#causeSelectSelect',
+    options: {
+      sorter: (items) => sort(items, 'text')
+    }
+  },
+  {
+    key: '#quantileFieldSelect',
+    options: {
+      sorter: (items) => sort(items, 'text')
+    }
+  }
+]
 
 // Note: Using standard object properties unless listeners required
 let state;
@@ -48,14 +61,14 @@ export async function start() {
 }
 
 function hookInputs() {
-  hookDemographicInputs(state)
+  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
 
   state.defineDynamicProperty("showLines", true)
   state.defineDynamicProperty("quantileField", "unemployment")
   state.defineDynamicProperty("measure", "age_adjusted_rate")
   
   hookSelect("#measureSelect", state, "measureOptions", "measure")
-  hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField")
+  hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField", true)
   hookSelect("#quantileNumSelect", state, "quantileNumOptions", "quantileNum")
   hookCheckbox("#showLinesCheck", state, "showLines")
   hookCheckbox("#showTableCheck", state, "showTable")
