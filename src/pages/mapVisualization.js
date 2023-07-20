@@ -66,7 +66,10 @@ export const renderMapVisualizationPage = () => {
                   <option >State</option>
                 </select>
 
-    
+                <select class="js-example-basic-single" name="state">
+                  <option value="AL">Alabama</option>
+                  <option value="WY">Wyoming</option>
+                </select>
               </div>
             </div>
           </div>
@@ -80,20 +83,31 @@ export const renderMapVisualizationPage = () => {
           <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i
               class="fas fa-lg fa-caret-left"></i></button>
           <div class="d-flex flex-row-reverse justify-content-between">
-            <div class="ml-auto mt-3 mb-3" id="downloadContainer">
+            <div class="ml-auto" id="downloadContainer">
               <div class="col-md-12 p-0 dropdown">
                 <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-                  data-bs-toggle="dropdown" id="downloadDictionary" style="color:#000000 !important">
-                  Download Graph <i class="fas fa-download" style="color:#000000 !important"></i>
+                  data-bs-toggle="dropdown" id="download-graph-btn" style="color:#000000 !important">
+                  Download Graph <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
                 </button>
-                <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadDictionary">
-                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 1 as PNG"
-                      id="downloadFigureOnePNG">Figure 1</button></li>
-                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 2 as PNG"
-                      id="downloadFigureTwoPNG">Figure 2</button></li>
-                  <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 3 as PNG"
-                      id="downloadFigureThreePNG">Figure 3</button></li>
-                </ul>
+                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
+                  <div class="position-relative d-flex align-items-center">
+                    <ul class="navbar-dropdown w-100">
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 1 as PNG"
+                          id="downloadFigureOnePNG">Figure 1</button></li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 2 as PNG"
+                          id="downloadFigureTwoPNG">Figure 2</button></li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 3 as PNG"
+                          id="downloadFigureThreePNG">Figure 3</button></li>
+                    </ul>
+                    <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                      <div class="top-50 start-50 translate-middle position-absolute">
+                        <div class="spinner-border" role="status"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                
               </div>
             </div>
           </div>
@@ -107,38 +121,45 @@ export const renderMapVisualizationPage = () => {
             <div id="plots-container" class="d-none flex-row">
               <div class="position-relative graph">
                 <div id="plot-map"></div>
-                <h1>Figure 1. Map</h1>
+                <div>
+                  <p id="map-title">Figure 1. This visualization is showing <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
+                </div>
               </div>
-
               <div class="d-flex flex-column gap-5">
                 <div class="position-relative graph">
                   <div id="plot-histogram"></div>
-                  <h1>Figure 2. Histogram</h1>
                 </div>
+                  <p id="map-title">Figure 2. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
                 <div class="position-relative graph">
                   <div id="plot-demographic"></div>
                 </div>
-                <h1>Figure 3. Bar </h1>
-              </div>
-
+                  <p id="map-title">Figure 3. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
+               </div>
             </div>
-
-          </div>
-
+            </div>
           <div class="row" id="map-table-wrapper" style="display: none;">
             <div class="d-flex flex-row-reverse justify-content-between">
               <div class="ml-auto mt-3 mb-3" id="downloadContainer">
                 <div class="col-md-12 p-0 dropdown">
                   <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-                    data-bs-toggle="dropdown" id="download-table" style="color:#000000 !important">
-                    Download Table<i class="fas fa-download" style="color:#000000 !important"></i>
+                    data-bs-toggle="dropdown" id="download-table-btn" style="color:#000000 !important">
+                    Download Table<span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></i>
                   </button>
-                  <ul class="dropdown-menu navbar-dropdown" aria-labelledby="downloadTable">
-                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
-                        id="download-table-csv">CSV</button></li>
-                    <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
-                        id="download-table-tsv">TSV</button></li>
-                  </ul>
+                  <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
+                    <div class="position-relative d-flex align-items-center">
+                      <ul class="navbar-dropdown w-100">
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                            id="download-table-csv">CSV</button></li>
+                        <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                            id="download-table-tsv">TSV</button></li>
+                      </ul>
+                      <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                        <div class="top-50 start-50 translate-middle position-absolute">
+                          <div class="spinner-border" role="status"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
