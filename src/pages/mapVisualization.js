@@ -66,10 +66,6 @@ export const renderMapVisualizationPage = () => {
                   <option >State</option>
                 </select>
 
-                <select class="js-example-basic-single" name="state">
-                  <option value="AL">Alabama</option>
-                  <option value="WY">Wyoming</option>
-                </select>
               </div>
             </div>
           </div>
