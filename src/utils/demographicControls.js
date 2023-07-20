@@ -16,12 +16,14 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
 
   state.defineDynamicProperty("comparePrimary", null)
   state.defineDynamicProperty("compareSecondary", null)
+  state.defineDynamicProperty("selectYear", "2020")
   state.defineDynamicProperty("selectCause", "All")
   state.defineDynamicProperty("selectRace", "All")
   state.defineDynamicProperty("selectSex", "All")
 
   hookSelect("#comparePrimarySelect", state, "comparePrimaryOptions", "comparePrimary")
   hookSelect("#compareSecondarySelect", state, "compareSecondaryOptions", "compareSecondary")
+  hookSelect("#yearSelectSelect", state, "selectYearOptions", "selectYear", true)
   hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause", true)
   hookSelect("#sexSelectSelect", state, "selectSexOptions", "selectSex")
   hookSelect("#raceSelectSelect", state, "selectRaceOptions", "selectRace")

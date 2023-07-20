@@ -29,6 +29,11 @@ export const renderMapVisualizationPage = () => {
 
               <h4 class="pt-3">Select</h2>
 
+              <label for="yearSelectSelect">Year</label>
+              <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
+                <option hidden >Awaiting data...</option>
+              </select>
+
               <label for="causeSelectSelect">Cause</label>
               <select id="causeSelectSelect" class="form-select mb-2" disabled aria-label="Cause select">
                 <option hidden >Awaiting data...</option>
