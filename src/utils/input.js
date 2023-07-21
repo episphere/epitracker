@@ -32,7 +32,6 @@ export function hookSelect(query, state, optionsProperty, valueProperty, isSelec
     });
   } else {
     select.addEventListener("change", () => {
-      console.log({select, valueProperty, value: select.value})
       state[valueProperty] = select.value
     })
   }

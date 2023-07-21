@@ -1,4 +1,5 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+import { checkableLegend } from "./checkableLegend.js";
 
 export function createQuantilePlot(data, options={}) {
   options = {
@@ -10,6 +11,7 @@ export function createQuantilePlot(data, options={}) {
     xTickFormat: d => d,
     xLabel: "quantile",
     yLabel: null,
+    colorDomain: null,
     ...options 
   }
 
@@ -48,12 +50,17 @@ export function createQuantilePlot(data, options={}) {
       stroke: options.color, strokeWidth: 2
     }))
   }
+  
+  const colorOpt = {}
+  if (options.colorDomain) {
+    colorOpt.domain = options.colorDomain
+  }
 
   const plotOptions = {
     width: 820,
     height: 640,
     style: {fontSize: "14px"},
-    color: {legend: true},
+    color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel},
     marginLeft: 80,
@@ -68,6 +75,7 @@ export function createQuantilePlot(data, options={}) {
     plotOptions.facet = {data, x: options.facet}
   }
 
-  return Plot.plot(plotOptions)
 
+  const plot = Plot.plot(plotOptions)
+  return {plot}
 }
