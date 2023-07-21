@@ -32,6 +32,7 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 let state;
 
 export async function start() {
+
   state = new State()
   state.defineDynamicProperty("data", null)
   state.defineDynamicProperty("displayColorValues", null)
@@ -56,6 +57,7 @@ export async function start() {
   state.addListener(() => {
     queryData()
     update()
+
   }, "data")
 
   state.addListener(() => {
@@ -70,7 +72,6 @@ export async function start() {
   }, "displayColorValues")
 
   state.comparePrimary = "race"
-  document.getElementById("loader-container").setAttribute("class", "d-none")
 
   toggleSidebar('plot-quantiles')
 
@@ -126,6 +127,7 @@ function update() {
   renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
   paginationHandler(state.plotData, 200, headers)
   updateQuantileTable(state.plotData)
+  toggleLoading(false)
 }
 
 function updateLegend() {
@@ -188,6 +190,8 @@ function updateQuantilePlot() {
 }
 
 async function loadData(year) {
+  toggleLoading(true)
+
   const data = await d3.csv(`data/quantile_data/quantile_data_${year}.csv`)
   data.sort((a,b) => a.quantile - b.quantile)
   data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
@@ -199,8 +203,8 @@ async function loadData(year) {
     }
   })
   state.data = data 
+  
 }
-
 
 async function initialDataLoad() {
 
@@ -226,6 +230,17 @@ async function initialDataLoad() {
   //toggleInputActivation(true)
   state.inputsActive = true 
 
+}
+
+function toggleLoading(loading) {
+  if (loading) {
+    document.getElementById("plots-container").style.visibility = "hidden"
+    document.getElementById("loader-container").style.visibility = "visible"
+
+  } else {
+    document.getElementById("plots-container").style.visibility = "visible"
+    document.getElementById("loader-container").style.visibility = "hidden"
+  }
 }
 
 const updateQuantileTable = (data) => {
