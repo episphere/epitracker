@@ -108,7 +108,10 @@ export const renderQuantileVisualizationPage = () => {
   
         <div id="plots-container" class="d-flex flex-column">
           <div class="position-relative graph">
-            <div id="plot-quantiles"></div>
+            <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
+              <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
+              <div id="plot-quantiles"></div>
+            </figure>
           </div>
   
   

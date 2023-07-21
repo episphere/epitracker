@@ -6,6 +6,7 @@ import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
 import { toggleSidebar, sort } from "./helper.js"
+import { checkableLegend } from "./checkableLegend.js"
 
 // ===== Global stuff =====
 
@@ -33,6 +34,7 @@ let state;
 export async function start() {
   state = new State()
   state.defineDynamicProperty("data", null)
+  state.defineDynamicProperty("displayColorValues", null)
 
   hookInputs()
   await initialDataLoad()
@@ -62,6 +64,10 @@ export async function start() {
       update()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
+
+  state.addListener(() => {
+    updateQuantilePlot()
+  }, "displayColorValues")
 
   state.comparePrimary = "race"
   document.getElementById("loader-container").setAttribute("class", "d-none")
@@ -111,7 +117,49 @@ function queryData() {
 }
 
 function update() {
+  updateQuantilePlot()
+  updateLegend()
+
+  const headers = Object.keys(state.plotData[0])
+  downloadFiles(state.plotData, headers, "first_data", true)
+  downloadQuantileGraphs()
+  renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
+  paginationHandler(state.plotData, 200, headers)
+  updateQuantileTable(state.plotData)
+}
+
+function updateLegend() {
   const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+  
+  let colorValues = null 
+  const legendContainer = document.getElementById("plot-legend")
+  legendContainer.innerHTML = ``
+  if (state.comparePrimary != "none") {
+    colorValues = [...new Set(state.plotData.map(d => d[colorField]))]
+    colorValues.sort()
+    state.displayColorValues = colorValues
+    const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues)
+    legendContainer.appendChild(legend)
+
+    legend.addEventListener("change", () => {
+      state.displayColorValues = legend.getValues()
+    })
+  } 
+
+}
+
+function updateQuantilePlot() {
+  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+
+  let colorValues = null 
+  if (state.comparePrimary != "none") {
+    colorValues = [...new Set(state.plotData.map(d => d[state.comparePrimary]))]
+    colorValues.sort()
+  }
+
+  if (state.displayColorValues == null) {
+    state.displayColorValues = colorValues
+  }
 
   const quantileDetails = state.quantileDetailsMap.get(state.quantileField)
   const xTicks = quantileDetailsToTicks(quantileDetails)
@@ -120,25 +168,23 @@ function update() {
   const xLabel = state.quantileField + " (quantile)"
   const yLabel = state.valueField
 
+  let filteredPlotData = state.plotData 
+  if (state.comparePrimary != "none") {
+    filteredPlotData = state.plotData.filter(d => state.displayColorValues.includes(d[colorField]))
+  }
+
   const plotContainer = document.getElementById("plot-quantiles")
-  const plot = createQuantilePlot(state.plotData, {
+  const {plot} = createQuantilePlot(filteredPlotData, {
     valueField: state.measure,
     intervalFields: [state.measure+"_low", state.measure+"_high"],
     facet: state.compareSecondary != "none" ? state.compareSecondary : null,
     drawLines: state.showLines,
     xTickFormat: xTickFormat, 
     xLabel, yLabel, color: colorField,
-
+    colorDomain: colorValues
   })
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
-
-  const headers = Object.keys(state.plotData[0])
-  downloadFiles(state.plotData, headers, "first_data", true)
-  downloadQuantileGraphs()
-  renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
-  paginationHandler(state.plotData, 200, headers)
-  updateQuantileTable(state.plotData)
 }
 
 async function loadData(year) {
@@ -160,7 +206,7 @@ async function initialDataLoad() {
 
   // Load files and put processed data into state 
  
- loadData("2020")
+  await loadData("2020")
   
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
