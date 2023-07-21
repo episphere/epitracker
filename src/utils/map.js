@@ -42,6 +42,8 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 let state;
 
 export async function start() {
+  toggleLoading(true)
+
   state = new State()
   state.defineDynamicProperty("data", null)
 
@@ -79,9 +81,17 @@ export async function start() {
 
   toggleSidebar('plot-map')
 
-  document.getElementById("plots-container").setAttribute("class", "d-flex flex-row")
-  document.getElementById("loader-container").setAttribute("class", "d-none")
+}
 
+function toggleLoading(loading) {
+  if (loading) {
+    document.getElementById("plots-container").style.visibility = "hidden"
+    document.getElementById("loader-container").style.visibility = "visible"
+
+  } else {
+    document.getElementById("plots-container").style.visibility = "visible"
+    document.getElementById("loader-container").style.visibility = "hidden"
+  }
 }
 
 function updateMapTitle() {
@@ -264,8 +274,9 @@ function update() {
   downloadMapGraphs()
   renderTable("map-table", dataPagination(0, 200, state.mapData), headers);
   paginationHandler(state.mapData, 200, headers);
-
   updateMapTitle()
+  
+  toggleLoading(false)
 }
 
 function updateSidePlots() {
@@ -312,6 +323,7 @@ async function initialDataLoad() {
 }
 
 async function loadData(year) {
+  toggleLoading(true)
   const data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
   data.forEach((row) => {
     MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))

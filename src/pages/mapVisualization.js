@@ -4,30 +4,25 @@ export const renderMapVisualizationPage = () => {
   let template = `
     <div class="container-fluid p-5">
       <div class="row">
-        <h1 class="mb-4">EpiTracker Cancer</h1> 
-      </div>
-
-      
-      <div class="row">
         <div class="col-md-2" id="sidebar">
           <div class="card rounded-1">
             <div class="card-header">
               Demographic Options
             </div>
             <div class="card-body">
-              <h4 class="">Compare</h2>
+              <h5 class="">Compare</h5>
     
-              <label for="comparePrimarySelect">Compare Primary</label>
+              <label for="comparePrimarySelect">Primary</label>
               <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
                 <option hidden >Awaiting data...</option>
               </select>
     
-              <label for="compareSecondarySelect">Compare Secondary</label>
+              <label for="compareSecondarySelect">Secondary</label>
               <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
                 <option hidden >Awaiting data...</option>
               </select>
 
-              <h4 class="pt-3">Select</h2>
+              <h5 class="pt-3">Select</h5>
 
               <label for="yearSelectSelect">Year</label>
               <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
@@ -112,14 +107,14 @@ export const renderMapVisualizationPage = () => {
               </div>
             </div>
           </div>
-          <div class="tab-pane fade show active px-3 py-5" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
+          <div class="tab-pane fade show px-3 py-5" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
 
-            <div id="loader-container" class="d-flex flex-row justify-content-center">
+            <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
               <div class="spinner-border" role="status">
               </div>
             </div>
 
-            <div id="plots-container" class="d-none flex-row">
+            <div id="plots-container" class="d-flex flex-row">
               <div class="position-relative graph">
                 <div id="plot-map"></div>
                 <div>

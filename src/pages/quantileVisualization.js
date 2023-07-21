@@ -4,27 +4,24 @@ export const renderQuantileVisualizationPage = () => {
   let template = `
   <div class="container-fluid p-5">
     <div class="row">
-      <h1 class="mb-4">EpiTracker Cancer</h1>
-    </div>
-    <div class="row">
       <div class="col-md-2" id="sidebar">
         <div class="card rounded-1">
           <div class="card-header">
             Demographic Options
           </div>
           <div class="card-body">
-          <h4 class="">Compare</h2>
-            <label for="comparePrimarySelect">Compare Primary</label>
+          <h5 class="">Compare</h5>
+            <label for="comparePrimarySelect">Primary</label>
             <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="compareSecondarySelect">Compare Secondary</label>
+            <label for="compareSecondarySelect">Secondary</label>
             <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <h4 class="pt-3">Select</h2>
+            <h5 class="pt-3">Select</h5>
 
             <label for="yearSelectSelect">Year</label>
               <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
@@ -98,16 +95,20 @@ export const renderQuantileVisualizationPage = () => {
       </div>
     </div>
     <div>
-      <div class="tab-pane fade show active px-10 py-10" id="plot-map-pane" role="tabpanel"
+      <div class="tab-pane fade show px-10 py-10" id="plot-map-pane" role="tabpanel"
         aria-labelledby="plot-map-tab">
   
-        <div id="loader-container" class="d-flex flex-row justify-content-center">
-          <div class="spinner-border" role="status">
-          </div>
-        </div>
+       
   
         <div id="plots-container" class="d-flex flex-column">
-          <div class="position-relative graph">
+         
+
+          <div class="position-relative graph mb-5 mx-4"  style="height: fit-content">
+            <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
+              <div class="spinner-border" role="status">
+              </div>
+            </div>
+
             <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
               <div id="plot-quantiles"></div>
