@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 import { State } from "./DynamicState2.js"
-import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
+import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js"
 import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } from "./mapPlots.js"
 import { addTooltip, toggleSidebar } from "./helper.js";
@@ -45,7 +45,7 @@ export async function start() {
   toggleLoading(true)
 
   state = new State()
-  state.defineDynamicProperty("data", null)
+  state.defineDynamicProperty("data", [])
 
   hookInputs()
   await initialDataLoad()
@@ -74,6 +74,7 @@ export async function start() {
     queryData()
     syncDataDependentInputs(state)
     update()
+    updateMapTitle()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", "measure", "level")
   
   state.inputsActive = true
@@ -132,11 +133,11 @@ function hookInputs() {
 }
 
 function queryData() {
-
+  
 
   //  Get data for map
 
-  let mapData = state.data.filter(
+  let mapData = [...state.data].filter(
     (d) =>
       d.cause == state.selectCause &&
       d.sex == state.selectSex &&
@@ -150,8 +151,7 @@ function queryData() {
     mapData = mapData.filter((d) => d.county_fips == "All");
   }
   mapData = mapData.filter(row => Number.isFinite(row[state.measure]))
-
-  state.mapData = mapData
+  state.mapData = [...mapData]
 
 
   // Get data for demographic plot
@@ -248,7 +248,6 @@ function addPlotInteractivity() {
 }
 
 function update() {
-
   const indexField = state.level + "_fips"
 
   state.featureCollection = state.level == "county" ? state.countyGeo : state.stateGeo
@@ -268,12 +267,12 @@ function update() {
 
   addPlotInteractivity()
 
-
-  const headers = Object.keys(state.mapData[0])
-  downloadFiles(state.mapData, headers, "first_data");
   downloadMapGraphs()
-  renderTable("map-table", dataPagination(0, 200, state.mapData), headers);
-  paginationHandler(state.mapData, 200, headers);
+  
+  downloadFiles(state.mapData, "first_data");
+  renderTable("map-table", dataPagination(0, 200, state.mapData));
+  paginationHandler(state.mapData, 200);
+
   updateMapTitle()
   
   toggleLoading(false)
@@ -307,12 +306,14 @@ function updateSidePlots() {
 }
 
 async function initialDataLoad() {
+  state.stateGeo = await d3.json("data/states.json") 
+  state.countyGeo =  await d3.json("data/counties.json")
+
   await loadData("2020")
- 
+
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
 
-  state.countyGeo =  await d3.json("data/counties.json")
-  state.stateGeo = await d3.json("data/states.json") 
+  
   state.dictionary = await d3.json("data/dictionary.json")
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
   
@@ -324,11 +325,14 @@ async function initialDataLoad() {
 
 async function loadData(year) {
   toggleLoading(true)
-  const data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
-  data.forEach((row) => {
+  let data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
+  data = data.map((row) => {
     MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))
+    const {stateName, county} = mapStateAndCounty(row['state_fips'], row['county_fips'], state)
+
+    return {...row, state: stateName, county}
   })
-  state.data = data
+  state.data = [...data] || []
   return data
 }
 

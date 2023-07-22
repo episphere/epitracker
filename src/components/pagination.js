@@ -26,7 +26,9 @@ function paginationOptimizer(pageNumber, pageSize) {
   })
 }
 
-export const paginationHandler = (data, pageSize, headers) => {
+export const paginationHandler = (data, pageSize) => {
+  if (!data.length) return;
+  const headers = Object.keys(data[0])
   const dataLength = data.length;
   const pages = Math.ceil(dataLength / pageSize);
   const array = [];
@@ -65,7 +67,7 @@ const addEventPageBTNs = (pageSize, data, headers) => {
         let end = pageNumber * pageSize;
         document.getElementById("previousPage").dataset.previous = pageNumber;
         document.getElementById("nextPage").dataset.next = pageNumber;
-        renderTable("map-table", dataPagination(start, end, data), headers);
+        renderTable("map-table", dataPagination(start, end, data));
         Array.from(elements).forEach((ele) =>
           ele.classList.remove("active-page")
         );

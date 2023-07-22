@@ -12,6 +12,8 @@ import {
   dataPagination,
   paginationTemplate,
 } from "./description.js";
+import {downloadFiles} from '../utils/download.js'
+
 let previousValue = "";
 
 export const dataDictionaryTemplate = async () => {
@@ -218,7 +220,7 @@ const renderDataDictionaryFilters = (dictionary, headers) => {
     `;
   document.getElementById("filterDataDictionary").innerHTML = template;
   addEventFilterDataDictionary(dictionary, headers);
-  downloadFiles(dictionary, headers, "dictionary");
+  // downloadFiles(dictionary, headers, "dictionary");
   document.getElementById("pageSizeContainer").innerHTML = pageSizeTemplate(
     dictionary,
     60
@@ -444,127 +446,84 @@ const renderDataDictionary = (dictionary, pageSize, headers) => {
   addEventSortColumn(dictionary, pageSize, headers);
 };
 
-const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
-  e.stopPropagation();
-  const type = isTsv ? 'tsv' : 'csv';
-  const content =
-    `data:text/${type};charset=utf-8,`+
-    json2other(data, headers, isTsv).replace(/(<b>)|(<\/b>)/g, "");
-  const encodedUri = encodeURI(content);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `${fileName}.${type}`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+// const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
+//   e.stopPropagation();
+//   const type = isTsv ? 'tsv' : 'csv';
+//   const content =
+//     `data:text/${type};charset=utf-8,`+
+//     json2other(data, headers, isTsv).replace(/(<b>)|(<\/b>)/g, "");
+//   const encodedUri = encodeURI(content);
+//   const link = document.createElement("a");
+//   link.setAttribute("href", encodedUri);
+//   link.setAttribute("download", `${fileName}.${type}`);
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+// }
 
-const downloadFileRef = {
-  csvButton: null, 
-  csvCallback: null,
-  tsvButton: null, 
-  tsvCallback: null,
-  // pngFigureOneButton: null, 
-  // pngFigureOneCallback: null,
-  // pngFigureTwoButton: null, 
-  // pngFigureTwoCallback: null,
-  // pngFigureThreeButton: null, 
-  // pngFigureThreeCallback: null
-}
+// const downloadFileRef = {
+//   csvButton: null, 
+//   csvCallback: null,
+//   tsvButton: null, 
+//   tsvCallback: null,
+// }
 
-const removeDownloadEventListeners = () => {
-  if (downloadFileRef.csvButton) {
-    downloadFileRef.csvButton.removeEventListener('click', downloadFileRef.csvCallback)
-  }
-  if (downloadFileRef.tsvButton) {
-    downloadFileRef.tsvButton.removeEventListener('click', downloadFileRef.tsvCallback)
-  }
-  // if (downloadRef.pngFigureOneButton) {
-  //   downloadRef.pngFigureOneButton.removeEventListener('click', downloadRef.pngFigureOneCallback)
-  // }
+// const removeDownloadEventListeners = () => {
+//   if (downloadFileRef.csvButton) {
+//     downloadFileRef.csvButton.removeEventListener('click', downloadFileRef.csvCallback)
+//   }
+//   if (downloadFileRef.tsvButton) {
+//     downloadFileRef.tsvButton.removeEventListener('click', downloadFileRef.tsvCallback)
+//   }
+// }
 
-  // if (downloadRef.pngFigureTwoButton) {
-  //   downloadRef.pngFigureTwoButton.removeEventListener('click', downloadRef.pngFigureTwoCallback)
-  // }
+// export const downloadFiles = (data, headers, fileName) => {
+//   removeDownloadEventListeners()
 
-  // if (downloadRef.pngFigureTreeButton) {
-  //   downloadRef.pngFigureTreeButton.removeEventListener('click', downloadRef.pngFigureTreeCallback)
-  // }
-}
-
-export const downloadFiles = (data, headers, fileName) => {
-  removeDownloadEventListeners()
-
-  let flatArray = [];
-  headers.splice(headers.indexOf("PI"), 1);
-  headers.splice(headers.indexOf("PI_Email"), 1);
-  data.forEach((dt) => {
-    if (dt.pis) {
-      const flatObj = {
-        ...dt,
-      };
-      dt.pis.forEach((obj, index) => {
-        const piColumnName = `PI_${index + 1}`;
-        const piEmailColumnName = `PI_Email_${index + 1}`;
-        flatObj[piColumnName] = obj.PI;
-        flatObj[piEmailColumnName] = obj.PI_Email;
-        if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
-        if (headers.indexOf(piEmailColumnName) === -1)
-          headers.push(piEmailColumnName);
-      });
-      flatArray.push(flatObj);
-    } else flatArray.push(dt);
-  });
-  data = flatArray;
+//   let flatArray = [];
+//   headers.splice(headers.indexOf("PI"), 1);
+//   headers.splice(headers.indexOf("PI_Email"), 1);
+//   data.forEach((dt) => {
+//     if (dt.pis) {
+//       const flatObj = {
+//         ...dt,
+//       };
+//       dt.pis.forEach((obj, index) => {
+//         const piColumnName = `PI_${index + 1}`;
+//         const piEmailColumnName = `PI_Email_${index + 1}`;
+//         flatObj[piColumnName] = obj.PI;
+//         flatObj[piEmailColumnName] = obj.PI_Email;
+//         if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
+//         if (headers.indexOf(piEmailColumnName) === -1)
+//           headers.push(piEmailColumnName);
+//       });
+//       flatArray.push(flatObj);
+//     } else flatArray.push(dt);
+//   });
+//   data = flatArray;
   
-  const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
-  const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
+//   const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
+//   const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
 
 
-  // const downloadFigureOnePNG = () => downloadGraph('plot-map', 'map')
-  // const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram')
-  // const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram')
+//   const downloadCSVButton = document.getElementById(
+//     "download-table-csv"
+//   );
 
-  const downloadCSVButton = document.getElementById(
-    "download-table-csv"
-  );
-
-  if (downloadCSVButton) {
-    downloadCSVButton.addEventListener("click", downloadTableCSV);
-    downloadFileRef.csvButton = downloadCSVButton
-    downloadFileRef.csvCallback = downloadTableCSV
-  }
+//   if (downloadCSVButton) {
+//     downloadCSVButton.addEventListener("click", downloadTableCSV);
+//     downloadFileRef.csvButton = downloadCSVButton
+//     downloadFileRef.csvCallback = downloadTableCSV
+//   }
   
 
-  const downloadTSVButton = document.getElementById(
-    "download-table-tsv"
-  );
+//   const downloadTSVButton = document.getElementById(
+//     "download-table-tsv"
+//   );
 
-  if (downloadTSVButton) {
-    downloadTSVButton.addEventListener("click", downloadTableTSV);
-    downloadFileRef.tsvButton = downloadTSVButton
-    downloadFileRef.tsvCallback = downloadTableTSV
-  }
-  
-
-  // const downloadFigureOneButton = document.getElementById(
-  //   "downloadFigureOnePNG"
-  // );
-  // downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
-  // downloadRef.pngFigureOneButton = downloadFigureOneButton
-  // downloadRef.pngFigureOneCallback = downloadFigureOnePNG
-
-  // const downloadFigureTwoButton = document.getElementById(
-  //   "downloadFigureTwoPNG"
-  // );
-  // downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
-  // downloadRef.pngFigureTwoButton = downloadFigureTwoButton
-  // downloadRef.pngFigureTwoCallback = downloadFigureTwoPNG
-
-  // const downloadFigureThreeButton = document.getElementById(
-  //   "downloadFigureThreePNG"
-  // );
-  // downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
-  // downloadRef.pngFigureThreeButton = downloadFigureThreeButton
-  // downloadRef.pngFigureThreeCallback = downloadFigureThreePNG
-};
+//   if (downloadTSVButton) {
+//     downloadTSVButton.addEventListener("click", downloadTableTSV);
+//     downloadFileRef.tsvButton = downloadTSVButton
+//     downloadFileRef.tsvCallback = downloadTableTSV
+//   }
+// };

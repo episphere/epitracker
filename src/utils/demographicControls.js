@@ -57,3 +57,13 @@ function unique(data, accessor=d=>d) {
   return [...new Set(data.map(accessor))]
 }
 
+export function mapStateAndCounty(stateFips, countyFips, state) {
+  const {features: stateFeatures} = state.stateGeo
+  const {features: countyFeatures} = state.countyGeo
+  const foundedState = stateFeatures.find(item => item.id === stateFips)
+  const foundedCounty = countyFeatures.find(item => item.id === countyFips)
+  const stateName = foundedState ? foundedState.properties.name : 'All'
+  const countyName = foundedCounty ? foundedCounty.properties.name : 'All'
+
+  return {state: stateName, county: countyName}
+}

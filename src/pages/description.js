@@ -5,7 +5,7 @@ import {
   shortenText,
   tsv2Json,
 } from "./../shared.js";
-import { downloadFiles } from "./dictionary.js";
+import { downloadFiles } from "../utils/download.js";
 let previousValue = "";
 
 export const renderDescription = (modified_at) => {
@@ -157,7 +157,7 @@ const getDescription = async () => {
     </div>
     `;
   addEventFilterDataCatalogue(json, headers);
-  downloadFiles(json, headers, "study_description", true);
+  // downloadFiles(json, headers, "study_description", true);
   renderStudyDescription(json, defaultPageSize, headers);
   paginationHandler(json, defaultPageSize, headers);
   document.getElementById("pageSizeContainer").innerHTML = pageSizeTemplate(

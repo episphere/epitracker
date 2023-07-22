@@ -230,3 +230,5 @@ export function createHistogramPlot(data, options={}) {
 
   return plot
 }
+
+

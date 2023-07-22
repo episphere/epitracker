@@ -20,9 +20,10 @@ const renderTableBody = (data = [], headers = []) => {
   return bodyElement
 }
 
-export const renderTable = (tableID, data, headers) => {
+export const renderTable = (tableID, data) => {
   if (!data.length) return;
-  
+  const headers = Object.keys(data[0])
+
   const dataTable = document.querySelector(`#${tableID}`);
   if (dataTable) {
     dataTable.innerHTML = renderTableHeader(headers)

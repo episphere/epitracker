@@ -1,7 +1,7 @@
 import { State } from "./DynamicState2.js"
 import { hookSelect, hookCheckbox, hookInputActivation } from "./input.js"
 import { createQuantilePlot } from "./quantilePlots.js"
-import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
+import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
@@ -104,6 +104,8 @@ function hookInputs() {
 }
 
 function queryData() {
+  console.log({data: state.data, state})
+  
   let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
@@ -187,6 +189,12 @@ function updateQuantilePlot() {
   })
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
+
+  downloadFiles(state.plotData, "first_data", true)
+  downloadQuantileGraphs()
+  renderTable("quantile-table", dataPagination(0, 200, state.plotData))
+  paginationHandler(state.plotData, 200)
+  updateQuantileTable(state.plotData)
 }
 
 async function loadData(year) {
@@ -194,6 +202,8 @@ async function loadData(year) {
 
   const data = await d3.csv(`data/quantile_data/quantile_data_${year}.csv`)
   data.sort((a,b) => a.quantile - b.quantile)
+
+  // TODO: These should be merged and call mapStateAndCounty function
   data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
   data.forEach(row => {
     for (const measure of ["crude_rate", "age_adjusted_rate"]) {

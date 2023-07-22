@@ -78,30 +78,10 @@ const removeDownloadEventListeners = () => {
   }
 }
 
-export const downloadFiles = (data, headers, fileName) => {
+export const downloadFiles = (data, fileName) => {
   removeDownloadEventListeners()
-
-  let flatArray = [];
-  headers.splice(headers.indexOf("PI"), 1);
-  headers.splice(headers.indexOf("PI_Email"), 1);
-  data.forEach((dt) => {
-    if (dt.pis) {
-      const flatObj = {
-        ...dt,
-      };
-      dt.pis.forEach((obj, index) => {
-        const piColumnName = `PI_${index + 1}`;
-        const piEmailColumnName = `PI_Email_${index + 1}`;
-        flatObj[piColumnName] = obj.PI;
-        flatObj[piEmailColumnName] = obj.PI_Email;
-        if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
-        if (headers.indexOf(piEmailColumnName) === -1)
-          headers.push(piEmailColumnName);
-      });
-      flatArray.push(flatObj);
-    } else flatArray.push(dt);
-  });
-  data = flatArray;
+  if (!Array.isArray(data)) return;
+  const headers = Object.keys(data[0])
   
   const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
   const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
