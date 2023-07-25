@@ -117,7 +117,6 @@ export const renderMapVisualizationPage = () => {
             <div id="plots-container" class="d-flex flex-row">
               <div class="position-relative graph">
                 <div id="plot-map"></div>
-                <h1>Figure 1. Map</h1>
                 <div>
                   <p id="map-title">Figure 1. This visualization is showing <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
                 </div>
