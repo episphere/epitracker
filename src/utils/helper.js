@@ -1,9 +1,51 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm'
 
+export function addProximityHover(elementsSelect, plotSelect, listener, minDistance=30) {
+    const plotRect = plotSelect.node().getBoundingClientRect()
+    
+    const points = [] 
+    elementsSelect.each((_,i,nodes) => {
+      const elemRect = nodes[i].getBoundingClientRect()
+      const centroid = [elemRect.x + elemRect.width/2, elemRect.y+elemRect.height/2]
+      const relCentroid = [centroid[0]-plotRect.x, centroid[1]-plotRect.y]
+      points.push(relCentroid)
+    })
+  
+    const delauney = d3.Delaunay.from(points, d => d[0], d => d[1])
+    const distSqr = minDistance**2
+  
+    let previousHover = null
+  
+    plotSelect.on("mousemove.interact", (e,d) => {
+        // To account for elements rescaled by CSS
+        const domPoint = new DOMPointReadOnly(e.clientX, e.clientY)
+        const pt = domPoint.matrixTransform(plotSelect.node().getScreenCTM().inverse())
+        const mousePoint = [pt.x, pt.y]
+    
+        const index = delauney.find(mousePoint[0], mousePoint[1])
+        const point = points[index] 
+    
+        if (minDistance != null) {
+            const distance = (mousePoint[0]-point[0])**2 + (mousePoint[1]-point[1])**2
+            if (distance < distSqr ) {
+            if (index != previousHover) {
+                const elem = elementsSelect.nodes()[index]
+                listener(index, elem, elementsSelect.nodes()[previousHover]) 
+                previousHover = index
+            }
+            } else {
+                if (previousHover != null) {
+                    listener(null, null, elementsSelect.nodes()[previousHover]) 
+                    previousHover = null 
+                }
+
+            }
+        }
+    })
+  }
 
 export function addPopperTooltip(element) {
-    console.log(Popper)
 
     const tooltipElement = document.createElement("div")
     tooltipElement.classList.add("custom-tooltip")
@@ -11,30 +53,30 @@ export function addPopperTooltip(element) {
   
     let popper = null
     function show(targetElement, html) {
-      if (popper) popper.destroy()
-      popper = Popper.createPopper(targetElement, tooltipElement, {
-        placement: "bottom-start",
-        modifiers: [
-            {
-              name: 'offset',
-              options: {
-                offset: [8, 8],
-              },
-            },
-            {
-                name: 'preventOverflow',
+        if (popper) popper.destroy()
+        popper = Popper.createPopper(targetElement, tooltipElement, {
+            placement: "top-start",
+            modifiers: [
+                {
+                name: 'offset',
                 options: {
-                  boundary: element,
+                    offset: [10, 10],
                 },
-            },
-          ],
-      })
-      tooltipElement.innerHTML = html 
-      tooltipElement.style.display = "block"
+                },
+                {
+                    name: 'preventOverflow',
+                    options: {
+                    boundary: element,
+                    },
+                },
+            ],
+        })
+        tooltipElement.innerHTML = html 
+        tooltipElement.style.display = "block"
     }
   
     function hide() {
-      tooltipElement.style.display = "none"
+        tooltipElement.style.display = "none"
     }
   
     return {show, hide}

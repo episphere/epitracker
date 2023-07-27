@@ -74,7 +74,7 @@ export const renderQuantileVisualizationPage = () => {
         </div>
   `
 
-  template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.SHOW_HIDE_TABLE])
+  template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.START_ZERO, SETTINGS.SHOW_HIDE_TABLE, ])
 
   template += `
     </div>

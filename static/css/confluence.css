@@ -1378,10 +1378,11 @@ span.icon {
   background-color: rgba(255,255,255,1);
   font-family: sans-serif;
   font-size: 0.7em;
-  padding: 5px;
+  padding: 8px;
   border: none;
+  border-radius: 2px;
   display: none;
-  box-shadow: 1px 1px 5px black;
+  box-shadow: 1px 1px 5px rgb(81, 81, 81);
   pointer-events: none;
 }
 .svg-tooltip {
