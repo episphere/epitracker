@@ -131,13 +131,13 @@ export const renderMapVisualizationPage = () => {
                   <div class="position-relative graph">
                     <div id="plot-histogram"></div>
                   </div>
-                     <p id="map-title">Figure 2. Histogram showing the frequency of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>
+                     <p id="histogram-title">Figure 2. Histogram showing the frequency of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>
                 </div>
                 <div id="plot-demographic-container">
                   <div class="position-relative graph">
                     <div id="plot-demographic"></div>
                   </div>
-                  <p id="map-title">Figure 3. <b data-map-item="measure">measure</b> <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer morality rate by <b data-map-item="selectSex">sex</b> sex, <b data-map-item="selectRace">race</b> race and ethnicity, <b data-map-item="selectYear">Year</b>.</p>
+                  <p id="demographic-title">Figure 3. <b data-map-item="measure">measure</b> <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer morality rate by <b data-map-item="selectSex">sex</b> sex, <b data-map-item="selectRace">race</b> race and ethnicity, <b data-map-item="selectYear">Year</b>.</p>
                 </div>
                </div>
             </div>

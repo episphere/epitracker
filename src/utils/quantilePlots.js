@@ -16,8 +16,6 @@ export function createQuantilePlot(data, options={}) {
     ...options 
   }
 
-  console.log(options.color)
-
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
   const marks = []
