@@ -2382,3 +2382,15 @@ button.previous-btn {
 .loading-icon {
   background-color: rgba(255, 255, 255, 0.8);
 }
+
+#map-title {
+  max-width:  800px;
+}
+
+#histogram-title {
+  max-width: 400px;
+}
+
+#demographic-title {
+  max-width: 400px;
+}
