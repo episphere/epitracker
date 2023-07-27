@@ -5,8 +5,10 @@ import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMP
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort } from "./helper.js"
+import { toggleSidebar, sort, addPopperTooltip, addProximityHover } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
 
 // ===== Global stuff =====
 
@@ -69,7 +71,7 @@ export async function start() {
 
   state.addListener(() => {
     updateQuantilePlot()
-  }, "displayColorValues")
+  }, "displayColorValues", "showLines", "startZero")
 
   state.comparePrimary = "race"
 
@@ -81,6 +83,7 @@ function hookInputs() {
   hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
 
   state.defineDynamicProperty("showLines", true)
+  state.defineDynamicProperty("startZero", true)
   state.defineDynamicProperty("quantileField", "unemployment")
   state.defineDynamicProperty("measure", "age_adjusted_rate")
   
@@ -88,6 +91,7 @@ function hookInputs() {
   hookSelect("#quantileFieldSelect", state, "quantileFieldOptions", "quantileField", true)
   hookSelect("#quantileNumSelect", state, "quantileNumOptions", "quantileNum")
   hookCheckbox("#showLinesCheck", state, "showLines")
+  hookCheckbox("#startZeroCheck", state, "startZero")
   hookCheckbox("#showTableCheck", state, "showTable")
 
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect",
@@ -95,17 +99,11 @@ function hookInputs() {
    "inputsActive")
 
   state.addListener(() => {
-    update()
-  }, "showLines")
-
-  state.addListener(() => {
     document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
   }, "showTable")
 }
 
-function queryData() {
-  console.log({data: state.data, state})
-  
+function queryData() {  
   let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
@@ -141,7 +139,12 @@ function updateLegend() {
   if (state.comparePrimary != "none") {
     colorValues = [...new Set(state.plotData.map(d => d[colorField]))]
     colorValues.sort()
-    state.displayColorValues = colorValues
+
+
+    state.displayColorValues = colorValues.filter(d => state.displayColorValues.includes(d))
+    if (state.displayColorValues.length == 0) {
+      state.displayColorValues = colorValues
+    }
     const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues)
     legendContainer.appendChild(legend)
 
@@ -176,6 +179,7 @@ function updateQuantilePlot() {
   if (state.comparePrimary != "none") {
     filteredPlotData = state.plotData.filter(d => state.displayColorValues.includes(d[colorField]))
   }
+  state.filteredPlotData = filteredPlotData
 
   const plotContainer = document.getElementById("plot-quantiles")
   const {plot} = createQuantilePlot(filteredPlotData, {
@@ -183,18 +187,47 @@ function updateQuantilePlot() {
     intervalFields: [state.measure+"_low", state.measure+"_high"],
     facet: state.compareSecondary != "none" ? state.compareSecondary : null,
     drawLines: state.showLines,
+    yStartZero: state.startZero,
     xTickFormat: xTickFormat, 
-    xLabel, yLabel, color: colorField,
+    xLabel, yLabel, color: d => d[colorField],
     colorDomain: colorValues
   })
+  state.quantilePlot = plot
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
 
+  addPlotInteractivity()
   downloadFiles(state.plotData, "first_data", true)
   downloadQuantileGraphs()
   renderTable("quantile-table", dataPagination(0, 200, state.plotData))
   paginationHandler(state.plotData, 200)
   updateQuantileTable(state.plotData)
+}
+
+function addPlotInteractivity() {
+  const tooltip = addPopperTooltip(document.getElementById("plot-quantiles"))
+
+  const plotSelect = d3.select(state.quantilePlot)
+  const dotSelect = plotSelect.selectAll("circle")
+  addProximityHover(dotSelect, plotSelect, (i,element,prevElement) => {
+    if (i == null) {
+      tooltip.hide()
+    } else {
+      const index = d3.select(element).data()[0]
+      const row = state.filteredPlotData[index]
+
+      d3.select(element).attr("r", 6)
+
+      const activeCompares = [state.comparePrimary, state.compareSecondary].filter(d => d != "none")
+      let text = ``
+      activeCompares.forEach(compare => text += `<b>${row[compare]}</b> </br>`)
+      text += `${row[state.measure]}`
+      tooltip.show(element, text)
+    }
+    d3.select(prevElement).attr("r", 4)
+  }, 20)
+
+  //console.log(plotSelect, gSelect)
 }
 
 async function loadData(year) {

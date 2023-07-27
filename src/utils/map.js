@@ -4,7 +4,7 @@ import { State } from "./DynamicState2.js"
 import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js"
 import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } from "./mapPlots.js"
-import { addTooltip, toggleSidebar } from "./helper.js";
+import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import { downloadGraph, downloadFiles }  from "./download.js"
@@ -71,6 +71,10 @@ export async function start() {
   }, "data")
 
   state.addListener(() => {
+    update()
+  }, "scheme")
+
+  state.addListener(() => {
     queryData()
     syncDataDependentInputs(state)
     update()
@@ -120,10 +124,11 @@ function hookInputs() {
 
   hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#yearSelectSelect", "#causeSelectSelect", 
-    "#sexSelectSelect", "#raceSelectSelect","#measureSelect", "#levelSelect"], state, "inputsActive")
+    "#sexSelectSelect", "#raceSelectSelect","#measureSelect", "#levelSelect", "#schemeSelect"], state, "inputsActive")
 
   hookSelect("#measureSelect", state, "measureOptions", "measure")
   hookSelect("#levelSelect", state, "levelOptions", "level")
+  hookSelect("#schemeSelect", state, "schemeOptions", "scheme")
   
   hookCheckbox("#showTableCheck", state, "showTable")
 
@@ -204,7 +209,7 @@ function addPlotInteractivity() {
   const geoSelect = gSelect
     .selectAll("path")
 
-  const tooltip = addTooltip(plotSelect)
+  const tooltip = addPopperTooltip(document.getElementById("plot-map"))
 
   const previousStroke = null
   gSelect.on("mouseleave.interact", () => {
@@ -218,19 +223,18 @@ function addPlotInteractivity() {
       state.plotHighlight = feature.id
       d3.select(e.target)
         .attr("stroke", "mediumseagreen")
-        .attr("stroke-width", 4)
+        .attr("stroke-opacity", .6)
+        .attr("stroke-width", 3)
         .raise();
 
-      const bbox = e.target.getBBox();
-      const centroid = [bbox.x + bbox.width / 2, bbox.y + bbox.height / 2];
 
       const row = spatialDataMap.get(feature.id)
       const text = `
-        ${feature.properties.name}</br>
+        <b>${feature.properties.name}, ${state.conceptMappings.states[feature.id.slice(0,2)].short}</b></br>
         ${row[state.measure].toFixed(2)}
       `
 
-      tooltip.show(text, ...centroid)
+      tooltip.show(e.target,text)
 
     })
     .on("mouseleave.interact", (e, d) => {
@@ -252,7 +256,7 @@ function update() {
 
   state.featureCollection = state.level == "county" ? state.countyGeo : state.stateGeo
   const choroplethFigure = createChoroplethPlot(state.mapData, state.featureCollection, {
-    indexField, measureField: state.measure,
+    indexField, measureField: state.measure, scheme: state.scheme,
     overlayFeatureCollection: state.level == "county" ? state.stateGeo : null
   })
   const choropleth = choroplethFigure.plot 
@@ -308,6 +312,7 @@ function updateSidePlots() {
 async function initialDataLoad() {
   state.stateGeo = await d3.json("data/states.json") 
   state.countyGeo =  await d3.json("data/counties.json")
+  state.conceptMappings = await d3.json("data/conceptMappings.json")
 
   await loadData("2020")
 
@@ -321,6 +326,9 @@ async function initialDataLoad() {
   state.measureOptions = MEASURES
   state.levelOptions = LEVELS
   state.selectYearOptions = YEARS
+  state.scheme = "RdYlBu"
+  state.schemeOptions = [...Object.entries(state.conceptMappings.colorSchemes)].map(([k,v]) => ({text: v, value: k}))
+  console.log(state.schemeOptions)
 }
 
 async function loadData(year) {

@@ -12,8 +12,11 @@ export function createQuantilePlot(data, options={}) {
     xLabel: "quantile",
     yLabel: null,
     colorDomain: null,
+    yStartZero: true,
     ...options 
   }
+
+  console.log(options.color)
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
@@ -36,12 +39,6 @@ export function createQuantilePlot(data, options={}) {
   marks.push(Plot.dot(data, {
     x: "quantile", y: options.valueField, 
     stroke: options.color, fill: options.color, r:4, strokeWidth:3,
-    title: (d) => {
-      const display = Object.entries(d).reduce((pv, cv, ci) => {
-        return (ci ? `${pv}\n` : pv) + `${cv[0]}: ${cv[1]}`
-      }, '')
-      return display
-    }
   }))
 
   if (options.intervalFields) {
@@ -56,13 +53,18 @@ export function createQuantilePlot(data, options={}) {
     colorOpt.domain = options.colorDomain
   }
 
+  const yDomain = [
+    options.yStartZero ? 0 : d3.min(data, d => d[options.intervalFields[0]]),
+    d3.max(data, d => d[options.intervalFields[1]])
+  ]
+
   const plotOptions = {
     width: 820,
     height: 640,
     style: {fontSize: "14px"},
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
-    y: {ticks: 8, grid: true, label: options.yLabel},
+    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
     marginLeft: 80,
     marginTop: 50,
     marginBottom: 110,
