@@ -103,9 +103,7 @@ function hookInputs() {
   }, "showTable")
 }
 
-function queryData() {
-  console.log({data: state.data, state})
-  
+function queryData() {  
   let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 

@@ -1,5 +1,44 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm'
 
+
+export function addPopperTooltip(element) {
+    console.log(Popper)
+
+    const tooltipElement = document.createElement("div")
+    tooltipElement.classList.add("custom-tooltip")
+    element.appendChild(tooltipElement)
+  
+    let popper = null
+    function show(targetElement, html) {
+      if (popper) popper.destroy()
+      popper = Popper.createPopper(targetElement, tooltipElement, {
+        placement: "bottom-start",
+        modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [8, 8],
+              },
+            },
+            {
+                name: 'preventOverflow',
+                options: {
+                  boundary: element,
+                },
+            },
+          ],
+      })
+      tooltipElement.innerHTML = html 
+      tooltipElement.style.display = "block"
+    }
+  
+    function hide() {
+      tooltipElement.style.display = "none"
+    }
+  
+    return {show, hide}
+  }
 
 export function addTooltip(svgSelect, elementSelect=null) {
     const mouseOffset = [10,10]

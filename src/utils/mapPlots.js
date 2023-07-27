@@ -13,6 +13,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   options = {
     drawBorders: false,
+    scheme: "RdYlBu",
     ...options
   }
 
@@ -21,7 +22,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   const meanValue = d3.mean(spatialData, (d) => d[options.measureField])
   const maxValue = d3.max(spatialData, (d) => d[options.measureField])
   const color = {
-    scheme: "rdylbu",
+    scheme: options.scheme,
     pivot: meanValue,
     symmetric: true,
     reverse: true,
@@ -56,7 +57,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
-    "RdYlBu", options.measureField, null, true)
+    options.scheme, options.measureField, null, true)
 
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
