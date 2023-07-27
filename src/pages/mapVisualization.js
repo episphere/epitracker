@@ -115,21 +115,25 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-flex flex-row">
-              <div class="position-relative graph">
+              <div class="position-relative graph" id="plot-map-container">
                 <div id="plot-map"></div>
                 <div>
                   <p id="map-title">Figure 1. This visualization is showing <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
                 </div>
               </div>
               <div class="d-flex flex-column gap-5">
-                <div class="position-relative graph">
-                  <div id="plot-histogram"></div>
-                </div>
+                <div id="plot-histogram-container">
+                  <div class="position-relative graph">
+                    <div id="plot-histogram"></div>
+                  </div>
                   <p id="map-title">Figure 2. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
-                <div class="position-relative graph">
-                  <div id="plot-demographic"></div>
                 </div>
+                <div id="plot-demographic-container">
+                  <div class="position-relative graph">
+                    <div id="plot-demographic"></div>
+                  </div>
                   <p id="map-title">Figure 3. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
+                </div>
                </div>
             </div>
             </div>
