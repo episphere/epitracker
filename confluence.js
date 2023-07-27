@@ -4,6 +4,7 @@ import {
   assignNavbarActive
 } from "./src/shared.js";
 import { aboutConfluence, renderOverView } from "./src/pages/about.js";
+//import { renderInstructionPage} from "./src/pages/instruction.js"
 import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
@@ -57,7 +58,19 @@ const manageRouter = async () => {
     assignNavbarActive(element);
     aboutConfluence("overview");
     renderOverView();
-  } else if (hash === "#visualization/quantile") {
+  } 
+  // else if (hash === "#instruction") {
+  //   const element = document.getElementById("instructionPage");
+  //   if (!element) return;
+  //   if (element.classList.contains("navbar-active")) return;
+  //   document.title = "Epitracker - Instruction";
+  //   assignNavbarActive(element);
+  //   //confluenceDiv.innerHTML = renderInstructionPage()
+    
+  //   //aboutConfluence("overview");
+  //   renderInstructionPage();
+  // }
+  else if (hash === "#visualization/quantile") {
     const element = document.getElementById("quantile-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;

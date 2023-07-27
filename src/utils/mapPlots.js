@@ -161,7 +161,7 @@ export function createDemographicsPlot(data, options = {}) {
       grid: true,
       axis: "right",
       // label: options.measureField + " ↑",
-      label: 'Count',
+      label: 'Mortality rate per 100,000',
       tickFormat: tickFormat,
     },
     x: { domain: domainValues, tickFormat: options.xTickFormat },
@@ -206,7 +206,7 @@ export function createHistogramPlot(data, options={}) {
     },
     marginBottom: 40,
     x: { label: dic[options.measureField] + " →", tickFormat: tickFormat },
-    y: { label: 'count' },
+    y: { label: 'number of counties' },
     marks: [
       Plot.rectY(
         data,

@@ -12,12 +12,6 @@ export const aboutConfluence = (activeTab, showDescripton) => {
         "about",
 
         activeTab
-
-        // "Overview"
-
-        // "Description of Studies",
-
-        // "Scientific Committee"
       )
     : `<div id='overview'></div>`;
   console.log({ navBarItems });

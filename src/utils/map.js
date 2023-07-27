@@ -336,14 +336,14 @@ async function loadData(year) {
   let data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
   data = data.map((row) => {
     MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))
-    const {stateName, county} = mapStateAndCounty(row['state_fips'], row['county_fips'], state)
+    const {stateName, countyName} = mapStateAndCounty(row['state_fips'], row['county_fips'], state)
 
-    return {...row, state: stateName, county}
+    return {...row, state: stateName, county: countyName}
   })
+
   state.data = [...data] || []
   return data
 }
-
 
 function l(word, sub = null) {
   if (sub == null) {
@@ -374,16 +374,15 @@ const removeDownloadGraphEventListeners = () => {
     state.downloadGraphRef.pngFigureTreeButton.removeEventListener('click', state.downloadGraphRef.pngFigureTreeCallback)
   }
 }
-
 function downloadMapGraphs() {
   removeDownloadGraphEventListeners()
 
   const downloadFigureOnePNG = () => {
     console.log('Downloading 1')
-    downloadGraph('plot-map', 'map', 'map-loading')
+    downloadGraph('plot-map-container', 'map', 'map-loading')
   }
-  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram', 'histogram', 'map-loading')
-  const downloadFigureThreePNG = () => downloadGraph('plot-demographic', 'histogram', 'map-loading')
+  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram-container', 'histogram', 'map-loading')
+  const downloadFigureThreePNG = () => downloadGraph('plot-demographic-container', 'histogram', 'map-loading')
 
   const downloadFigureOneButton = document.getElementById(
     "downloadFigureOnePNG"

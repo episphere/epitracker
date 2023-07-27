@@ -120,21 +120,25 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-flex flex-row">
-              <div class="position-relative graph">
+              <div class="position-relative graph" id="plot-map-container">
                 <div id="plot-map"></div>
                 <div>
-                  <p id="map-title">Figure 1. This visualization is showing <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
+                  <p id="map-title">Figure 1. Map of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>
                 </div>
               </div>
               <div class="d-flex flex-column gap-5">
-                <div class="position-relative graph">
-                  <div id="plot-histogram"></div>
+                <div id="plot-histogram-container">
+                  <div class="position-relative graph">
+                    <div id="plot-histogram"></div>
+                  </div>
+                     <p id="map-title">Figure 2. Histogram showing the frequency of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>
                 </div>
-                  <p id="map-title">Figure 2. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
-                <div class="position-relative graph">
-                  <div id="plot-demographic"></div>
+                <div id="plot-demographic-container">
+                  <div class="position-relative graph">
+                    <div id="plot-demographic"></div>
+                  </div>
+                  <p id="map-title">Figure 3. <b data-map-item="measure">measure</b> <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer morality rate by <b data-map-item="selectSex">sex</b> sex, <b data-map-item="selectRace">race</b> race and ethnicity, <b data-map-item="selectYear">Year</b>.</p>
                 </div>
-                  <p id="map-title">Figure 3. This visualization shows <b data-map-item="measure">measure</b> for <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b> cancer cases for <b data-map-item="selectSex">sex</b> sex <b data-map-item="selectRace">race</b> race at the <b data-map-item="level">level</b> level.</p>
                </div>
             </div>
             </div>

@@ -13,6 +13,11 @@ export const navBarMenutemplate = () => {
             About
             </a>            
         </div>
+       <!--- <div class="grid-elements">
+            <a class="nav-link nav-menu-links white-font" href="#instruction" id="instructionPage">
+            Instruction
+            </a>            
+        </div>-->
         <div class="grid-elements">
            <a class="nav-link nav-menu-links white-font" href="#quantile-visualization" title="Quantile Visualization" id="quantile-visualization">
            Quantile Visualization
@@ -23,28 +28,6 @@ export const navBarMenutemplate = () => {
          Quantile Visualization
          </a>
        </div>
-         <!---<div class="grid-elements">
-             <a class="nav-link nav-menu-links white-font" href="#data_access/overview" title="Consortia" id="dataRequest">
-                 Consortia
-             </a>
-         </div>
-         <div class="grid-elements">
-           <a class="nav-link nav-menu-links white-font" href="#researchStudies" title="Research Studies" id="data2">
-           Research Studies
-           </a>
-         </div>
-
-         <div class="grid-elements" style="display: none;">
-           <a class="nav-link nav-menu-links white-font" href="#data_access/form" title="Data Form" id="dataForm"> 
-             Data Form
-           </a>
-         </div>
-
-         <div class="grid-elements">
-           <a class="nav-link nav-menu-links white-font" href="#publicationpage" title="DCEG Publications" id="publicationID">
-           DCEG Publications
-           </a>
-         </div>--->
         ${JSON.parse(localStorage.parms).login.split('@')[1].includes('deloitte.com') || JSON.parse(localStorage.parms).login.split('@')[1].includes('nih.gov')
           ?`<div class="grid-elements dropdown">
             <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font" title="My DCEG Publication Data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -60,35 +43,12 @@ export const navBarMenutemplate = () => {
             </div>
           </div>`
           :``
-        }
-        <!---<div class="grid-elements">
-          <a class="nav-link nav-menu-links white-font" href="#myDCEG/upload" title="My DCEG Publication Data - Upload" id="myDCEGID_upload">
-            Upload
-          </a>
-        </div>--->
+        }      
         <div class="grid-elements">
             <a class="nav-link nav-menu-links white-font" rel="noopener" target="_blank" href="https://github.com/episphere/dataplatform/issues" title="BCRPP github issues">
                 Report issue
             </a>
-        </div>
-
-                <!---<div class='grid-elements dropdown'>
-                    <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Consortia
-                    </button>
-                    <div class="dropdown-menu navbar-dropdown" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/overview" title="Consortia" id="dataRequest"> Consortia </a>
-                    ${
-                      showProjectConceptForm
-                        ? `<a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/form" title="Data Form" id="dataForm"> </a>
-                    `
-                        : ""
-                    }
-                    ${
-                      viewSubmissionsShow
-                        ? `<a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#userSubmissions" title='View Your Submissions' id="userSubmissions"> </a>`
-                        : ""
-                    }--->
+        </div>             
                     <!---a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/accepted" title="Accepted Studies" id="dataAccepted"> Accepted </a--->
                     ${
                       emailforChair.indexOf(

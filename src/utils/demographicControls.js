@@ -65,5 +65,5 @@ export function mapStateAndCounty(stateFips, countyFips, state) {
   const stateName = foundedState ? foundedState.properties.name : 'All'
   const countyName = foundedCounty ? foundedCounty.properties.name : 'All'
 
-  return {state: stateName, county: countyName}
+  return {stateName, countyName}
 }
