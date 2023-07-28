@@ -29,6 +29,10 @@ function getShowHideTable() {
         Show Table
       </label>
     </div>
+    <label for="schemeSelect">Color Scheme</label>
+    <select id="schemeSelect" class="form-select mb-2" aria-label="Scheme select" disabled>
+      <option hidden >Awaiting data...</option>
+    </select>
   `
 }
 

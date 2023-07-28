@@ -66,11 +66,7 @@ export const renderMapVisualizationPage = () => {
                   <option >State</option>
                 </select>
 
-                <label for="schemeSelect">Color Scheme</label>
-                <select id="schemeSelect" class="form-select mb-2" aria-label="Scheme select" disabled>
-                  <option hidden >Awaiting data...</option>
-                </select>
-
+                
               </div>
             </div>
           </div>
