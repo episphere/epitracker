@@ -1,11 +1,13 @@
 export const SETTINGS = {
   GRAPH_TYPE: 'graph-type',
   SHOW_HIDE_TABLE: 'show-hide-table',
+  START_ZERO: 'start-zero',
 }
 
 const SETTINGS_CONTENTS = {
   [SETTINGS.GRAPH_TYPE]: {render: getGraphType},
   [SETTINGS.SHOW_HIDE_TABLE]: {render: getShowHideTable},
+  [SETTINGS.START_ZERO]: {render: getStartZero}
 }
 
 function getGraphType() {
@@ -25,6 +27,21 @@ function getShowHideTable() {
       <input class="form-check-input" type="checkbox" value="" id="showTableCheck">
       <label class="form-check-label" for="showTableCheck">
         Show Table
+      </label>
+    </div>
+    <label for="schemeSelect">Color Scheme</label>
+    <select id="schemeSelect" class="form-select mb-2" aria-label="Scheme select" disabled>
+      <option hidden >Awaiting data...</option>
+    </select>
+  `
+}
+
+function getStartZero() {
+  return `
+    <div class="form-check">
+      <input checked class="form-check-input" type="checkbox" value="" id="startZeroCheck">
+      <label class="form-check-label" for="startZeroCheck">
+        Start Y at 0
       </label>
     </div>
   `

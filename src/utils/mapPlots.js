@@ -13,6 +13,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   options = {
     drawBorders: false,
+    scheme: "RdYlBu",
     ...options
   }
 
@@ -21,7 +22,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   const meanValue = d3.mean(spatialData, (d) => d[options.measureField])
   const maxValue = d3.max(spatialData, (d) => d[options.measureField])
   const color = {
-    scheme: "rdylbu",
+    scheme: options.scheme,
     pivot: meanValue,
     symmetric: true,
     reverse: true,
@@ -52,12 +53,12 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     color: color,
     marks: marks,
   }
-
+  console.log({options, plotOptions})
 
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
-    "RdYlBu", options.measureField, null, true)
-
+    options.scheme, options.measureField, null, true)
+  console.log({options, colorLegend})
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
   figure.appendChild(colorLegend)
@@ -160,7 +161,7 @@ export function createDemographicsPlot(data, options = {}) {
       grid: true,
       axis: "right",
       // label: options.measureField + " ↑",
-      label: 'Count',
+      label: 'Mortality rate per 100,000',
       tickFormat: tickFormat,
     },
     x: { domain: domainValues, tickFormat: options.xTickFormat },
@@ -205,7 +206,7 @@ export function createHistogramPlot(data, options={}) {
     },
     marginBottom: 40,
     x: { label: dic[options.measureField] + " →", tickFormat: tickFormat },
-    y: { label: 'count' },
+    y: { label: 'number of counties' },
     marks: [
       Plot.rectY(
         data,

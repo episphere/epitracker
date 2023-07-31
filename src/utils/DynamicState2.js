@@ -39,7 +39,8 @@ export class State {
       listener = {properties: new Set(properties), key, fs: []}
       this.listeners.push(listener)
     }
-    listener.fs.push(f)
+    //listener.fs.push(f)
+    listener.fs = [f]
     this.listeners.sort((a,b) => a.properties.size - b.properties.size)
   }
 
