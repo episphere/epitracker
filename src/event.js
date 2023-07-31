@@ -34,13 +34,13 @@ import {
 } from "./shared.js";
 import { renderDataSummary } from "./pages/about.js";
 import { variables } from "./variables.js";
-import {
-  template as dataGovernanceTemplate,
-  addFields,
-  dataGovernanceLazyLoad,
-  dataGovernanceCollaboration,
-  dataGovernanceProjects, testingDataGov
-} from "./pages/dataGovernance.js";
+// import {
+//   template as dataGovernanceTemplate,
+//   // addFields,
+//   dataGovernanceLazyLoad,
+//   dataGovernanceCollaboration,
+//   dataGovernanceProjects, testingDataGov
+// } from "./pages/dataGovernance.js";
 import { myProjectsTemplate } from "./pages/myProjects.js";
 import { createProjectModal } from "./components/modal.js";
 import {
@@ -934,114 +934,6 @@ const checkPermissionLevel = (data) => {
     return array[0].role;
   }
   return null;
-};
-
-export const addEventAddNewCollaborator = () => {
-  const btn1 = document.getElementById("addNewCollaborators");
-  const btn2 = document.getElementById("listCollaborators");
-  const btn3 = document.getElementById("listExtCollaborators");
-  const folderToShare = document.getElementById("folderToShare");
-  btn1.addEventListener("click", () => {
-    const ID = folderToShare.dataset.folderId;
-    const name = folderToShare.dataset.folderName;
-    const type = folderToShare.dataset.objectType;
-    btn1.classList.add("active-tab");
-    btn2.classList.remove("active-tab");
-    btn3.classList.remove("active-tab");
-    const collaboratorModalBody = document.getElementById(
-      "collaboratorModalBody"
-    );
-    collaboratorModalBody.innerHTML = `
-            <form id="addCollaborationForm" method="POST">
-                <div class="modal-body allow-overflow">
-                    <div><h5 class="modal-title">Share <strong>${name}</strong></h5></div>
-                    <br>
-                    <div class="row" id="collaboratorEmails">
-                        ${addFields(1)}
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <button class="btn btn-light" type="button" title="Add more collaborators" id="addMoreEmail" data-counter=1><i class="fas fa-plus"></i> Add</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" title="Submit" class="btn btn-light">Submit</button>
-                    <button type="button" title="Close" class="btn btn-dark" data-dismiss="modal">Close</button>
-                </div>
-            </form>
-        `;
-    const addMoreEmail = document.getElementById("addMoreEmail");
-    addMoreEmail.addEventListener("click", () => {
-      const counter = parseInt(addMoreEmail.dataset.counter) + 1;
-      addMoreEmail.dataset.counter = counter;
-      document
-        .getElementById("collaboratorEmails")
-        .insertAdjacentHTML("beforeend", addFields(counter));
-      if (counter === 5) addMoreEmail.disabled = true;
-    });
-
-    addEventCollaboratorForm(ID, type, name);
-  });
-};
-
-const addEventCollaboratorForm = (ID, type, name) => {
-  const form = document.getElementById("addCollaborationForm");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const showNotification = document.getElementById("showNotification");
-    let template = "";
-    for (let i = 1; i <= 5; i++) {
-      const email = document.getElementById(`shareFolderEmail${i}`);
-      const role = document.getElementById(`folderRole${i}`);
-      if (email && role) {
-        const emails = email.value.split(",");
-        for (let index = 0; index < emails.length; index++) {
-          const login = emails[index].trim();
-          const response = await addNewCollaborator(
-            ID,
-            type,
-            login,
-            role.value.toLowerCase()
-          );
-          top = top + 2;
-          if (response.status === 200 || response.status === 201) {
-            template += notificationTemplate(
-              top,
-              `<span class="successMsg">Added new collaborator</span>`,
-              `${login} added to ${name} as ${role.value} successfully!`
-            );
-          } else {
-            template += notificationTemplate(
-              top,
-              `<span class="errorMsg">Error!</span>`,
-              `Could not add ${login} to ${name} as ${
-                role.value
-              }, <span class="errorMsg">${
-                (await response.json()).message
-              }</span>!!`
-            );
-          }
-        }
-      }
-    }
-    showNotification.innerHTML = template;
-    addEventHideNotification();
-  });
-};
-const addEventHideNotification = () => {
-  const hideNotification = document.getElementsByClassName("hideNotification");
-  Array.from(hideNotification).forEach((btn) => {
-    btn.addEventListener("click", () => {
-      btn.parentNode.parentNode.parentNode.removeChild(
-        btn.parentNode.parentNode
-      );
-      if (top >= 2) top = top - 2;
-    });
-    setTimeout(() => {
-      btn.dispatchEvent(new Event("click"));
-    }, 8000);
-  });
 };
 
 export const addEventDataGovernanceNavBar = (bool) => {
