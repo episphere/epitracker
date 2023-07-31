@@ -13,7 +13,6 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 // ===== Global stuff =====
 
 // Static
-const MEASURES = ["crude_rate", "age_adjusted_rate"]
 const YEARS = ["2018", "2019", "2020", "2018-2020"]
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
@@ -232,17 +231,17 @@ function addPlotInteractivity() {
 
 async function loadData(year) {
   toggleLoading(true)
-
+  const {measureOptions} = state.conceptMappings
   const data = await d3.csv(`data/quantile_data/quantile_data_${year}.csv`)
   data.sort((a,b) => a.quantile - b.quantile)
 
   // TODO: These should be merged and call mapStateAndCounty function
-  data.forEach(row => MEASURES.forEach(measure => row[measure] = parseFloat(row[measure])))
+  data.forEach(row => measureOptions.forEach(measure => row[measure.name] = parseFloat(row[measure.name])))
   data.forEach(row => {
-    for (const measure of ["crude_rate", "age_adjusted_rate"]) {
-      const se = row[measure] / Math.sqrt(row.deaths)
-      row[measure+"_low"] = row[measure] - 1.96*se 
-      row[measure+"_high"] = row[measure] + 1.96*se 
+    for (const measure of measureOptions) {
+      const se = row[measure.name] / Math.sqrt(row.deaths)
+      row[measure.name+"_low"] = row[measure.name] - 1.96*se 
+      row[measure.name+"_high"] = row[measure.name] + 1.96*se 
     }
   })
   state.data = data 
@@ -252,18 +251,19 @@ async function loadData(year) {
 async function initialDataLoad() {
 
   // Load files and put processed data into state 
- 
+  state.conceptMappings = await d3.json("data/conceptMappings.json");
+
   await loadData("2020")
   
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
-  state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
+  state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.abbr])])
   
   const quantileDetails = await d3.json("data/quantile_details.json")
   state.quantileDetailsMap = d3.index(quantileDetails, d => d.field)
 
 
   //  Update the input state 
-  state.measureOptions = MEASURES
+  state.measureOptions = state.conceptMappings.measureOptions
   state.quantileFieldOptions = unique(quantileDetails, d => d.field)
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
   state.selectYearOptions = YEARS

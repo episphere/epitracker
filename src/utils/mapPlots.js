@@ -53,12 +53,12 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     color: color,
     marks: marks,
   }
-
+  console.log({options, plotOptions})
 
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
     options.scheme, options.measureField, null, true)
-
+  console.log({options, colorLegend})
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
   figure.appendChild(colorLegend)

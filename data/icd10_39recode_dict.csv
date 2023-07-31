@@ -1,15 +1,15 @@
-code,name,icd10,
-01,Tuberculosis,A16-A19,
-02,Syphilis,A50-A53,
-03,Human immunodeficiency virus (HIV) disease,B20-B24,
-04,Malignant neoplasms,C00-C97,
-05,Malignant neoplasm of stomach,C16,
-06,"Malignant neoplasms of colon, rectum and anus",C18-C21,
-07,Malignant neoplasm of pancreas,C25,
-08,"Malignant neoplasms of trachea, bronchus and lung",C33-C34,
-09,Malignant neoplasm of breast,C50,
-10,"Malignant neoplasms of cervix uteri, corpus uteri and ovary",C53-C56,
-11,Malignant neoplasm of prostate,C61,
+code,name,icd10,abbr
+01,Tuberculosis,A16-A19,A
+02,Syphilis,A50-A53,B
+03,Human immunodeficiency virus (HIV) disease,B20-B24,C
+04,Malignant neoplasms,C00-C97,D
+05,Malignant neoplasm of stomach,C16,E
+06,"Malignant neoplasms of colon, rectum and anus",C18-C21,F
+07,Malignant neoplasm of pancreas,C25,G
+08,"Malignant neoplasms of trachea, bronchus and lung",C33-C34,H
+09,Malignant neoplasm of breast,C50,I
+10,"Malignant neoplasms of cervix uteri, corpus uteri and ovary",C53-C56,J
+11,Malignant neoplasm of prostate,C61,k
 12,Malignant neoplasms of urinary tract,C64-C68,
 13,Non-Hodgkin's lymphoma,C82-C85,
 14,Leukemia,C91-C95,

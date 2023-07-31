@@ -1,21 +1,30 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
-import { State } from "./DynamicState2.js"
-import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
-import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js"
-import { createChoroplethPlot, createDemographicsPlot, createHistogramPlot } from "./mapPlots.js"
+import { State } from "./DynamicState2.js";
+import {
+  hookDemographicInputs,
+  syncDataDependentInputs,
+  mapStateAndCounty,
+  COMPARABLE_FIELDS,
+  SELECTABLE_FIELDS,
+} from "./demographicControls.js";
+import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
+import {
+  createChoroplethPlot,
+  createDemographicsPlot,
+  createHistogramPlot,
+} from "./mapPlots.js";
 import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
-import {paginationHandler, dataPagination} from '../components/pagination.js'
-import {renderTable} from '../components/table.js'
-import { downloadGraph, downloadFiles }  from "./download.js"
+import { paginationHandler, dataPagination } from "../components/pagination.js";
+import { renderTable } from "../components/table.js";
+import { downloadGraph, downloadFiles } from "./download.js";
 
 // Static
-const MEASURES = ["crude_rate", "age_adjusted_rate"]
-const LEVELS = ["state", "county"]
-const YEARS = ["2018", "2019", "2020", "2018-2020"]
+const LEVELS = ["state", "county"];
+const YEARS = ["2018", "2019", "2020", "2018-2020"];
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
-    key: '#causeSelectSelect',
+    key: "#causeSelectSelect",
     options: {
       sorter: (items) => {
         return items.sort((a, b) => {
@@ -31,115 +40,136 @@ const SEARCH_SELECT_INPUT_QUERIES = [
           // names must be equal
           return 0;
         });
-
-      }
-    }
-  }
-]
+      },
+    },
+  },
+];
 
 // Note: Using standard object properties unless listeners required
 
 let state;
 
 export async function start() {
-  toggleLoading(true)
+  toggleLoading(true);
 
-  state = new State()
-  state.defineDynamicProperty("data", [])
+  state = new State();
+  state.defineDynamicProperty("data", []);
 
-  hookInputs()
-  await initialDataLoad()
+  hookInputs();
+  await initialDataLoad();
 
-  state.comparePrimaryOptions = COMPARABLE_FIELDS
+  state.comparePrimaryOptions = COMPARABLE_FIELDS;
 
   state.downloadGraphRef = {
-    pngFigureOneButton: null, 
+    pngFigureOneButton: null,
     pngFigureOneCallback: null,
-    pngFigureTwoButton: null, 
+    pngFigureTwoButton: null,
     pngFigureTwoCallback: null,
-    pngFigureThreeButton: null, 
-    pngFigureThreeCallback: null
-  }
+    pngFigureThreeButton: null,
+    pngFigureThreeCallback: null,
+  };
 
   state.addListener(() => {
-    loadData(state.selectYear)
-  }, "selectYear")
+    loadData(state.selectYear);
+  }, "selectYear");
 
   state.addListener(() => {
-    queryData()
-    update()
-  }, "data")
+    queryData();
+    update();
+  }, "data");
 
   state.addListener(() => {
-    update()
-  }, "scheme")
+    update();
+  }, "scheme");
 
-  state.addListener(() => {
-    queryData()
-    syncDataDependentInputs(state)
-    update()
-    updateMapTitle()
-  }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", "measure", "level")
-  
-  state.inputsActive = true
-  state.comparePrimary = "race"
+  state.addListener(
+    () => {
+      queryData();
+      syncDataDependentInputs(state);
+      update();
+      updateMapTitle();
+    },
+    "comparePrimary",
+    "compareSecondary",
+    "selectCause",
+    "selectSex",
+    "selectRace",
+    "measure",
+    "level"
+  );
 
-  toggleSidebar('plot-map')
+  state.inputsActive = true;
+  state.comparePrimary = "race";
 
+  toggleSidebar("plot-map");
 }
 
 function toggleLoading(loading) {
   if (loading) {
-    document.getElementById("plots-container").style.visibility = "hidden"
-    document.getElementById("loader-container").style.visibility = "visible"
-
+    document.getElementById("plots-container").style.visibility = "hidden";
+    document.getElementById("loader-container").style.visibility = "visible";
   } else {
-    document.getElementById("plots-container").style.visibility = "visible"
-    document.getElementById("loader-container").style.visibility = "hidden"
+    document.getElementById("plots-container").style.visibility = "visible";
+    document.getElementById("loader-container").style.visibility = "hidden";
   }
 }
 
 function updateMapTitle() {
   if (!state?.properties) return;
-  
-  const mapSelectionElements = document.querySelectorAll("[data-map-item]")
 
-  mapSelectionElements.forEach(element => {
-    const {mapItem, optionsKey} = element.dataset
+  const mapSelectionElements = document.querySelectorAll("[data-map-item]");
+
+  mapSelectionElements.forEach((element) => {
+    const { mapItem, optionsKey } = element.dataset;
     let mapItemValue = state.properties[mapItem];
     if (optionsKey) {
       const options = state.properties[optionsKey];
-      const selectedOption = options.find(option => option.value === mapItemValue)
+      const selectedOption = options.find(
+        (option) => option.value === mapItemValue
+      );
       if (selectedOption) {
-        mapItemValue = selectedOption.text
+        mapItemValue = selectedOption.text;
       }
     }
-    
-    element.innerHTML = mapItemValue
-  })
+
+    element.innerHTML = mapItemValue;
+  });
 }
 
 function hookInputs() {
-  state.defineDynamicProperty("level", "county")
+  state.defineDynamicProperty("level", "county");
 
-  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES)
-  hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#yearSelectSelect", "#causeSelectSelect", 
-    "#sexSelectSelect", "#raceSelectSelect","#measureSelect", "#levelSelect", "#schemeSelect"], state, "inputsActive")
+  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES);
+  hookInputActivation(
+    [
+      "#comparePrimarySelect",
+      "#compareSecondarySelect",
+      "#yearSelectSelect",
+      "#causeSelectSelect",
+      "#sexSelectSelect",
+      "#raceSelectSelect",
+      "#measureSelect",
+      "#levelSelect",
+      "#schemeSelect",
+    ],
+    state,
+    "inputsActive"
+  );
 
-  hookSelect("#measureSelect", state, "measureOptions", "measure")
-  hookSelect("#levelSelect", state, "levelOptions", "level")
-  hookSelect("#schemeSelect", state, "schemeOptions", "scheme")
-  
-  hookCheckbox("#showTableCheck", state, "showTable")
+  hookSelect("#measureSelect", state, "measureOptions", "measure");
+  hookSelect("#levelSelect", state, "levelOptions", "level");
+  hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
 
+  hookCheckbox("#showTableCheck", state, "showTable");
+  console.log({ state });
   state.addListener(() => {
-    document.getElementById("map-table-wrapper").style.display = state.showTable ? "block" : "none"
-  }, "showTable")
+    document.getElementById("map-table-wrapper").style.display = state.showTable
+      ? "block"
+      : "none";
+  }, "showTable");
 }
 
 function queryData() {
-  
-
   //  Get data for map
 
   let mapData = [...state.data].filter(
@@ -155,16 +185,15 @@ function queryData() {
   } else {
     mapData = mapData.filter((d) => d.county_fips == "All");
   }
-  mapData = mapData.filter(row => Number.isFinite(row[state.measure]))
-  state.mapData = [...mapData]
-
+  mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
+  state.mapData = [...mapData];
 
   // Get data for demographic plot
- 
-  state.demographicData = getDemographicData()
-} 
 
-function getDemographicData(highlight=null) {
+  state.demographicData = getDemographicData();
+}
+
+function getDemographicData(highlight = null) {
   let stateFips = "All";
   let countyFips = "All";
   if (highlight) {
@@ -180,9 +209,7 @@ function getDemographicData(highlight=null) {
   );
 
   const stratifySet = new Set(
-    [state.comparePrimary, state.compareSecondary].filter(
-      (d) => d != "none"
-    )
+    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
   );
   SELECTABLE_FIELDS.forEach((field) => {
     if (stratifySet.has(field)) {
@@ -194,155 +221,177 @@ function getDemographicData(highlight=null) {
     }
   });
 
-  return demographicData
+  return demographicData;
 }
 
 function addPlotInteractivity() {
-  const indexField = state.level + "_fips"
+  const indexField = state.level + "_fips";
   const spatialDataMap = d3.index(state.mapData, (d) => d[indexField]);
 
-  const plotSelect = d3.select(state.choroplethPlot)
+  const plotSelect = d3.select(state.choroplethPlot);
 
-  const gSelect = d3
-    .select(plotSelect.selectAll("g[aria-label='geo'").nodes()[0])
+  const gSelect = d3.select(
+    plotSelect.selectAll("g[aria-label='geo'").nodes()[0]
+  );
 
-  const geoSelect = gSelect
-    .selectAll("path")
+  const geoSelect = gSelect.selectAll("path");
 
-  const tooltip = addPopperTooltip(document.getElementById("plot-map"))
+  const tooltip = addPopperTooltip(document.getElementById("plot-map"));
 
-  const previousStroke = null
+  const previousStroke = null;
   gSelect.on("mouseleave.interact", () => {
-    state.plotHighlight = null
-    tooltip.hide()
-  })
+    state.plotHighlight = null;
+    tooltip.hide();
+  });
 
   geoSelect
     .on("mouseover.interact", (e, d) => {
-      const feature = state.featureCollection.features[d]
-      state.plotHighlight = feature.id
+      const feature = state.featureCollection.features[d];
+      state.plotHighlight = feature.id;
       d3.select(e.target)
         .attr("stroke", "mediumseagreen")
-        .attr("stroke-opacity", .6)
+        .attr("stroke-opacity", 0.6)
         .attr("stroke-width", 3)
         .raise();
 
-
-      const row = spatialDataMap.get(feature.id)
+      const row = spatialDataMap.get(feature.id);
       const text = `
-        <b>${feature.properties.name}, ${state.conceptMappings.states[feature.id.slice(0,2)].short}</b></br>
+        <b>${feature.properties.name}, ${
+        state.conceptMappings.states[feature.id.slice(0, 2)].short
+      }</b></br>
         ${row[state.measure].toFixed(2)}
-      `
+      `;
 
-      tooltip.show(e.target,text)
-
+      tooltip.show(e.target, text);
     })
     .on("mouseleave.interact", (e, d) => {
       d3.select(e.target)
         .attr("stroke", previousStroke)
         .attr("stroke-width", 0.5)
         .raise();
-
     });
 
-  state.defineDynamicProperty("plotHighlight")
+  state.defineDynamicProperty("plotHighlight");
   state.addListener(() => {
-    updateSidePlots()
-  }, "plotHighlight")
+    updateSidePlots();
+  }, "plotHighlight");
 }
 
 function update() {
-  const indexField = state.level + "_fips"
+  const indexField = state.level + "_fips";
 
-  state.featureCollection = state.level == "county" ? state.countyGeo : state.stateGeo
-  const choroplethFigure = createChoroplethPlot(state.mapData, state.featureCollection, {
-    indexField, measureField: state.measure, scheme: state.scheme,
-    overlayFeatureCollection: state.level == "county" ? state.stateGeo : null
-  })
-  const choropleth = choroplethFigure.plot 
-  const figure = choroplethFigure.figure
+  state.featureCollection =
+    state.level == "county" ? state.countyGeo : state.stateGeo;
+  const choroplethFigure = createChoroplethPlot(
+    state.mapData,
+    state.featureCollection,
+    {
+      indexField,
+      measureField: state.measure,
+      scheme: state.scheme,
+      overlayFeatureCollection: state.level == "county" ? state.stateGeo : null,
+    }
+  );
+  const choropleth = choroplethFigure.plot;
+  const figure = choroplethFigure.figure;
 
-  const mapPlotContainer = document.getElementById("plot-map")
-  mapPlotContainer.innerHTML = '' 
-  mapPlotContainer.appendChild(figure)
+  const mapPlotContainer = document.getElementById("plot-map");
+  mapPlotContainer.innerHTML = "";
+  mapPlotContainer.appendChild(figure);
 
-  state.choroplethPlot = choropleth
-  updateSidePlots(indexField)
+  state.choroplethPlot = choropleth;
+  updateSidePlots(indexField);
 
-  addPlotInteractivity()
+  addPlotInteractivity();
 
-  downloadMapGraphs()
-  
+  downloadMapGraphs();
+
   downloadFiles(state.mapData, "first_data");
   renderTable("map-table", dataPagination(0, 200, state.mapData));
   paginationHandler(state.mapData, 200);
 
-  updateMapTitle()
-  
-  toggleLoading(false)
+  updateMapTitle();
+
+  toggleLoading(false);
 }
 
 function updateSidePlots() {
-  const spatialIndexField = state.level + "_fips"
+  const spatialIndexField = state.level + "_fips";
 
-  const demographicHighlightData = getDemographicData(state.plotHighlight)
+  const demographicHighlightData = getDemographicData(state.plotHighlight);
   const demographicsPlot = createDemographicsPlot(demographicHighlightData, {
     referenceData: state.demographicData,
-    measureField: state.measure, comparePrimary: state.comparePrimary, compareSecondary: state.compareSecondary,
-    xTickFormat: d => l(d), facetTickFormat: d => l(d)
-  })
+    measureField: state.measure,
+    comparePrimary: state.comparePrimary,
+    compareSecondary: state.compareSecondary,
+    xTickFormat: (d) => l(d),
+    facetTickFormat: (d) => l(d),
+  });
 
-  const demographicsPlotContainer = document.getElementById("plot-demographic")
-  demographicsPlotContainer.innerHTML = ''
-  demographicsPlotContainer.appendChild(demographicsPlot)
+  const demographicsPlotContainer = document.getElementById("plot-demographic");
+  demographicsPlotContainer.innerHTML = "";
+  demographicsPlotContainer.appendChild(demographicsPlot);
 
-  const highlightRow = state.mapData.filter(d => d[spatialIndexField] == state.plotHighlight).slice(0,1)
+  const highlightRow = state.mapData
+    .filter((d) => d[spatialIndexField] == state.plotHighlight)
+    .slice(0, 1);
   const histogramPlot = createHistogramPlot(state.mapData, {
-    measureField: state.measure, markLine: highlightRow
-  })
+    measureField: state.measure,
+    markLine: highlightRow,
+  });
 
   const histogramPlotContainer = document.getElementById("plot-histogram");
-  histogramPlotContainer.innerHTML = ''
-  histogramPlotContainer.appendChild(histogramPlot)
+  histogramPlotContainer.innerHTML = "";
+  histogramPlotContainer.appendChild(histogramPlot);
 
-  state.demographicsPlot = demographicsPlot
-  state.histogramPlot = histogramPlot
+  state.demographicsPlot = demographicsPlot;
+  state.histogramPlot = histogramPlot;
 }
 
 async function initialDataLoad() {
-  state.stateGeo = await d3.json("data/states.json") 
-  state.countyGeo =  await d3.json("data/counties.json")
-  state.conceptMappings = await d3.json("data/conceptMappings.json")
+  state.stateGeo = await d3.json("data/states.json");
+  state.countyGeo = await d3.json("data/counties.json");
+  state.conceptMappings = await d3.json("data/conceptMappings.json");
 
-  await loadData("2020")
+  await loadData("2020");
 
-  const causeDictData = await d3.csv("data/icd10_39recode_dict.csv")
+  const causeDictData = await d3.csv("data/icd10_39recode_dict.csv");
 
-  
-  state.dictionary = await d3.json("data/dictionary.json")
-  state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.name])])
-  
-  //  Update the input state 
-  state.measureOptions = MEASURES
-  state.levelOptions = LEVELS
-  state.selectYearOptions = YEARS
-  state.scheme = "RdYlBu"
-  state.schemeOptions = [...Object.entries(state.conceptMappings.colorSchemes)].map(([k,v]) => ({text: v, value: k}))
-  console.log(state.schemeOptions)
+  state.dictionary = await d3.json("data/dictionary.json");
+  state.causeMap = new Map([
+    ["All", "All"],
+    ...causeDictData.map((row) => [row.code, row.abbr]),
+  ]);
+
+  //  Update the input state
+  state.measureOptions = state.conceptMappings.measureOptions;
+  state.levelOptions = LEVELS;
+  state.selectYearOptions = YEARS;
+  state.scheme = "RdYlBu";
+  state.schemeOptions = [
+    ...Object.entries(state.conceptMappings.colorSchemes),
+  ].map(([k, v]) => ({ text: v, value: k }));
+  console.log({state: JSON.parse(JSON.stringify(state))});
 }
 
 async function loadData(year) {
-  toggleLoading(true)
-  let data =  await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`)
+  toggleLoading(true);
+  const {measureOptions} = state.conceptMappings
+
+  let data = await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`);
   data = data.map((row) => {
-    MEASURES.forEach((field) => (row[field] = parseFloat(row[field])))
-    const {stateName, countyName} = mapStateAndCounty(row['state_fips'], row['county_fips'], state)
+    measureOptions.forEach((field) => (row[field.name] = parseFloat(row[field.name])));
+    const { stateName, countyName } = mapStateAndCounty(
+      row["state_fips"],
+      row["county_fips"],
+      state
+    );
 
-    return {...row, state: stateName, county: countyName}
-  })
+    return { ...row, state: stateName, county: countyName };
+  });
 
-  state.data = [...data] || []
-  return data
+  state.data = [...data] || [];
+  return data;
 }
 
 function l(word, sub = null) {
@@ -363,26 +412,37 @@ function l(word, sub = null) {
 
 const removeDownloadGraphEventListeners = () => {
   if (state.downloadGraphRef.pngFigureOneButton) {
-    state.downloadGraphRef.pngFigureOneButton.removeEventListener('click', state.downloadGraphRef.pngFigureOneCallback)
+    state.downloadGraphRef.pngFigureOneButton.removeEventListener(
+      "click",
+      state.downloadGraphRef.pngFigureOneCallback
+    );
   }
 
   if (state.downloadGraphRef.pngFigureTwoButton) {
-    state.downloadGraphRef.pngFigureTwoButton.removeEventListener('click', state.downloadGraphRef.pngFigureTwoCallback)
+    state.downloadGraphRef.pngFigureTwoButton.removeEventListener(
+      "click",
+      state.downloadGraphRef.pngFigureTwoCallback
+    );
   }
 
   if (state.downloadGraphRef.pngFigureTreeButton) {
-    state.downloadGraphRef.pngFigureTreeButton.removeEventListener('click', state.downloadGraphRef.pngFigureTreeCallback)
+    state.downloadGraphRef.pngFigureTreeButton.removeEventListener(
+      "click",
+      state.downloadGraphRef.pngFigureTreeCallback
+    );
   }
-}
+};
 function downloadMapGraphs() {
-  removeDownloadGraphEventListeners()
+  removeDownloadGraphEventListeners();
 
   const downloadFigureOnePNG = () => {
-    console.log('Downloading 1')
-    downloadGraph('plot-map-container', 'map', 'map-loading')
-  }
-  const downloadFigureTwoPNG = () => downloadGraph('plot-histogram-container', 'histogram', 'map-loading')
-  const downloadFigureThreePNG = () => downloadGraph('plot-demographic-container', 'histogram', 'map-loading')
+    console.log("Downloading 1");
+    downloadGraph("plot-map-container", "map", "map-loading");
+  };
+  const downloadFigureTwoPNG = () =>
+    downloadGraph("plot-histogram-container", "histogram", "map-loading");
+  const downloadFigureThreePNG = () =>
+    downloadGraph("plot-demographic-container", "histogram", "map-loading");
 
   const downloadFigureOneButton = document.getElementById(
     "downloadFigureOnePNG"
@@ -390,10 +450,9 @@ function downloadMapGraphs() {
 
   if (downloadFigureOneButton) {
     downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
-    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
-    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton;
+    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG;
   }
-
 
   const downloadFigureTwoButton = document.getElementById(
     "downloadFigureTwoPNG"
@@ -401,8 +460,8 @@ function downloadMapGraphs() {
 
   if (downloadFigureTwoButton) {
     downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
-    state.downloadGraphRef.pngFigureTwoButton = downloadFigureTwoButton
-    state.downloadGraphRef.pngFigureTwoCallback = downloadFigureTwoPNG
+    state.downloadGraphRef.pngFigureTwoButton = downloadFigureTwoButton;
+    state.downloadGraphRef.pngFigureTwoCallback = downloadFigureTwoPNG;
   }
 
   const downloadFigureThreeButton = document.getElementById(
@@ -411,11 +470,11 @@ function downloadMapGraphs() {
 
   if (downloadFigureThreeButton) {
     downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
-    state.downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton
-    state.downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG
+    state.downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton;
+    state.downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG;
   }
 }
 
 function statePropertyName(operation, field) {
-  return operation + field[0].toUpperCase() + field.slice(1)
+  return operation + field[0].toUpperCase() + field.slice(1);
 }
