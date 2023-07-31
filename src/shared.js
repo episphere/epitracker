@@ -1,59 +1,3 @@
-import { config } from "./config.js";
-import { logOut } from "./manageAuthentication.js";
-import { confluence } from "../confluence.js";
-
-export const emailsAllowedToUpdateData = [
-  "ahearntu@nih.gov", "kopchickbp@nih.gov"
-];
-
-export const emailforChair = []//['Roger.Milne@cancervic.org.au','ahearntu@nih.gov', 'garciacm@nih.gov', 'sbehpour@deloitte.com','kopchickbp@nih.gov'];
-//  [
-// "Roger.Milne@cancervic.org.au",
-// "ahearntu@nih.gov",
-// "garciacm@nih.gov",
-// "wraynr@nih.gov",
-// "kopchickbp@nih.gov",
-// ];
-
-export const emailforDACC = []//['pkraft@hsph.harvard.edu', 'garciacm@nih.gov', 'ahearntu@nih.gov',  'mukopadhyays2@nih.gov'];;
-
-// [
-//   "pkraft@hsph.harvard.edu",
-//   "garciacm@nih.gov",
-//   "ahearntu@nih.gov",
-//   "mukopadhyays2@nih.gov",
-// ]; // , 'mia.gaudet@nih.gov', 'troisir@nih.gov', 'mukopadhyays2@nih.gov', 'montserrat.garcia-closas@nih.gov', 'garciacm@nih.gov'];
-
-export const publicDataFileId = 697309514903; //Unknown
-
-export const summaryStatsFileId = 956943662666; //861342561526;//908600664259; //Confluence Summary Statistics (691143057533) => Pilot - BCRP_Summary_Results_AllSubjects.csv (861342561526)
-
-export const summaryStatsCasesFileId = 862065772362; //862065772362; //958869203942; //927803436743; //862065772362; //cases => Pilot - BCRP_Summary_Results_Cases.csv
-
-export const missingnessStatsFileId = 1043323929905; //653087731560; //Unknown, TUA Commented out July 21, file needs to be updated to missingness stats using BCRPP data, not confluence data
-// export const missingnessStatsFileId = 653087731560;
-export const cps2StatsFileId = 908522264695;
-
-export const uploadFormFolder = 155292358576;
-
-export const daccReviewFolder = 161192245846;
-
-export const daccReviewChairFolder = 165542319674;
-
-export const chairReviewFolder = 161191639493;
-
-//export const finalFolder = 162221886155 //Currently using Temp Folder. Final Folder:161192097034;
-
-export const acceptedFolder = 162222239448;
-
-export const deniedFolder = 162221803333;
-
-export const submitterFolder = 162222418449;
-
-export const dataPlatformFolder = 196554876811;
-
-export const publicDataFolder = 196819085811;
-
 export const getFolderItems = async (id) => {
   try {
     const access_token = JSON.parse(localStorage.parms).access_token;
@@ -194,107 +138,107 @@ export const getFileVersions = async (id) => {
   }
 };
 
-export const storeAccessToken = async () => {
-  let parms = searchParms();
-  if (parms.code) {
-    //exchange code for authorization token
-    let clt = {};
-    if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
-    else if (location.origin.indexOf("localhost") !== -1)
-      clt = config.iniAppLocal;
-    else if (location.origin.indexOf(applicationURLs.stage) !== -1)
-      clt = config.iniAppStage;
-    else if (location.origin.indexOf(applicationURLs.prod) !== -1)
-      clt = config.iniAppProd;
-    document.getElementById("confluenceDiv").innerHTML = "";
+// export const storeAccessToken = async () => {
+//   let parms = searchParms();
+//   if (parms.code) {
+//     //exchange code for authorization token
+//     let clt = {};
+//     if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
+//     else if (location.origin.indexOf("localhost") !== -1)
+//       clt = config.iniAppLocal;
+//     else if (location.origin.indexOf(applicationURLs.stage) !== -1)
+//       clt = config.iniAppStage;
+//     else if (location.origin.indexOf(applicationURLs.prod) !== -1)
+//       clt = config.iniAppProd;
+//     document.getElementById("confluenceDiv").innerHTML = "";
 
-    var myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+//     var myHeaders = new Headers();
+//     myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
-    var urlencoded = new URLSearchParams();
-    urlencoded.append("grant_type", "authorization_code");
-    urlencoded.append("client_id", clt.client_id);
-    urlencoded.append("client_secret", clt.server_id);
-    urlencoded.append("code", parms.code);
+//     var urlencoded = new URLSearchParams();
+//     urlencoded.append("grant_type", "authorization_code");
+//     urlencoded.append("client_id", clt.client_id);
+//     urlencoded.append("client_secret", clt.server_id);
+//     urlencoded.append("code", parms.code);
 
-    var requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: urlencoded,
-      redirect: "follow",
-    };
-    const response = await fetch(
-      "https://api.box.com/oauth2/token",
-      requestOptions
-    );
-    if (response.status === 400) {
-      window.history.replaceState({}, "", "./#home");
-    }
-    if (response.status && response.status === 200) {
-      localStorage.parms = JSON.stringify(await response.json());
-      window.history.replaceState({}, "", "./#home");
-      confluence();
-      // document.getElementById("loginBoxAppDev").hidden = true;
-      document.getElementById("loginBoxAppStage").hidden = true;
-      document.getElementById("loginBoxAppEpisphere").hidden = true;
-      document.getElementById("loginBoxAppProd").hidden = true;
-    }
-  } else {
-    if (localStorage.parms) {
-      confluence.parms = JSON.parse(localStorage.parms);
-      if (confluence.parms.access_token === undefined) {
-        localStorage.clear();
-        alert("access token not found, please contact system administrator");
-      }
-    }
-  }
-};
+//     var requestOptions = {
+//       method: "POST",
+//       headers: myHeaders,
+//       body: urlencoded,
+//       redirect: "follow",
+//     };
+//     const response = await fetch(
+//       "https://api.box.com/oauth2/token",
+//       requestOptions
+//     );
+//     if (response.status === 400) {
+//       window.history.replaceState({}, "", "./#home");
+//     }
+//     if (response.status && response.status === 200) {
+//       localStorage.parms = JSON.stringify(await response.json());
+//       window.history.replaceState({}, "", "./#home");
+//       confluence();
+//       // document.getElementById("loginBoxAppDev").hidden = true;
+//       document.getElementById("loginBoxAppStage").hidden = true;
+//       document.getElementById("loginBoxAppEpisphere").hidden = true;
+//       document.getElementById("loginBoxAppProd").hidden = true;
+//     }
+//   } else {
+//     if (localStorage.parms) {
+//       confluence.parms = JSON.parse(localStorage.parms);
+//       if (confluence.parms.access_token === undefined) {
+//         localStorage.clear();
+//         alert("access token not found, please contact system administrator");
+//       }
+//     }
+//   }
+// };
 
-export const refreshToken = async () => {
-  if (!localStorage.parms) return;
-  const parms = JSON.parse(localStorage.parms);
-  let clt = {};
-  if (location.origin.indexOf("localhost") !== -1) clt = config.iniAppLocal;
-  else if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
-  else if (location.origin.indexOf(applicationURLs.stage) !== -1)
-    clt = config.iniAppStage;
-  else if (location.origin.indexOf(applicationURLs.prod) !== -1)
-    clt = config.iniAppProd;
+// export const refreshToken = async () => {
+//   if (!localStorage.parms) return;
+//   const parms = JSON.parse(localStorage.parms);
+//   let clt = {};
+//   if (location.origin.indexOf("localhost") !== -1) clt = config.iniAppLocal;
+//   else if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
+//   else if (location.origin.indexOf(applicationURLs.stage) !== -1)
+//     clt = config.iniAppStage;
+//   else if (location.origin.indexOf(applicationURLs.prod) !== -1)
+//     clt = config.iniAppProd;
 
-  const response = await fetch(`https://api.box.com/oauth2/token`, {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
-    body: `grant_type=refresh_token&refresh_token=${parms.refresh_token}&client_id=${clt.client_id}&client_secret=${clt.server_id}`,
-  });
-  if (response.status === 200) {
-    const newToken = await response.json();
-    const newParms = {
-      ...parms,
-      ...newToken,
-    };
-    localStorage.parms = JSON.stringify(newParms);
-    return true;
-  } else {
-    hideAnimation();
-    sessionExpired();
-  }
-};
+//   const response = await fetch(`https://api.box.com/oauth2/token`, {
+//     headers: {
+//       "Content-Type": "application/x-www-form-urlencoded",
+//     },
+//     method: "POST",
+//     body: `grant_type=refresh_token&refresh_token=${parms.refresh_token}&client_id=${clt.client_id}&client_secret=${clt.server_id}`,
+//   });
+//   if (response.status === 200) {
+//     const newToken = await response.json();
+//     const newParms = {
+//       ...parms,
+//       ...newToken,
+//     };
+//     localStorage.parms = JSON.stringify(newParms);
+//     return true;
+//   } else {
+//     hideAnimation();
+//     sessionExpired();
+//   }
+// };
 
-const searchParms = () => {
-  let parms = {};
-  if (location.search.length > 3) {
-    location.search
-      .slice(1)
-      .split("&")
-      .forEach((pp) => {
-        pp = pp.split("=");
-        parms[pp[0]] = pp[1];
-      });
-  }
-  return parms;
-};
+// const searchParms = () => {
+//   let parms = {};
+//   if (location.search.length > 3) {
+//     location.search
+//       .slice(1)
+//       .split("&")
+//       .forEach((pp) => {
+//         pp = pp.split("=");
+//         parms[pp[0]] = pp[1];
+//       });
+//   }
+//   return parms;
+// };
 
 export const createFolder = async (folderId, folderName) => {
   try {
@@ -1714,53 +1658,6 @@ export const amIViewer = (data, login) => {
     return true;
   }
   return false;
-};
-
-export const inactivityTime = () => {
-  let time;
-  const resetTimer = () => {
-    clearTimeout(time);
-    time = setTimeout(() => {
-      const resposeTimeout = setTimeout(() => {
-        // log out user if they don't respond to warning after 5 mins.
-        logOut();
-      }, 300000);
-
-      const button = document.createElement("button");
-      button.dataset.toggle = "modal";
-      button.dataset.target = "#confluenceMainModal";
-      document.body.appendChild(button);
-      button.click();
-      const header = document.getElementById("confluenceModalHeader");
-      const body = document.getElementById("confluenceModalBody");
-      header.innerHTML = `<h5 class="modal-title">Inactive</h5>`;
-
-      body.innerHTML = `You were inactive for 20 minutes, would you like to extend your session?
-                            <div class="modal-footer">
-                                <button type="button" title="Close" class="btn btn-dark log-out-user" data-dismiss="modal">Log Out</button>
-                                <button type="button" title="Continue" class="btn btn-primary extend-user-session" data-dismiss="modal">Continue</button>
-                            </div>`;
-      document.body.removeChild(button);
-      Array.from(document.getElementsByClassName("log-out-user")).forEach(
-        (e) => {
-          e.addEventListener("click", () => {
-            logOut();
-          });
-        }
-      );
-      Array.from(
-        document.getElementsByClassName("extend-user-session")
-      ).forEach((e) => {
-        e.addEventListener("click", () => {
-          clearTimeout(resposeTimeout);
-          resetTimer;
-        });
-      });
-    }, 1200000);
-  };
-  window.onload = resetTimer;
-  document.onmousemove = resetTimer;
-  document.onkeypress = resetTimer;
 };
 
 export const csvJSON = (csv) => {

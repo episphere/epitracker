@@ -23,7 +23,6 @@ export function downloadHtmlAsImage(html, fileName) {
       toggleLoading('map-loading', 'download-graph-btn', false)
     });
   }, 10)
-  
 }
   
 function downloadImage(image, fileName) {
