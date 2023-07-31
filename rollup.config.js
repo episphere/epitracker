@@ -1,5 +1,5 @@
 export default {
-    input: 'confluence.js',
+    input: 'epitracker.js',
     output: {
         file: 'dist/bundle.js',
         format: 'es'

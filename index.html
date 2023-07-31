@@ -15,7 +15,7 @@
       rel="shortcut icon"
       href="./static/images/favicon.ico"
     />
-    <link type="text/css" rel="stylesheet" href="./static/css/confluence.css" />
+    <link type="text/css" rel="stylesheet" href="./static/css/epitracker.css" />
     <link
       crossorigin="anonymous"
       type="text/css"
@@ -48,8 +48,8 @@
 
   <body>
     <ul class="skip-links">
-      <li><a href="#confluenceNav">Skip to navigation</a></li>
-      <li><a href="#confluenceMain">Skip to main content</a></li>
+      <li><a href="#epitrackerNav">Skip to navigation</a></li>
+      <li><a href="#epitrackerMain">Skip to main content</a></li>
     </ul>
     <header role="banner">
       <div id="header" class="header">
@@ -71,7 +71,7 @@
       <nav
         class="navbar navbar-expand-xl navbar-dark"
         role="navigation"
-        id="confluenceNav"
+        id="epitrackerNav"
       >
         <div class="container">
           <button
@@ -135,7 +135,7 @@
         </div>
       </nav>
     </header>
-    <main role="main" id="confluenceMain">
+    <main role="main" id="epitrackerMain">
       <div
         class="main-summary-row"
         id="loadingAnimation"
@@ -146,14 +146,14 @@
         <div
           aria-live="polite"
           aria-atomic="true"
-          class="row confluence-notification"
+          class="row epitracker-notification"
         >
           <div id="showNotification"></div>
         </div>
 
         <div
           class="modal fade"
-          id="confluenceMainModal"
+          id="epitrackerMainModal"
           data-keyboard="false"
           data-backdrop="static"
           tabindex="-1"
@@ -162,8 +162,8 @@
         >
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-              <div class="modal-header" id="confluenceModalHeader"></div>
-              <div class="modal-body" id="confluenceModalBody"></div>
+              <div class="modal-header" id="epitrackerModalHeader"></div>
+              <div class="modal-body" id="epitrackerModalBody"></div>
             </div>
           </div>
         </div>
@@ -286,7 +286,7 @@
           </div>
         </div>
       </div>
-      <div class="body-min-height" id="confluenceDiv"></div>
+      <div class="body-min-height" id="epitrackerDiv"></div>
     </main>
     <footer role="contentinfo"></footer>
     <!--<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" defer crossorigin="anonymous"></script>-->
@@ -318,7 +318,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
     <script type="module" src="./src/pages/quantileVisualization.js?version=1.0.0.14"></script>
     <script type="module" src="./src/pages/mapVisualization.js?version=1.0.0.14"></script>
-    <script type="module" src="./confluence.js?version=1.2"></script>
+    <script type="module" src="./epitracker.js?version=1.2"></script>
     <!-- <script type="module" src="./dist/bundle.js"></script> -->
   </body>
 </html>

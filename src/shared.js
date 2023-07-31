@@ -56,7 +56,7 @@ export const getFolderInfo = async (id) => {
 
 export const getPublicFile = async (sharedName, id) => {
   let r = await fetch(
-    `https://us-central1-nih-nci-dceg-episphere-dev.cloudfunctions.net/confluencePublicData?fileId=${id}&sharedName=${sharedName}`,
+    `https://us-central1-nih-nci-dceg-episphere-dev.cloudfunctions.net/epitrackerPublicData?fileId=${id}&sharedName=${sharedName}`,
     {
       method: "GET",
     }
@@ -150,7 +150,7 @@ export const getFileVersions = async (id) => {
 //       clt = config.iniAppStage;
 //     else if (location.origin.indexOf(applicationURLs.prod) !== -1)
 //       clt = config.iniAppProd;
-//     document.getElementById("confluenceDiv").innerHTML = "";
+//     document.getElementById("epitrackerDiv").innerHTML = "";
 
 //     var myHeaders = new Headers();
 //     myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
@@ -177,7 +177,7 @@ export const getFileVersions = async (id) => {
 //     if (response.status && response.status === 200) {
 //       localStorage.parms = JSON.stringify(await response.json());
 //       window.history.replaceState({}, "", "./#home");
-//       confluence();
+//       epitracker();
 //       // document.getElementById("loginBoxAppDev").hidden = true;
 //       document.getElementById("loginBoxAppStage").hidden = true;
 //       document.getElementById("loginBoxAppEpisphere").hidden = true;
@@ -185,8 +185,8 @@ export const getFileVersions = async (id) => {
 //     }
 //   } else {
 //     if (localStorage.parms) {
-//       confluence.parms = JSON.parse(localStorage.parms);
-//       if (confluence.parms.access_token === undefined) {
+//       epitracker.parms = JSON.parse(localStorage.parms);
+//       if (epitracker.parms.access_token === undefined) {
 //         localStorage.clear();
 //         alert("access token not found, please contact system administrator");
 //       }
@@ -1571,9 +1571,9 @@ export const filterStudies = (array) => {
   return array.filter(
     (obj) =>
       obj.type === "folder" &&
-      obj.name !== "Confluence - CPSIII" &&
-      obj.name !== "Confluence - Dikshit" &&
-      obj.name !== "Confluence - Documents for NCI Participating Studies"
+      obj.name !== "epitracker - CPSIII" &&
+      obj.name !== "epitracker - Dikshit" &&
+      obj.name !== "epitracker - Documents for NCI Participating Studies"
   );
 };
 
@@ -1588,9 +1588,9 @@ export const filterStudiesDataTypes = (array) => {
   return array.filter(
     (obj) =>
       obj.type === "folder" &&
-      obj.name !== "Confluence - CPSIII" &&
-      obj.name !== "Confluence - Dikshit" &&
-      obj.name !== "Confluence - Documents for NCI Participating Studies" &&
+      obj.name !== "epitracker - CPSIII" &&
+      obj.name !== "epitracker - Dikshit" &&
+      obj.name !== "epitracker - Documents for NCI Participating Studies" &&
       obj.name !== "Samples"
   );
 };
@@ -1603,7 +1603,7 @@ export const filterProjects = (array) => {
   return array.filter(
     (obj) =>
       obj.type === "folder" &&
-      obj.name.toLowerCase().indexOf("confluence_") !== -1 &&
+      obj.name.toLowerCase().indexOf("epitracker_") !== -1 &&
       obj.name.toLowerCase().indexOf("_project") !== -1
   );
 };
@@ -1936,6 +1936,6 @@ export function selectProps(...props){
 // Need to change to BCRPP urls
 export const applicationURLs = {
   dev: "https://episphere.github.io/dataplatform",
-  stage: "https://confluence-stage.cancer.gov",
+  stage: "https://epitracker-stage.cancer.gov",
   prod: "34.98.117.145",
 };

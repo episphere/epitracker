@@ -2,7 +2,7 @@ export const infoDeck = () => {
   let template = "";
   template += `
         <div class="secondary-bg padding-bottom-1rem">
-            <div class="confluence-banner">
+            <div class="epitracker-banner">
                 <div class="banner-logo">
                     <div class="banner-overlay-text row justify-content-center text-center">
                         <div class="col-xl-12">
@@ -69,17 +69,17 @@ export const infoDeck = () => {
             </div>
         </div>
         <div class="ternary-bg">
-            <div class="container align-left confluence-info font-family-montserrat">
+            <div class="container align-left epitracker-info font-family-montserrat">
                 <div><a href="https://dceg.cancer.gov" target="__blank">The Division of Cancer Epidemiology and Genetics</a> (DCEG) is a research program of the National Cancer Institure (NCI), one of the National Institutes of Health (NIH).  The Division is the world’s most comprehensive cancer epidemiology research group. Its renowned epidemiologists, geneticists, and biostatisticians conduct population and multidisciplinary research to discover the genetic and environmental determinants of cancer and new approaches to cancer prevention.</a></div>
             </div>
         </div>
     `;
-  document.getElementById("confluenceDiv").innerHTML = template;
+  document.getElementById("epitrackerDiv").innerHTML = template;
 };
 
 const cardContents = (obj) => {
   return `
-        <div class="col-xl card confluence-cards" style="min-width:225px">
+        <div class="col-xl card epitracker-cards" style="min-width:225px">
             <div class="primary-bg rounded-circle" style="margin-top: -40px; padding: 10px;">
                 <i class="fas ${obj.icon} fa-2x icon-padding font-white"></i>
             </div>

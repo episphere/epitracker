@@ -1,6 +1,6 @@
 import { pageNavBar } from "../components/navBarMenuItems.js";
 
-export const aboutConfluence = (activeTab, showDescripton) => {
+export const aboutepitracker = (activeTab, showDescripton) => {
   let navBarItems = showDescripton
     ? pageNavBar(
         "about",
@@ -20,7 +20,7 @@ export const aboutConfluence = (activeTab, showDescripton) => {
             </div>
         </div>
     `;
-  document.getElementById("confluenceDiv").innerHTML = template;
+  document.getElementById("epitrackerDiv").innerHTML = template;
 };
 
 // Changes needed here for definitions
@@ -45,7 +45,7 @@ export const renderOverView = async () => {
                   
               
                 </div>
-        <div class="align-left" id="confluenceDataSummary"></div>
+        <div class="align-left" id="epitrackerDataSummary"></div>
     </div>
 `;
   document.getElementById("overview").innerHTML = template;

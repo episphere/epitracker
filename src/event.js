@@ -794,8 +794,8 @@ const addEventExtendCollaborations = async () => {
   const btn = document.getElementById('extendCollaborations');
   if(!btn) return;
   btn.addEventListener('click', async () => {
-      const header = document.getElementById('confluenceModalHeader');
-      const body = document.getElementById('confluenceModalBody');
+      const header = document.getElementById('epitrackerModalHeader');
+      const body = document.getElementById('epitrackerModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Collaborations Updating</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -835,8 +835,8 @@ export const addEventUpdateExtCollaborators = async () => {
   if(!btn) return;
   btn.addEventListener('click', async () => {
       const id = document.getElementById('')
-      const header = document.getElementById('confluenceModalHeader');
-      const body = document.getElementById('confluenceModalBody');
+      const header = document.getElementById('epitrackerModalHeader');
+      const body = document.getElementById('epitrackerModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Update Collaborations</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -866,8 +866,8 @@ export const addEventUpdateAllCollaborators = async () => {
   const btn = document.getElementById('updateCollaborations');
   if(!btn) return;
   btn.addEventListener('click', async () => {
-      const header = document.getElementById('confluenceModalHeader');
-      const body = document.getElementById('confluenceModalBody');
+      const header = document.getElementById('epitrackerModalHeader');
+      const body = document.getElementById('epitrackerModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Update Collaborations</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -1137,7 +1137,7 @@ export const addEventVariableDefinitions = () => {
       if (variable === "chip") {
         variableName = "Genotyping chip";
         definition =
-          "Filter data according to subjects genotyped by the confluence chips or other genotyping chips";
+          "Filter data according to subjects genotyped by the epitracker chips or other genotyping chips";
       }
       if (variable === "subsetStatistics") {
         variableName = "Subset statistics";
@@ -1185,8 +1185,8 @@ export const addEventVariableDefinitions = () => {
         definition = "Enter Box folder ID. To see all folders enter 0. Only folder owners can extend access.";
       }
 
-      const header = document.getElementById("confluenceModalHeader");
-      const body = document.getElementById("confluenceModalBody");
+      const header = document.getElementById("epitrackerModalHeader");
+      const body = document.getElementById("epitrackerModalBody");
 
       header.innerHTML = `<h5 class="modal-title">${variableName}</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -1202,8 +1202,8 @@ export const addEventUpdateSummaryStatsData = () => {
   console.log(btn);
   if (!btn) return;
   btn.addEventListener("click", async () => {
-    const header = document.getElementById("confluenceModalHeader");
-    const body = document.getElementById("confluenceModalBody");
+    const header = document.getElementById("epitrackerModalHeader");
+    const body = document.getElementById("epitrackerModalBody");
 
     header.innerHTML = `<h5 class="modal-title">Download updated data</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
