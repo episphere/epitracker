@@ -1,9 +1,6 @@
 import { renderTable } from "./table.js";
 
 function paginationOptimizer(pageNumber, pageSize) {
-  // const activePage = document.querySelector('.active-page')
-  // const activePageNumber = parseInt(activePage.dataset.page)
-  // pageNumber = pageNumber > activePageNumber ? pageNumber + 1 : pageNumber - 1
   const pageCategory = Math.ceil(pageSize / 10)
   const pageElements = document.querySelectorAll('.page-item')
   pageElements.forEach(pageEl => {

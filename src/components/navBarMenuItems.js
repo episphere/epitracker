@@ -1,4 +1,3 @@
-import { applicationURLs, emailforChair, emailforDACC } from "./../shared.js";
 const showProjectConceptForm = true;
 const viewSubmissionsShow = true;
 export const navBarMenutemplate = () => {
@@ -28,68 +27,12 @@ export const navBarMenutemplate = () => {
          Quantile Visualization
          </a>
        </div>
-        ${JSON.parse(localStorage.parms).login.split('@')[1].includes('deloitte.com') || JSON.parse(localStorage.parms).login.split('@')[1].includes('nih.gov')
-          ?`<div class="grid-elements dropdown">
-            <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font" title="My DCEG Publication Data" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            DCEG Investigators
-            </button>
-            
-            <div class="dropdown-menu navbar-dropdown" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#uploadinstruction" id="instructionID">How to upload data from my published manuscript </a>
-            <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#myDCEG/upload" id="myDCEGID_upload"> Upload new data</a>
-            <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#myDCEG" id="myDCEGID">See my uploaded data</a>
-            <div id="governanceNav" class="grid-elements"></div>
-
-            </div>
-          </div>`
-          :``
-        }      
         <div class="grid-elements">
             <a class="nav-link nav-menu-links white-font" rel="noopener" target="_blank" href="https://github.com/episphere/dataplatform/issues" title="BCRPP github issues">
                 Report issue
             </a>
-        </div>             
-                    <!---a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/accepted" title="Accepted Studies" id="dataAccepted"> Accepted </a--->
-                    ${
-                      emailforChair.indexOf(
-                        JSON.parse(localStorage.parms).login
-                      ) !== -1
-                        ? `<a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/chairView" title="Chair File View" id="chairView">  </a>`
-                        : ``
-                    }
-                    ${
-                      emailforDACC.indexOf(
-                        JSON.parse(localStorage.parms).login
-                      ) !== -1
-                        ? `<a class="dropdown-item nav-link nav-menu-links dropdown-menu-links pl-4" href="#data_access/daccView" title="DACC Menu" id="daccView"> DACC Menu </a>`
-                        : ``
-                    }
-            </div>
-
-
-        <div class="navbar-nav ml-auto">
-            ${
-              localStorage.parms && JSON.parse(localStorage.parms).name
-                ? `
-                <div class="grid-elements dropdown">
-                    <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font"  title="Welcome, ${
-                      JSON.parse(localStorage.parms).name
-                    }!" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        ${JSON.parse(localStorage.parms).name}
-                    </button>
-                    <div class="dropdown-menu navbar-dropdown" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="#logout" id="logOutBtn">Log Out</a>
-                    </div>
-                </div>
-            `
-                : `
-                <div class="grid-elements">
-                    <a class="nav-link nav-menu-links" title="Log Out" href="#logout" id="logOutBtn">Log Out</a>
-                </div>
-            `
-            }
-            
         </div>
+      </div>
     `;
 };
 export function pageNavBar(page, activeTab, ...pageHeaders) {
@@ -115,26 +58,6 @@ export function pageNavBar(page, activeTab, ...pageHeaders) {
       "font-size-14",
       "font-weight-bold"
     );
-
-    //Active Tab Function
-    // if (header === "Overview") {
-    //   link.href = `#${page}/overview`;
-    //   if (activeTab === "overview") link.classList.add("active");
-    // }
-
-    // keeping this part for future use to get "Project Concept Form" and "View Submissions" back.
-    // if (header === "Project Concept Form") {
-    //   link.href = `#${page}/form`;
-    //   if (activeTab === "form") link.classList.add("active");
-    // }
-    // if (header === "View Submissions") {
-    //   link.href = `#userSubmissions`;
-    //   console.log(
-    //     "Active Tab in View Submissions",
-    //     activeTab === "User Submissions"
-    //   );
-    //   if (activeTab === "User Submissions") link.classList.add("active");
-    // }
     if (header === "Chair Menu") {
       link.href = `#${page}/chairView`;
       if (activeTab === "chairView") link.classList.add("active");

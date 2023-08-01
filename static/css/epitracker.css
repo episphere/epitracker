@@ -118,7 +118,7 @@ body {
   font-weight: bold;
 }
 
-.confluence-notification {
+.epitracker-notification {
   position: relative;
 }
 
@@ -166,7 +166,7 @@ body {
   border: 1px solid #dddddd !important;
 }
 
-.confluence-color {
+.epitracker-color {
   background-color: #74103a !important;
 }
 
@@ -184,14 +184,14 @@ body {
   margin: 0.25px 0px;
 }
 
-.confluence-about-topics {
+.epitracker-about-topics {
   border: 0px;
   height: 100%;
   width: 100% !important;
   margin: 0px;
 }
 
-.confluence-about-topics:focus {
+.epitracker-about-topics:focus {
   cursor: pointer;
 }
 
@@ -206,7 +206,7 @@ body {
   font-weight: bold;
 }
 
-.confluence-resources {
+.epitracker-resources {
   padding: 10px;
   text-align: left;
   font-size: 1.35rem;
@@ -224,7 +224,7 @@ body {
   font-weight: bold;
 }
 
-.confluence-pink {
+.epitracker-pink {
   color: #2a72a5;
   font-weight: bold;
 }
@@ -247,15 +247,15 @@ body {
   font-weight: bold;
 }
 
-.info-confluence {
+.info-epitracker {
   margin: 1rem 0;
 }
 
-.info-confluence-bottom {
+.info-epitracker-bottom {
   margin: 1rem 0;
 }
 
-#confluenceInfo {
+#epitrackerInfo {
   margin: 1rem 0;
   /* max-height: 400px; */
 }
@@ -366,7 +366,7 @@ body {
   padding-top: 15px;
 }
 
-/* #confluenceDiv {
+/* #epitrackerDiv {
   height: inherit;
   width: inherit;
   text-align: center;
@@ -405,7 +405,7 @@ body {
   text-align: right !important;
 }
 
-#confluenceDataSummary {
+#epitrackerDataSummary {
   min-height: 235px;
 }
 
@@ -833,7 +833,7 @@ body {
   min-height: 380px;
 }
 
-.about-confluence {
+.about-epitracker {
   background-color: #fff;
   padding-top: 1rem;
   border-radius: 0.5rem;
@@ -879,7 +879,7 @@ body {
   padding: 0px !important;
 }
 
-#confluenceQuestion {
+#epitrackerQuestion {
   color: #ffffff;
 }
 
@@ -1016,7 +1016,7 @@ body {
   box-shadow: 5px 3px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
 }
 
-.confluence-div-shadow {
+.epitracker-div-shadow {
   box-shadow: 10px 0 13px -7px rgba(0, 0, 0, 0.12),
     -10px 0 13px -7px rgba(0, 0, 0, 0.24);
 }
@@ -1110,7 +1110,7 @@ body {
   width: 75%;
 }
 
-.confluence-banner {
+.epitracker-banner {
   position: relative;
   text-align: center;
   display: block;
@@ -1157,7 +1157,7 @@ body {
   background-color: #f7f5f4 !important;
 }
 
-.confluence-info {
+.epitracker-info {
   font-size: 18px;
   padding: 2rem 0 !important;
 }
@@ -1241,7 +1241,7 @@ body {
   text-align: center;
 }
 
-.confluence-cards {
+.epitracker-cards {
   align-items: center;
   border: 1px solid rgb(218, 219, 230) !important;
   border-radius: 0.5rem !important;
@@ -1689,7 +1689,7 @@ form {
   color: #f8b759;
 }
 
-.fa-confluence {
+.fa-epitracker {
   cursor: pointer;
 }
 

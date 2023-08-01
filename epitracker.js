@@ -3,8 +3,7 @@ import {
   hideAnimation,
   assignNavbarActive
 } from "./src/shared.js";
-import { aboutConfluence, renderOverView } from "./src/pages/about.js";
-//import { renderInstructionPage} from "./src/pages/instruction.js"
+import { aboutepitracker, renderOverView } from "./src/pages/about.js";
 import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
@@ -12,7 +11,7 @@ import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
 import {start as startMapPage} from "./src/utils/map.js"
 
-export const confluence = async () => {
+export const epitracker = async () => {
   if(window.navigator && navigator.serviceWorker) {
     navigator.serviceWorker.getRegistrations()
     .then(function(registrations) {
@@ -22,17 +21,11 @@ export const confluence = async () => {
       }
     });
   }
-  // if ("serviceWorker" in navigator) {
-  //   try {
-  //     navigator.serviceWorker.register("./serviceWorker.js");
-  //     console.log("Service Worker");
-  //   } catch (error) {}
-  // }
   manageRouter();
 };
 
 const manageRouter = async () => {
-  const confluenceDiv = document.getElementById("confluenceDiv");
+  const epitrackerDiv = document.getElementById("epitrackerDiv");
   const navBarOptions = document.getElementById("navBarOptions");
   document.querySelector("[role='contentinfo']").innerHTML = footerTemplate();
   const hash = decodeURIComponent(window.location.hash);
@@ -56,27 +49,15 @@ const manageRouter = async () => {
     if (element.classList.contains("navbar-active")) return;
     document.title = "Epitracker - Overview";
     assignNavbarActive(element);
-    aboutConfluence("overview");
+    aboutepitracker("overview");
     renderOverView();
-  } 
-  // else if (hash === "#instruction") {
-  //   const element = document.getElementById("instructionPage");
-  //   if (!element) return;
-  //   if (element.classList.contains("navbar-active")) return;
-  //   document.title = "Epitracker - Instruction";
-  //   assignNavbarActive(element);
-  //   //confluenceDiv.innerHTML = renderInstructionPage()
-    
-  //   //aboutConfluence("overview");
-  //   renderInstructionPage();
-  // }
-  else if (hash === "#visualization/quantile") {
+  } else if (hash === "#visualization/quantile") {
     const element = document.getElementById("quantile-visualization");
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
     document.title = "quantile-visualization";
     assignNavbarActive(element);
-    confluenceDiv.innerHTML = renderQuantileVisualizationPage()
+    epitrackerDiv.innerHTML = renderQuantileVisualizationPage()
     //loadQuantileData().then((data => quantileDataLoaded(...data)))
     startQuantilePage()
   } 
@@ -86,17 +67,17 @@ const manageRouter = async () => {
     if (element.classList.contains("navbar-active")) return;
     document.title = "map-visualization";
     assignNavbarActive(element);
-    confluenceDiv.innerHTML = renderMapVisualizationPage()
+    epitrackerDiv.innerHTML = renderMapVisualizationPage()
     startMapPage()
     //loadMapData().then(mapDataLoaded)
   } else window.location.hash = "#home";
 };
 
 window.onload = async () => {
-  const confluenceDiv = document.getElementById("confluenceDiv");
-  confluenceDiv.innerHTML = "";
-  await confluence();
-  console.log("Loading Confluence");
+  const epitrackerDiv = document.getElementById("epitrackerDiv");
+  epitrackerDiv.innerHTML = "";
+  await epitracker();
+  console.log("Loading epitracker");
 };
 
 window.onhashchange = () => {
