@@ -71,7 +71,7 @@ export const renderMapVisualizationPage = () => {
             </div>
           </div>
   `
-  template += renderSettingsVisualization([SETTINGS.SHOW_HIDE_TABLE])
+  template += renderSettingsVisualization([SETTINGS.SHOW_HIDE_TABLE, SETTINGS.COLOR_SCHEME])
         
   template += `
         </div>
