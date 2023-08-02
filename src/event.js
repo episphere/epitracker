@@ -4,28 +4,45 @@ import {
   uploadFile,
   createFolder,
   getCollaboration,
+  addNewCollaborator,
   removeBoxCollaborator,
   notificationTemplate,
   updateBoxCollaborator,
   getFolderItems,
+  consortiumSelection,
   filterStudies,
   filterDataTypes,
   filterFiles,
+  copyFile,
   hideAnimation,
   getFileAccessStats,
   uploadFileVersion,
   getFile,
   csv2Json,
   json2csv,
+  publicDataFileId,
   summaryStatsFileId,
   getFileInfo,
   missingnessStatsFileId,
+  assignNavbarActive,
   reSizePlots,
+  showComments,
   tsv2Json,
   json2other,
+  getUser,
   updateBoxCollaboratorTime
 } from "./shared.js";
+import { renderDataSummary } from "./pages/about.js";
 import { variables } from "./variables.js";
+import {
+  template as dataGovernanceTemplate,
+  addFields,
+  dataGovernanceLazyLoad,
+  dataGovernanceCollaboration,
+  dataGovernanceProjects, testingDataGov
+} from "./pages/dataGovernance.js";
+import { myProjectsTemplate } from "./pages/myProjects.js";
+import { createProjectModal } from "./components/modal.js";
 import {
   getSelectedStudies,
   renderAllCasesCharts,
@@ -35,6 +52,9 @@ import {
   getFileContentCases,
 } from "./visualization.js";
 
+import { showPreview } from "./components/boxPreview.js";
+
+import { viewFinalDecisionFiles } from "./pages/dataRequest.js";
 let top = 0;
 let previousValue = "";
 
@@ -794,8 +814,8 @@ const addEventExtendCollaborations = async () => {
   const btn = document.getElementById('extendCollaborations');
   if(!btn) return;
   btn.addEventListener('click', async () => {
-      const header = document.getElementById('epitrackerModalHeader');
-      const body = document.getElementById('epitrackerModalBody');
+      const header = document.getElementById('confluenceModalHeader');
+      const body = document.getElementById('confluenceModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Collaborations Updating</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -835,8 +855,8 @@ export const addEventUpdateExtCollaborators = async () => {
   if(!btn) return;
   btn.addEventListener('click', async () => {
       const id = document.getElementById('')
-      const header = document.getElementById('epitrackerModalHeader');
-      const body = document.getElementById('epitrackerModalBody');
+      const header = document.getElementById('confluenceModalHeader');
+      const body = document.getElementById('confluenceModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Update Collaborations</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -866,8 +886,8 @@ export const addEventUpdateAllCollaborators = async () => {
   const btn = document.getElementById('updateCollaborations');
   if(!btn) return;
   btn.addEventListener('click', async () => {
-      const header = document.getElementById('epitrackerModalHeader');
-      const body = document.getElementById('epitrackerModalBody');
+      const header = document.getElementById('confluenceModalHeader');
+      const body = document.getElementById('confluenceModalBody');
       
       header.innerHTML = `<h5 class="modal-title">Update Collaborations</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -917,6 +937,99 @@ const checkPermissionLevel = (data) => {
   return null;
 };
 
+export const addEventAddNewCollaborator = () => {
+  const btn1 = document.getElementById("addNewCollaborators");
+  const btn2 = document.getElementById("listCollaborators");
+  const btn3 = document.getElementById("listExtCollaborators");
+  const folderToShare = document.getElementById("folderToShare");
+  btn1.addEventListener("click", () => {
+    const ID = folderToShare.dataset.folderId;
+    const name = folderToShare.dataset.folderName;
+    const type = folderToShare.dataset.objectType;
+    btn1.classList.add("active-tab");
+    btn2.classList.remove("active-tab");
+    btn3.classList.remove("active-tab");
+    const collaboratorModalBody = document.getElementById(
+      "collaboratorModalBody"
+    );
+    collaboratorModalBody.innerHTML = `
+            <form id="addCollaborationForm" method="POST">
+                <div class="modal-body allow-overflow">
+                    <div><h5 class="modal-title">Share <strong>${name}</strong></h5></div>
+                    <br>
+                    <div class="row" id="collaboratorEmails">
+                        ${addFields(1)}
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn btn-light" type="button" title="Add more collaborators" id="addMoreEmail" data-counter=1><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" title="Submit" class="btn btn-light">Submit</button>
+                    <button type="button" title="Close" class="btn btn-dark" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        `;
+    const addMoreEmail = document.getElementById("addMoreEmail");
+    addMoreEmail.addEventListener("click", () => {
+      const counter = parseInt(addMoreEmail.dataset.counter) + 1;
+      addMoreEmail.dataset.counter = counter;
+      document
+        .getElementById("collaboratorEmails")
+        .insertAdjacentHTML("beforeend", addFields(counter));
+      if (counter === 5) addMoreEmail.disabled = true;
+    });
+
+    addEventCollaboratorForm(ID, type, name);
+  });
+};
+
+const addEventCollaboratorForm = (ID, type, name) => {
+  const form = document.getElementById("addCollaborationForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const showNotification = document.getElementById("showNotification");
+    let template = "";
+    for (let i = 1; i <= 5; i++) {
+      const email = document.getElementById(`shareFolderEmail${i}`);
+      const role = document.getElementById(`folderRole${i}`);
+      if (email && role) {
+        const emails = email.value.split(",");
+        for (let index = 0; index < emails.length; index++) {
+          const login = emails[index].trim();
+          const response = await addNewCollaborator(
+            ID,
+            type,
+            login,
+            role.value.toLowerCase()
+          );
+          top = top + 2;
+          if (response.status === 200 || response.status === 201) {
+            template += notificationTemplate(
+              top,
+              `<span class="successMsg">Added new collaborator</span>`,
+              `${login} added to ${name} as ${role.value} successfully!`
+            );
+          } else {
+            template += notificationTemplate(
+              top,
+              `<span class="errorMsg">Error!</span>`,
+              `Could not add ${login} to ${name} as ${
+                role.value
+              }, <span class="errorMsg">${
+                (await response.json()).message
+              }</span>!!`
+            );
+          }
+        }
+      }
+    }
+    showNotification.innerHTML = template;
+    addEventHideNotification();
+  });
+};
 const addEventHideNotification = () => {
   const hideNotification = document.getElementsByClassName("hideNotification");
   Array.from(hideNotification).forEach((btn) => {
@@ -929,6 +1042,172 @@ const addEventHideNotification = () => {
     setTimeout(() => {
       btn.dispatchEvent(new Event("click"));
     }, 8000);
+  });
+};
+
+export const addEventDataGovernanceNavBar = (bool) => {
+  const dataGovernanceElement = document.getElementById("dataGovernance");
+  if (!dataGovernanceElement) return;
+  dataGovernanceElement.addEventListener("click", async () => {
+    // // if(dataGovernanceElement.classList.contains('navbar-active')) return;
+    showAnimation();
+    assignNavbarActive(dataGovernanceElement);
+    // document.title = "DCEG - Data Governance";
+    // const confluenceDiv = document.getElementById("confluenceDiv");
+    // // if(bool){
+    // confluenceDiv.classList.add("general-bg");
+
+    // const containerDiv = document.createElement("div");
+    // containerDiv.classList = ["container padding-bottom-1rem"];
+
+    // const headerDiv = document.createElement("div");
+    // headerDiv.classList = ["main-summary-row"];
+    // headerDiv.innerHTML = `<div class="align-left">
+    //                                     <h1 class="page-header">Data Governance of Uploaded Data</h1>
+    //                                 </div>`;
+    // const divRow = document.createElement("div");
+    // divRow.classList = ["main-summary-row white-bg div-border"];
+    // divRow.id = "dataGovernanceMain";
+
+    // const div1 = document.createElement("div");
+    // div1.classList = ["col-lg-6 align-left"];
+
+    //div1.innerHTML = await dataGovernanceTemplate();
+    await dataGovernanceTemplate();
+    hideAnimation();
+    // divRow.appendChild(div1);
+    // confluenceDiv.innerHTML = ``;
+    // containerDiv.appendChild(headerDiv);
+    // containerDiv.appendChild(btnDiv)
+    // containerDiv.appendChild(divRow);
+    // confluenceDiv.appendChild(containerDiv);
+    //     dataGovernanceProjects();
+    // dataGovernanceLazyLoad();
+    // dataGovernanceCollaboration();
+  });
+};
+
+const addEventCreateProjectBtn = () => {
+  const btn = document.getElementById("createProjectBtn");
+  btn.addEventListener("click", async () => {
+    const body = document.getElementById("createProjectModalBody");
+    body.innerHTML = `
+        <form id="createProjectForm" method="POST">
+            <label><strong>Project Name</strong> <span class="required">*</span>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="newProjectName" placeholder="Enter project name" required>
+                </div>
+            </label>
+            
+            <div class="form-group" id="consortiumSelection">${await consortiumSelection()}</div>
+            <div class="form-group" id="studySelection"></div>
+            <div class="form-group" id="dataTypeSelection"></div>
+            <div class="form-group" id="fileSelection"></div>
+
+            <div class="form-group">
+                <strong>Add collaborator(s)</strong> <span class="required">*</span>
+                <div class="row" id="collaboratorEmails">
+                    ${addFields(1, true)}
+                </div>
+            </div>
+                
+            <div class="row">
+                <div class="col"><button title="Add more collaborators" type="button" class="btn btn-light" id="addMoreEmail" data-counter=1><i class="fas fa-plus"></i> Add</button></div>
+            </div>
+            </br>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" title="Submit" class="btn btn-light">Submit</button>
+            <button type="button" title="Close" class="btn btn-dark" data-dismiss="modal">Close</button>
+        </form>
+        `;
+    const addMoreEmail = document.getElementById("addMoreEmail");
+    addMoreEmail.addEventListener("click", () => {
+      const counter = parseInt(addMoreEmail.dataset.counter) + 1;
+      addMoreEmail.dataset.counter = counter;
+      document
+        .getElementById("collaboratorEmails")
+        .insertAdjacentHTML("beforeend", addFields(counter));
+      if (counter === 5) addMoreEmail.disabled = true;
+    });
+    addEventCPCSelect();
+    addEventcreateProjectForm();
+  });
+};
+
+const addEventcreateProjectForm = () => {
+  const form = document.getElementById("createProjectForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const projectName =
+      "Confluence_" +
+      document.getElementById("newProjectName").value +
+      "_Project";
+    const fileId = document.getElementById("CPFSelect").value;
+
+    const showNotification = document.getElementById("showNotification");
+    let template = "";
+    const folder = await createFolder(0, projectName);
+    if (folder.status === 201) {
+      const parent = await folder.json();
+      const copied = await copyFile(fileId, parent.id);
+      if (copied.status === 201) {
+        for (let i = 1; i <= 5; i++) {
+          const email = document.getElementById(`shareFolderEmail${i}`);
+          const role = document.getElementById(`folderRole${i}`);
+          if (email && role) {
+            const emails = email.value.split(",");
+            for (let index = 0; index < emails.length; index++) {
+              const login = emails[index].trim();
+              const response = await addNewCollaborator(
+                parent.id,
+                "folder",
+                login,
+                role.value.toLowerCase()
+              );
+              top = top + 2;
+              if (response.status === 200 || response.status === 201) {
+                template += notificationTemplate(
+                  top,
+                  `<span class="successMsg">Added new collaborator</span>`,
+                  `${login} added to ${projectName} as ${role.value} successfully!`
+                );
+                //dataGovernanceProjects();
+                testingDataGov();
+              } else {
+                template += notificationTemplate(
+                  top,
+                  `<span class="errorMsg">Error!</span>`,
+                  `Could not add ${login} to ${projectName} as ${
+                    role.value
+                  }, <span class="errorMsg">${
+                    (await response.json()).message
+                  }</span>!!`
+                );
+              }
+            }
+          }
+        }
+      } else {
+        template += notificationTemplate(
+          top,
+          `<span class="errorMsg">Error!</span>`,
+          `Could not copy file to ${projectName}, <span class="errorMsg">${
+            (await copied.json()).message
+          }</span>!!`
+        );
+      }
+    } else {
+      template += notificationTemplate(
+        top,
+        `<span class="errorMsg">Error!</span>`,
+        `Could not create ${projectName}, <span class="errorMsg">${
+          (await folder.json()).message
+        }</span>!!`
+      );
+    }
+    showNotification.innerHTML = template;
+    addEventHideNotification();
   });
 };
 
@@ -1012,6 +1291,17 @@ const addEventCPDTSelect = () => {
     template += "</select>";
     document.getElementById("fileSelection").innerHTML = template;
     addEventCPDTSelect();
+  });
+};
+
+export const addEventMyProjects = () => {
+  const myProjects = document.getElementById("myProjects");
+  myProjects.addEventListener("click", async () => {
+    if (myProjects.classList.contains("navbar-active")) return;
+    showAnimation();
+    assignNavbarActive(myProjects, 2);
+    document.title = "BCRPP - My Projects";
+    myProjectsTemplate();
   });
 };
 
@@ -1137,7 +1427,7 @@ export const addEventVariableDefinitions = () => {
       if (variable === "chip") {
         variableName = "Genotyping chip";
         definition =
-          "Filter data according to subjects genotyped by the epitracker chips or other genotyping chips";
+          "Filter data according to subjects genotyped by the confluence chips or other genotyping chips";
       }
       if (variable === "subsetStatistics") {
         variableName = "Subset statistics";
@@ -1185,8 +1475,8 @@ export const addEventVariableDefinitions = () => {
         definition = "Enter Box folder ID. To see all folders enter 0. Only folder owners can extend access.";
       }
 
-      const header = document.getElementById("epitrackerModalHeader");
-      const body = document.getElementById("epitrackerModalBody");
+      const header = document.getElementById("confluenceModalHeader");
+      const body = document.getElementById("confluenceModalBody");
 
       header.innerHTML = `<h5 class="modal-title">${variableName}</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -1202,8 +1492,8 @@ export const addEventUpdateSummaryStatsData = () => {
   console.log(btn);
   if (!btn) return;
   btn.addEventListener("click", async () => {
-    const header = document.getElementById("epitrackerModalHeader");
-    const body = document.getElementById("epitrackerModalBody");
+    const header = document.getElementById("confluenceModalHeader");
+    const body = document.getElementById("confluenceModalBody");
 
     header.innerHTML = `<h5 class="modal-title">Download updated data</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -1564,6 +1854,176 @@ const filterData = (jsonData, headers) => {
     renderAllCharts(finalData);
   } else renderAllCasesCharts(finalData);
 };
+
+export const addEventConsortiaFilter = (d) => {
+  const checkboxs = document.getElementsByClassName("checkbox-consortia");
+  Array.from(checkboxs).forEach((checkbox) => {
+    checkbox.addEventListener("click", () => {
+      const selectedConsortium = Array.from(checkboxs)
+        .filter((dt) => dt.checked)
+        .map((dt) => dt.dataset.consortia);
+      let data = JSON.parse(JSON.stringify(d));
+      delete data["dataModifiedAt"];
+      if (selectedConsortium.length > 0) {
+        const newData = Object.values(data).filter((dt) =>
+          selectedConsortium.includes(dt.name)
+        );
+        let totalConsortia = 0,
+          totalWomen = 0,
+          totalPatients = 0;
+        newData.forEach((obj) => {
+          totalConsortia++;
+          totalPatients += obj.numPatients;
+          totalWomen += obj.numWomen;
+        });
+        renderDataSummary(
+          {
+            totalConsortia,
+            totalPatients,
+            totalWomen,
+          },
+          true
+        );
+      } else {
+        let totalConsortia = 0,
+          totalWomen = 0,
+          totalPatients = 0;
+        Object.values(data).forEach((obj) => {
+          totalConsortia++;
+          totalPatients += obj.numPatients;
+          totalWomen += obj.numWomen;
+        });
+        renderDataSummary(
+          {
+            totalConsortia,
+            totalPatients,
+            totalWomen,
+          },
+          true
+        );
+      }
+    });
+  });
+};
+
+export function switchTabs(show, hide, files) {
+  try {
+    if (!Array.isArray(hide)) {
+      return;
+    } else if (!Array.isArray(files)) {
+      return;
+    } else if (show === "decided") {
+      document.getElementById(show + "Tab").addEventListener("click", (e) => {
+        e.preventDefault();
+        const boxPreview = document.getElementById("filePreview");
+        boxPreview.classList.remove("d-block");
+        boxPreview.classList.add("d-none");
+
+        for (const tab of hide) {
+          document.getElementById(tab + "Tab").classList.remove("active");
+          document.getElementById(tab).classList.remove("show", "active");
+        }
+        document.getElementById(show + "Tab").classList.add("active");
+        document.getElementById(show).classList.add("show", "active");
+
+        localStorage.setItem("currentTab", show + "Tab");
+        return;
+      });
+    } else {
+      const boxPreview = document.getElementById("filePreview");
+
+      document.getElementById(show + "Tab").addEventListener("click", (e) => {
+        e.preventDefault();
+        if (boxPreview !== null) {
+          if (files.length != 0) {
+            if (!boxPreview.classList.contains("d-block")) {
+              boxPreview.classList.add("d-block");
+            }
+            switchFiles(show);
+            document.getElementById(show + "selectedDoc").value = files[0].id;
+            showPreview(files[0].id);
+            if (show !== "toBeCompleted") {
+              document.getElementById("boxFilePreview").classList.add("col-8");
+              showComments(files[0].id);
+            } else {
+              document
+                .getElementById("boxFilePreview")
+                .classList.remove("col-8");
+            }
+            if (show === "toBeCompleted") {
+              document.getElementById("sendtodaccButton").style.display =
+                "block";
+              document.getElementById("finalChairDecision").style.display =
+                "none";
+              document.getElementById("daccOverride").style.display = "none";
+              document.getElementById("fileComments").style.display = "none";
+              // document.getElementById('fileComments').innerHTML = listComments(files[0].id);
+            }
+            if (show === "inProgress") {
+              document.getElementById("sendtodaccButton").style.display =
+                "none";
+              document.getElementById("fileComments").style.display = "block";
+              document.getElementById("finalChairDecision").style.display =
+                "none";
+              document.getElementById("daccOverride").style.display = "block";
+              document.getElementById("fileComments").style.display = "block";
+            }
+            if (show === "daccCompleted") {
+              document.getElementById("sendtodaccButton").style.display =
+                "none";
+              document.getElementById("daccOverride").style.display = "none";
+              document.getElementById("fileComments").style.display = "block";
+              document.getElementById("finalChairDecision").style.display =
+                "block";
+              document.getElementById("fileComments").style.display = "block";
+            }
+            if (show === "dacctoBeCompleted") {
+              document.getElementById("daccComment").style.display = "block";
+            }
+            if (show === "completed") {
+              document.getElementById("daccComment").style.display = "none";
+            }
+            if (show === "daccReview") {
+              document.getElementById("boxFilePreview").classList.add("col-8");
+              document.getElementById("daccComment").style.display = "block";
+              showComments(files[0].id);
+            }
+          } else {
+            boxPreview.classList.remove("d-block");
+            boxPreview.classList.add("d-none");
+            if (show === "completed") {
+              if (document.getElementById("daccComment")) {
+                document.getElementById("daccComment").style.display = "none";
+              }
+            }
+          }
+        }
+
+        for (const tab of hide) {
+          document.getElementById(tab + "Tab").classList.remove("active");
+          document.getElementById(tab).classList.remove("show", "active");
+        }
+        document.getElementById(show + "Tab").classList.add("active");
+        document.getElementById(show).classList.add("show", "active");
+
+        localStorage.setItem("currentTab", show + "Tab");
+        return;
+      });
+    }
+  } catch (err) {
+    return;
+  }
+}
+
+export function switchFiles(tab) {
+  document
+    .getElementById(`${tab}selectedDoc`)
+    .addEventListener("change", (e) => {
+      const file_id = e.target.value;
+      showPreview(file_id);
+      showComments(file_id);
+    });
+}
 
 export function filterCheckBox(table, data) {
   const rows = Array.from(document.getElementsByClassName("filedata"));
