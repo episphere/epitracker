@@ -51,9 +51,7 @@ import {
   getFileContent,
   getFileContentCases,
 } from "./visualization.js";
-
 import { showPreview } from "./components/boxPreview.js";
-
 import { viewFinalDecisionFiles } from "./pages/dataRequest.js";
 let top = 0;
 let previousValue = "";
