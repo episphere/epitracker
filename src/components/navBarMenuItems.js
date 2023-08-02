@@ -36,17 +36,6 @@ export const navBarMenutemplate = () => {
   It creates a container element ('containerEl') with the "container" class to hold the navigation bar.
   The navigation bar consists of a list of buttons, each representing a page header.
   Each button has a link ('link') associated with it.
-
-  Parameters:
-  - page (string): The name of the page to navigate to (used in the link).
-  - activeTab (string): The name of the currently active tab (used for styling).
-  - ...pageHeaders (string): A variable number of strings representing the headers for each page.
-
-  Returns:
-  - containerEl.innerHTML (string): The inner HTML content of the generated navigation bar.
-
-  Example usage:
-  const navBarHTML = pageNavBar("overview", "overview-tab", "Header 1", "Header 2", "Header 3");
 */
 export function pageNavBar(page, activeTab, ...pageHeaders) {
   // Create a container element 'containerEl' with the "container" class.
