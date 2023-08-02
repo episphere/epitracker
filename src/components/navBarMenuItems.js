@@ -12,11 +12,7 @@ export const navBarMenutemplate = () => {
             About
             </a>            
         </div>
-       <!--- <div class="grid-elements">
-            <a class="nav-link nav-menu-links white-font" href="#instruction" id="instructionPage">
-            Instruction
-            </a>            
-        </div>-->
+       
         <div class="grid-elements">
            <a class="nav-link nav-menu-links white-font" href="#quantile-visualization" title="Quantile Visualization" id="quantile-visualization">
            Quantile Visualization
@@ -35,74 +31,63 @@ export const navBarMenutemplate = () => {
       </div>
     `;
 };
+/* 
+  This function generates a page navigation bar with buttons for each page header.
+  It creates a container element ('containerEl') with the "container" class to hold the navigation bar.
+  The navigation bar consists of a list of buttons, each representing a page header.
+  Each button has a link ('link') associated with it.
+
+  Parameters:
+  - page (string): The name of the page to navigate to (used in the link).
+  - activeTab (string): The name of the currently active tab (used for styling).
+  - ...pageHeaders (string): A variable number of strings representing the headers for each page.
+
+  Returns:
+  - containerEl.innerHTML (string): The inner HTML content of the generated navigation bar.
+
+  Example usage:
+  const navBarHTML = pageNavBar("overview", "overview-tab", "Header 1", "Header 2", "Header 3");
+*/
 export function pageNavBar(page, activeTab, ...pageHeaders) {
+  // Create a container element 'containerEl' with the "container" class.
   const containerEl = document.createElement("div");
   containerEl.classList.add("container");
 
+  // Create an outer div element 'outerDivEl' with specified classes.
   const outerDivEl = document.createElement("div");
   outerDivEl.classList.add("main-summary-row", "white-bg", "div-border");
 
+  // Create an inner div element 'innerDivEl' with specified classes.
   const innerDivEl = document.createElement("div");
   innerDivEl.classList.add("main-summary-row", "white-bg", "div-border");
 
+  // Append the 'innerDivEl' to the 'outerDivEl'.
   outerDivEl.appendChild(innerDivEl);
+
+  // Append the 'outerDivEl' to the 'containerEl'.
   containerEl.appendChild(outerDivEl);
 
+  // Iterate through each 'header' in 'pageHeaders' to create buttons for each page header.
   for (const header of pageHeaders) {
+    // Create a button element 'btn' with the "sub-menu-btn" class.
     let btn = document.createElement("button");
     btn.classList.add("sub-menu-btn");
+
+    // Create an anchor element 'link' with specified classes and set its 'href' attribute.
     let link = document.createElement("a");
-    link.classList.add(
-      "nav-link",
-      "black-font",
-      "font-size-14",
-      "font-weight-bold"
-    );
-    if (header === "Chair Menu") {
-      link.href = `#${page}/chairView`;
-      if (activeTab === "chairView") link.classList.add("active");
-    }
-    if (header === "Accepted") {
-      link.href = `#${page}/acceptedStudies`;
-      if (activeTab === "acceptedStudies") link.classList.add("active");
-    }
+    link.classList.add("nav-link", "black-font", "font-size-14", "font-weight-bold");
+    link.href = `#${page}-${header.toLowerCase()}`;
 
-    if (header === "DACC Menu") {
-      link.href = `#${page}/daccView`;
-      if (activeTab === "daccView") link.classList.add("active");
-    }
+    // Set the inner HTML of the link to the 'header'.
+    link.innerHTML = header;
 
-    if (header === "Description of Studies") {
-      link.href = `#${page}/description`;
-      if (activeTab === "description") link.classList.add("active");
-    }
-    if (header === "Scientific Committee") {
-      link.href = `#${page}/contact`;
-      if (activeTab === "contact") link.classList.add("active");
-    }
-    if (header === "Summary Statistics") {
-      link.href = `#${page}/summary`;
-      if (activeTab === "summary") link.classList.add("active");
-    }
-    if (header === "Dictionary") {
-      link.href = `#${page}/dictionary`;
-      if (activeTab === "dictionary") link.classList.add("active");
-    }
-    if (header === "Subset Statistics") {
-      link.href = `#${page}/subset`;
-      if (activeTab === "subset") link.classList.add("active");
-    }
-
-    link.innerText = header;
+    // Append the 'link' to the 'btn'.
     btn.appendChild(link);
+
+    // Append the 'btn' to the 'innerDivEl'.
     innerDivEl.appendChild(btn);
   }
-  if (page !== "data_exploration") {
-    const overviewDiv = document.createElement("div");
 
-    overviewDiv.id = "overview";
-    containerEl.appendChild(overviewDiv);
-  }
-
+  // Return the inner HTML content of the 'containerEl' as the result of the function.
   return containerEl.innerHTML;
 }
