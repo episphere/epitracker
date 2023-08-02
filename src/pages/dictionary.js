@@ -32,8 +32,6 @@ export const dataDictionaryTemplate = async () => {
                 </div>
             </div>
         </div>
-        <!---<button class='btn btn-primary' id='saveVars'>Save Variables</button>--->
-
     </div>
     <div class="col-xl-10 padding-right-zero" id="summaryStatsCharts">
         <button id="filterBarToggle"><i class="fas fa-lg fa-caret-left"></i></button>
@@ -143,8 +141,6 @@ const renderDataDictionaryFilters = (dictionary, headers) => {
   const coreVariableType = coreArray.map((dt) => dt["Sub-Category"]);
   const mamVariableType = mamArray.map((dt) => dt["Sub-Category"]);
   const incVariableType = incArray.map((dt) => dt["Sub-Category"]);
-  //const allVariableType = Object.values(dictionary).map(dt => dt['Sub-Category']);
-  //const uniqueType = allVariableType.filter((d,i) => allVariableType.indexOf(d) === i).sort();
   const coreuniqueType = coreVariableType
     .filter((d, i) => coreVariableType.indexOf(d) === i)
     .sort();
@@ -445,85 +441,3 @@ const renderDataDictionary = (dictionary, pageSize, headers) => {
   addEventToggleCollapsePanelBtn();
   addEventSortColumn(dictionary, pageSize, headers);
 };
-
-// const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
-//   e.stopPropagation();
-//   const type = isTsv ? 'tsv' : 'csv';
-//   const content =
-//     `data:text/${type};charset=utf-8,`+
-//     json2other(data, headers, isTsv).replace(/(<b>)|(<\/b>)/g, "");
-//   const encodedUri = encodeURI(content);
-//   const link = document.createElement("a");
-//   link.setAttribute("href", encodedUri);
-//   link.setAttribute("download", `${fileName}.${type}`);
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-// }
-
-// const downloadFileRef = {
-//   csvButton: null, 
-//   csvCallback: null,
-//   tsvButton: null, 
-//   tsvCallback: null,
-// }
-
-// const removeDownloadEventListeners = () => {
-//   if (downloadFileRef.csvButton) {
-//     downloadFileRef.csvButton.removeEventListener('click', downloadFileRef.csvCallback)
-//   }
-//   if (downloadFileRef.tsvButton) {
-//     downloadFileRef.tsvButton.removeEventListener('click', downloadFileRef.tsvCallback)
-//   }
-// }
-
-// export const downloadFiles = (data, headers, fileName) => {
-//   removeDownloadEventListeners()
-
-//   let flatArray = [];
-//   headers.splice(headers.indexOf("PI"), 1);
-//   headers.splice(headers.indexOf("PI_Email"), 1);
-//   data.forEach((dt) => {
-//     if (dt.pis) {
-//       const flatObj = {
-//         ...dt,
-//       };
-//       dt.pis.forEach((obj, index) => {
-//         const piColumnName = `PI_${index + 1}`;
-//         const piEmailColumnName = `PI_Email_${index + 1}`;
-//         flatObj[piColumnName] = obj.PI;
-//         flatObj[piEmailColumnName] = obj.PI_Email;
-//         if (headers.indexOf(piColumnName) === -1) headers.push(piColumnName);
-//         if (headers.indexOf(piEmailColumnName) === -1)
-//           headers.push(piEmailColumnName);
-//       });
-//       flatArray.push(flatObj);
-//     } else flatArray.push(dt);
-//   });
-//   data = flatArray;
-  
-//   const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
-//   const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
-
-
-//   const downloadCSVButton = document.getElementById(
-//     "download-table-csv"
-//   );
-
-//   if (downloadCSVButton) {
-//     downloadCSVButton.addEventListener("click", downloadTableCSV);
-//     downloadFileRef.csvButton = downloadCSVButton
-//     downloadFileRef.csvCallback = downloadTableCSV
-//   }
-  
-
-//   const downloadTSVButton = document.getElementById(
-//     "download-table-tsv"
-//   );
-
-//   if (downloadTSVButton) {
-//     downloadTSVButton.addEventListener("click", downloadTableTSV);
-//     downloadFileRef.tsvButton = downloadTSVButton
-//     downloadFileRef.tsvCallback = downloadTableTSV
-//   }
-// };

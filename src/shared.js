@@ -138,107 +138,6 @@ export const getFileVersions = async (id) => {
   }
 };
 
-// export const storeAccessToken = async () => {
-//   let parms = searchParms();
-//   if (parms.code) {
-//     //exchange code for authorization token
-//     let clt = {};
-//     if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
-//     else if (location.origin.indexOf("localhost") !== -1)
-//       clt = config.iniAppLocal;
-//     else if (location.origin.indexOf(applicationURLs.stage) !== -1)
-//       clt = config.iniAppStage;
-//     else if (location.origin.indexOf(applicationURLs.prod) !== -1)
-//       clt = config.iniAppProd;
-//     document.getElementById("epitrackerDiv").innerHTML = "";
-
-//     var myHeaders = new Headers();
-//     myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
-
-//     var urlencoded = new URLSearchParams();
-//     urlencoded.append("grant_type", "authorization_code");
-//     urlencoded.append("client_id", clt.client_id);
-//     urlencoded.append("client_secret", clt.server_id);
-//     urlencoded.append("code", parms.code);
-
-//     var requestOptions = {
-//       method: "POST",
-//       headers: myHeaders,
-//       body: urlencoded,
-//       redirect: "follow",
-//     };
-//     const response = await fetch(
-//       "https://api.box.com/oauth2/token",
-//       requestOptions
-//     );
-//     if (response.status === 400) {
-//       window.history.replaceState({}, "", "./#home");
-//     }
-//     if (response.status && response.status === 200) {
-//       localStorage.parms = JSON.stringify(await response.json());
-//       window.history.replaceState({}, "", "./#home");
-//       epitracker();
-//       // document.getElementById("loginBoxAppDev").hidden = true;
-//       document.getElementById("loginBoxAppStage").hidden = true;
-//       document.getElementById("loginBoxAppEpisphere").hidden = true;
-//       document.getElementById("loginBoxAppProd").hidden = true;
-//     }
-//   } else {
-//     if (localStorage.parms) {
-//       epitracker.parms = JSON.parse(localStorage.parms);
-//       if (epitracker.parms.access_token === undefined) {
-//         localStorage.clear();
-//         alert("access token not found, please contact system administrator");
-//       }
-//     }
-//   }
-// };
-
-// export const refreshToken = async () => {
-//   if (!localStorage.parms) return;
-//   const parms = JSON.parse(localStorage.parms);
-//   let clt = {};
-//   if (location.origin.indexOf("localhost") !== -1) clt = config.iniAppLocal;
-//   else if (location.origin.indexOf("episphere") !== -1) clt = config.iniAppDev;
-//   else if (location.origin.indexOf(applicationURLs.stage) !== -1)
-//     clt = config.iniAppStage;
-//   else if (location.origin.indexOf(applicationURLs.prod) !== -1)
-//     clt = config.iniAppProd;
-
-//   const response = await fetch(`https://api.box.com/oauth2/token`, {
-//     headers: {
-//       "Content-Type": "application/x-www-form-urlencoded",
-//     },
-//     method: "POST",
-//     body: `grant_type=refresh_token&refresh_token=${parms.refresh_token}&client_id=${clt.client_id}&client_secret=${clt.server_id}`,
-//   });
-//   if (response.status === 200) {
-//     const newToken = await response.json();
-//     const newParms = {
-//       ...parms,
-//       ...newToken,
-//     };
-//     localStorage.parms = JSON.stringify(newParms);
-//     return true;
-//   } else {
-//     hideAnimation();
-//     sessionExpired();
-//   }
-// };
-
-// const searchParms = () => {
-//   let parms = {};
-//   if (location.search.length > 3) {
-//     location.search
-//       .slice(1)
-//       .split("&")
-//       .forEach((pp) => {
-//         pp = pp.split("=");
-//         parms[pp[0]] = pp[1];
-//       });
-//   }
-//   return parms;
-// };
 
 export const createFolder = async (folderId, folderName) => {
   try {
@@ -277,11 +176,7 @@ export const createFolder = async (folderId, folderName) => {
 export const descFolder = async (folderId, description) => {
   try {
     const access_token = JSON.parse(localStorage.parms).access_token;
-    // let obj = {
-    //   parent: {
-    //     description: description,
-    //   },
-    // };
+
     let response = await fetch(`https://api.box.com/2.0/folders/${folderId}`, {
       method: "PUT",
       headers: {

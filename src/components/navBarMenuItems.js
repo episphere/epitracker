@@ -38,27 +38,21 @@ export const navBarMenutemplate = () => {
   Each button has a link ('link') associated with it.
 */
 export function pageNavBar(page, activeTab, ...pageHeaders) {
-  // Create a container element 'containerEl' with the "container" class.
   const containerEl = document.createElement("div");
   containerEl.classList.add("container");
 
-  // Create an outer div element 'outerDivEl' with specified classes.
   const outerDivEl = document.createElement("div");
   outerDivEl.classList.add("main-summary-row", "white-bg", "div-border");
 
-  // Create an inner div element 'innerDivEl' with specified classes.
   const innerDivEl = document.createElement("div");
   innerDivEl.classList.add("main-summary-row", "white-bg", "div-border");
 
-  // Append the 'innerDivEl' to the 'outerDivEl'.
   outerDivEl.appendChild(innerDivEl);
 
-  // Append the 'outerDivEl' to the 'containerEl'.
   containerEl.appendChild(outerDivEl);
 
   // Iterate through each 'header' in 'pageHeaders' to create buttons for each page header.
   for (const header of pageHeaders) {
-    // Create a button element 'btn' with the "sub-menu-btn" class.
     let btn = document.createElement("button");
     btn.classList.add("sub-menu-btn");
 
@@ -67,16 +61,11 @@ export function pageNavBar(page, activeTab, ...pageHeaders) {
     link.classList.add("nav-link", "black-font", "font-size-14", "font-weight-bold");
     link.href = `#${page}-${header.toLowerCase()}`;
 
-    // Set the inner HTML of the link to the 'header'.
     link.innerHTML = header;
-
-    // Append the 'link' to the 'btn'.
+   
     btn.appendChild(link);
 
-    // Append the 'btn' to the 'innerDivEl'.
     innerDivEl.appendChild(btn);
   }
-
-  // Return the inner HTML content of the 'containerEl' as the result of the function.
   return containerEl.innerHTML;
 }
