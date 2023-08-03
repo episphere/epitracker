@@ -5,7 +5,7 @@ code,name,icd10,abbr
 04,Malignant neoplasms,C00-C97,Malignant Neoplasms
 05,Malignant neoplasm of stomach,C16,Stomach (Malignant Neoplasm)
 06,"Malignant neoplasms of colon, rectum and anus",C18-C21,"Colon, Rectum and Anus (Malignant Neoplasms)"
-07,Malignant neoplasm of pancreas,C25,pancreas (Malignant Neoplasm)
+07,Malignant neoplasm of pancreas,C25,Pancreas (Malignant Neoplasm)
 08,"Malignant neoplasms of trachea, bronchus and lung",C33-C34,"Trachea, Bronchus and Lung (Malignant Neoplasms)"
 09,Malignant neoplasm of breast,C50,Breast (Malignant Neoplasm)
 10,"Malignant neoplasms of cervix uteri, Corpus uteri and ovary",C53-C56,"Cervix Uteri, Corpus Uteri and Ovary (Malignant Neoplasms)"
