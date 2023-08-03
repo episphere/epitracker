@@ -12,6 +12,11 @@ export const navBarMenutemplate = () => {
             About
             </a>            
         </div>
+        <div class="grid-elements">
+        <a class="nav-link nav-menu-links white-font" href="#instruction" id="instructionPage">
+        Instruction
+        </a>            
+        </div>
        
         <div class="grid-elements">
            <a class="nav-link nav-menu-links white-font" href="#quantile-visualization" title="Quantile Visualization" id="quantile-visualization">
