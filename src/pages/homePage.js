@@ -38,35 +38,14 @@ export const infoDeck = () => {
                         icon: "fa-chart-line",
                         explanation: "",
                     });
-                    // template += cardContents({
-                    //     header: "Death Rate",
-                    //     button: "Death Rate",
-                    //     href: "#publicationpage",
-                    //     icon: "fa-database",
-                    //     explanation: "",
-                    // });
   template += `</div>
             </div>
         </div>
         <div class="secondary-bg inverse-triangle"></div>
         <div class="container align-center">
-           <!---<div class="font-size-28 font-bold font-family-montserrat our-goals mt-3 mb-2">OUR GOALS</div>
-            <div class="row">-->
-                <div class="col-lg-3"></div>
-                <!---<div class="col-lg-6 font-size-18 align-left">To build a large-scale collaborative research resource with data from over 1.5 million women of different race/ethnic backgrounds participating in prospective cohort studies or trials to:</div>-->
                 <div class="col-lg-3"></div>
             </div>
             <br>
-            <div class="row">
-                <div class="col-lg-3"></div>
-                <div class="col-lg-6 font-size-18 align-left mb-3">
-                    <ul>
-                        <!---<li>Develop comprehensive breast cancer risk prediction models for precision prevention in diverse populations</li>
-                        <li>Validate newly developed models in integrated health care systems or breast cancer screening trials</li>-->
-                    </ul>
-                </div>
-                <div class="col-lg-3"></div>
-            </div>
         </div>
         <div class="ternary-bg">
             <div class="container align-left epitracker-info font-family-montserrat">

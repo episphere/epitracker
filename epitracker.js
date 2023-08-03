@@ -7,6 +7,7 @@ import { aboutepitracker, renderOverView } from "./src/pages/about.js";
 import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
+//import { renderInstructionPage } from "./src/pages/mapVisualization.js"
 
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
 import {start as startMapPage} from "./src/utils/map.js"
@@ -70,7 +71,17 @@ const manageRouter = async () => {
     epitrackerDiv.innerHTML = renderMapVisualizationPage()
     startMapPage()
     //loadMapData().then(mapDataLoaded)
-  } else window.location.hash = "#home";
+  } 
+// else if (hash === "#instruction") {
+//   const element = document.getElementById("instructionPage");
+//   if (!element) return;
+//   if (element.classList.contains("navbar-active")) return;
+//   document.title = "map-visualization";
+//   assignNavbarActive(element);
+//   //aboutepitracker("overview");
+//   ();
+//}
+ else window.location.hash = "#home";
 };
 
 window.onload = async () => {

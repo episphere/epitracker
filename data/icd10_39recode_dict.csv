@@ -1,20 +1,19 @@
 code,name,icd10,abbr
 01,Tuberculosis,A16-A19,Tuberculosis
 02,Syphilis,A50-A53,Syphilis
-03,Human immunodeficiency virus (HIV) disease,B20-B24,Human immunodeficiency virus (HIV) disease
-04,Malignant neoplasms,C00-C97,neoplasms(Malignant)
-05,Malignant neoplasm of stomach,C16,stomach(Malignant neoplasm)
-06,"Malignant neoplasms of colon, rectum and anus",C18-C21,colon, rectum and anus (Malignant neoplasms)
-07,Malignant neoplasm of pancreas,C25,pancreas(Malignant neoplasm)
-08,"Malignant neoplasms of trachea, bronchus and lung",C33-C34,trachea, bronchus and lung(Malignant neoplasms)
-09,Malignant neoplasm of breast,C50,breast(Malignant neoplasm)
-10,"Malignant neoplasms of cervix uteri, corpus uteri and ovary",C53-C56,cervix uteri, corpus uteri and ovary(Malignant neoplasms)
-11,Malignant neoplasm of prostate,C61,prostate(Malignant neoplasm)
-12,Malignant neoplasms of urinary tract,C64-C68,urinary tract(Malignant neoplasm)
+03,Human immunodeficiency virus (HIV) disease,B20-B24,Human Immunodeficiency Virus (HIV) Disease
+04,Malignant neoplasms,C00-C97,Malignant Neoplasms
+05,Malignant neoplasm of stomach,C16,Stomach (Malignant Neoplasm)
+06,"Malignant neoplasms of colon, rectum and anus",C18-C21,"Colon, Rectum and Anus (Malignant Neoplasms)"
+07,Malignant neoplasm of pancreas,C25,pancreas (Malignant Neoplasm)
+08,"Malignant neoplasms of trachea, bronchus and lung",C33-C34,"Trachea, Bronchus and Lung (Malignant Neoplasms)"
+09,Malignant neoplasm of breast,C50,Breast (Malignant Neoplasm)
+10,"Malignant neoplasms of cervix uteri, Corpus uteri and ovary",C53-C56,"Cervix Uteri, Corpus Uteri and Ovary (Malignant Neoplasms)"
+11,Malignant neoplasm of prostate,C61,Prostate (Malignant Neoplasm)
+12,Malignant neoplasms of urinary tract,C64-C68,Urinary Tract (Malignant Neoplasm)
 13,Non-Hodgkin's lymphoma,C82-C85,Non-Hodgkin's lymphoma
 14,Leukemia,C91-C95,Leukemia
-15,Other malignant neoplasms,"C00-C15, C17, C22-C24, C26-C32, C37-C49, C51-C52, C57-C60, C62-C63, C69-C81, C88, C90, C96-C97",Other(malignant neoplasms)
-16,Diabetes mellitus,E10-E14,
+15,Other malignant neoplasms,"C00-C15, C17, C22-C24, C26-C32, C37-C49, C51-C52, C57-C60, C62-C63, C69-C81, C88, C90, C96-C97",Other (Malignant Neoplasm)
 17,Alzheimer's disease,G30,
 18,Major cardiovascular diseases,I00-I78,
 19,Diseases of heart,"I00-I09, I11, I13, I20-I51",

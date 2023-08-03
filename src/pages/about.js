@@ -8,14 +8,11 @@ export const aboutepitracker = (activeTab, showDescripton) => {
         activeTab
       )
     : `<div id='overview'></div>`;
-  console.log({ navBarItems });
   let template = `
         <div class="general-bg body-min-height padding-bottom-1rem">
             <div class="container">
                 ${navBarItems}
-                    <!---<button class="sub-menu-btn"><a class="nav-link ${
-                      activeTab === "contact" ? "active" : ""
-                    } black-font font-size-14" href="#contact"> <strong> Scientific Committee</strong></a></button>--->
+                  
                
             </div>
         </div>
