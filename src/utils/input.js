@@ -1,5 +1,6 @@
 export function hookSelect(query, state, optionsProperty, valueProperty, isSelect2) {
   const select = document.querySelector(query) 
+  console.log({query, optionsProperty, valueProperty, isSelect2});
   select.innerHTML = ''
   state.defineDynamicProperty(optionsProperty, [])
   state.defineDynamicProperty(valueProperty, null) 

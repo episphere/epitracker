@@ -66,7 +66,10 @@ export const renderMapVisualizationPage = () => {
                   <option >State</option>
                 </select>
 
-                
+                <label for="stateCountySelectSelect">Search State/County</label>
+                <select id="stateCountySelectSelect" class="form-select mb-2" disabled aria-label="State/County select">
+                  <option hidden >Awaiting data...</option>
+                </select>
               </div>
             </div>
           </div>
@@ -95,6 +98,8 @@ export const renderMapVisualizationPage = () => {
                           id="downloadFigureTwoPNG">Figure 2</button></li>
                       <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download figure 3 as PNG"
                           id="downloadFigureThreePNG">Figure 3</button></li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download all figures as PNG"
+                          id="downloadAllFiguresPNG">All Figures</button></li>
                     </ul>
                     <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
                       <div class="top-50 start-50 translate-middle position-absolute">
@@ -117,6 +122,13 @@ export const renderMapVisualizationPage = () => {
 
             <div id="plots-container" class="d-flex flex-row">
               <div class="position-relative graph" id="plot-map-container">
+                <div class="plot-map-zoom">
+                  <label for="plot-map-zoom" class="form-label">
+                    Zoom Map: 
+                    <strong id="plot-map-zoom-value">1</strong>
+                  </label>
+                  <input type="range" class="form-range" min="1" max="5" step="0.5" value="1" id="plot-map-zoom">
+                </div>
                 <div id="plot-map"></div>
                 <div>
                   <p id="map-title">Figure 1. Map of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>

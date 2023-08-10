@@ -44,6 +44,9 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
 }
 
 export function syncDataDependentInputs(state) {
+  const {properties} = state
+  state.selectStateCountyOptions = state[`${properties.level}GeoMap`]
+
   state.selectCauseOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.race == state.selectRace),
     d => d.cause).sort().map(d => ({text: state.causeMap.get(d), value: d}))
   state.selectSexOptions = unique(state.data.filter(d => d.cause == state.selectCause &&  d.race == state.selectRace),

@@ -80,6 +80,8 @@ const removeDownloadEventListeners = () => {
 export const downloadFiles = (data, fileName) => {
   removeDownloadEventListeners()
   if (!Array.isArray(data)) return;
+
+  if (!data.length) return;
   const headers = Object.keys(data[0])
   
   const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)

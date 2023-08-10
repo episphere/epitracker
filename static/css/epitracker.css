@@ -2394,3 +2394,13 @@ button.previous-btn {
 #demographic-title {
   max-width: 400px;
 }
+
+.plot-map-zoom {
+  position: absolute;
+  width: 200px;
+  right: 30px;
+}
+
+.plot-map-zoom > label {
+  font-size: 14px;
+}

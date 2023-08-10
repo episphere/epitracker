@@ -10,17 +10,22 @@ const dic = {
 // Just the static plot.
 export function createChoroplethPlot(spatialData, featureCollection, options={}) {
   // indexField, measureField , drawBorders
+  const {
+    zoom,
+    ...restOptions
+  } = options
+
 
   options = {
     drawBorders: false,
     scheme: "RdYlBu",
-    ...options
+    ...restOptions
   }
 
   const spatialDataMap = d3.index(spatialData, d => d[options.indexField])
 
   const meanValue = d3.mean(spatialData, (d) => d[options.measureField])
-  const maxValue = d3.max(spatialData, (d) => d[options.measureField])
+  // const maxValue = d3.max(spatialData, (d) => d[options.measureField])
   const color = {
     scheme: options.scheme,
     pivot: meanValue,
@@ -35,7 +40,22 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
       stroke: (d) => options.drawBorders ? "lightgrey" : spatialDataMap.get(d.id)?.[options.measureField],
       fill: (d) => spatialDataMap.get(d.id)?.[options.measureField],
       strokeWidth: 0.5,
-    })
+    }),
+    // Plot.geo(featureCollection, {
+    // r: (d) => 2,
+    // fill: "red",
+    // fillOpacity: 0.2,
+    //   stroke: "red",
+    // title: (d) => {
+    //   console.log('test: ', {d})
+    //   return d
+    // },
+    //   href: (d) => {
+    //     console.log('test: ', {d})
+    //     return d.properties.name
+    //   },
+    //   target: "_blank"
+    // })
   )
 
   if (options.overlayFeatureCollection) {
@@ -46,23 +66,31 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     )
   }
 
-  
+  const {innerWidth: windowWidth} = window
+  const baseWidthSize = windowWidth * 900 / 1680;
+  const baseHeightSize = 640;
+
+  console.log({windowWidth, baseWidthSize});
+
   const plotOptions = {
     projection: "albers-usa",
-    width: 900, 
+    width: baseWidthSize * zoom, 
+    height: baseHeightSize * zoom,
     color: color,
     marks: marks,
   }
-  console.log({options, plotOptions})
 
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
     options.scheme, options.measureField, null, true)
-  console.log({options, colorLegend})
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
-  figure.appendChild(colorLegend)
+  colorLegend && figure.appendChild(colorLegend)
   figure.appendChild(plot)
+  figure.style.width = `${baseWidthSize}px`
+  figure.style.height = `${baseHeightSize}px`
+  figure.style.overflow = 'auto'
+  plot.style.maxWidth = 'initial'
   return {figure,plot}
 }
 

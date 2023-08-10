@@ -264,6 +264,8 @@ export function colorRampLegend(colorScale, valueExtent, label="", tickValues=nu
 }
 
 export function colorRampLegendMeanDiverge(values, schemeName, label=null, size=null, reverse=false) {
+    if (!values.length) return;
+    
     const mean = d3.mean(values) 
     const extent = d3.extent(values) 
     const maxSide = Math.max(mean-extent[0], extent[1]-mean)

@@ -18,6 +18,7 @@ import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
 import { paginationHandler, dataPagination } from "../components/pagination.js";
 import { renderTable } from "../components/table.js";
 import { downloadGraph, downloadFiles } from "./download.js";
+import { zoomSVG } from "./svgZoom.js";
 
 // Static
 const LEVELS = ["state", "county"];
@@ -43,17 +44,36 @@ const SEARCH_SELECT_INPUT_QUERIES = [
       },
     },
   },
+  {
+    key: "#stateCountySelectSelect"
+  }
 ];
 
 // Note: Using standard object properties unless listeners required
 
 let state;
 
+function changeMapZoomRange() {
+  const element = document.querySelector('#plot-map-zoom')
+  console.log('handleChangeMapZoomRange', {element});
+  if (!element) return;
+
+  // element.addEventListener('change', (e) => console.log('range changed: ', {e}))
+  element.onchange = ({target}) => {
+    const parentElement = target.parentElement
+    const labelElement = parentElement.querySelector('strong')
+    labelElement.innerText = target.value
+    state.mapZoom = Number(target.value);
+  }
+}
+
 export async function start() {
   toggleLoading(true);
+  changeMapZoomRange()
 
   state = new State();
   state.defineDynamicProperty("data", []);
+  state.defineDynamicProperty("mapZoom", 1);
 
   hookInputs();
   await initialDataLoad();
@@ -67,6 +87,8 @@ export async function start() {
     pngFigureTwoCallback: null,
     pngFigureThreeButton: null,
     pngFigureThreeCallback: null,
+    pngAllFiguresButton: null,
+    pngAllFiguresCallback: null,
   };
 
   state.addListener(() => {
@@ -97,6 +119,23 @@ export async function start() {
     "measure",
     "level"
   );
+
+  state.addListener(() => {
+    const {selectStateCounty} = state
+    state.isSelectedStateCounty = selectStateCounty !== 'all'
+    queryData(selectStateCounty);
+    syncDataDependentInputs(state);
+    console.log('selectStateCounty updated', {state, selectStateCounty})
+    update();
+    updateMapTitle();
+    state.plotHighlight = selectStateCounty !== 'all' ? selectStateCounty : null
+
+  }, 'selectStateCounty')
+
+  state.addListener(() => {
+    update();
+    console.log('zoom updated: ', {zoom: state.mapZoom})
+  }, 'mapZoom')
 
   state.inputsActive = true;
   state.comparePrimary = "race";
@@ -138,6 +177,7 @@ function updateMapTitle() {
 
 function hookInputs() {
   state.defineDynamicProperty("level", "county");
+  state.defineDynamicProperty("selectStateCounty", "All")
 
   hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES);
   hookInputActivation(
@@ -151,6 +191,7 @@ function hookInputs() {
       "#measureSelect",
       "#levelSelect",
       "#schemeSelect",
+      "#stateCountySelectSelect",
     ],
     state,
     "inputsActive"
@@ -159,6 +200,8 @@ function hookInputs() {
   hookSelect("#measureSelect", state, "measureOptions", "measure");
   hookSelect("#levelSelect", state, "levelOptions", "level");
   hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
+  hookSelect("#stateCountySelectSelect", state, "selectStateCountyOptions", "selectStateCounty", true)
+  
 
   hookCheckbox("#showTableCheck", state, "showTable");
   console.log({ state });
@@ -169,8 +212,9 @@ function hookInputs() {
   }, "showTable");
 }
 
-function queryData() {
+function queryData(fips) {
   //  Get data for map
+  console.log('queryData')
 
   let mapData = [...state.data].filter(
     (d) =>
@@ -186,8 +230,12 @@ function queryData() {
     mapData = mapData.filter((d) => d.county_fips == "All");
   }
   mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
+  if (fips && fips !== 'all') {
+    console.log('queryData: ', {mapData, level: state.level, fips, filters: mapData.filter((row) => row[`${state.level}_fips`] === fips)});
+    mapData = mapData.filter((row) => row[`${state.level}_fips`] === fips)
+  }
+  
   state.mapData = [...mapData];
-
   // Get data for demographic plot
 
   state.demographicData = getDemographicData();
@@ -240,9 +288,16 @@ function addPlotInteractivity() {
 
   const previousStroke = null;
   gSelect.on("mouseleave.interact", () => {
-    state.plotHighlight = null;
+    if (!state.isSelectedStateCounty) {
+      state.plotHighlight = null;
+    }
     tooltip.hide();
   });
+
+  // TODO: it called after right click on map
+  // geoSelect.on("contextmenu.interact", (e, d) => {
+  //   console.log('click clicked', {e, d, fc: state.featureCollection.features[d]})
+  // })
 
   geoSelect
     .on("mouseover.interact", (e, d) => {
@@ -290,6 +345,7 @@ function update() {
       measureField: state.measure,
       scheme: state.scheme,
       overlayFeatureCollection: state.level == "county" ? state.stateGeo : null,
+      zoom: state.mapZoom
     }
   );
   const choropleth = choroplethFigure.plot;
@@ -313,6 +369,11 @@ function update() {
   updateMapTitle();
 
   toggleLoading(false);
+
+  // const svgImage = document.querySelector('#plot-map > figure > svg:last-of-type')
+  // const svgContainer = document.querySelector('#plot-map')
+  // console.log({svgContainer, svgImage});
+  // zoomSVG(svgImage, svgContainer)
 }
 
 function updateSidePlots() {
@@ -349,9 +410,19 @@ function updateSidePlots() {
 }
 
 async function initialDataLoad() {
-  state.stateGeo = await d3.json("data/states.json");
-  state.countyGeo = await d3.json("data/counties.json");
+  const stateGeo = await d3.json("data/states.json");
+  const countyGeo = await d3.json("data/counties.json");
   state.conceptMappings = await d3.json("data/conceptMappings.json");
+  state.stateGeo = stateGeo
+  state.countyGeo = countyGeo
+  state.countyGeoMap = [{
+    text: 'All',
+    value: 'all'
+  }, ...countyGeo.features.map((feature) => ({text: feature.properties.name + ', ' + feature.id, value: feature.id  }))]
+  state.stateGeoMap = [{
+    text: 'All',
+    value: 'all'
+  }, ...stateGeo.features.map((feature) => ({text: feature.properties.name, value: feature.id  }))]
 
   await loadData("2020");
 
@@ -367,6 +438,8 @@ async function initialDataLoad() {
   state.measureOptions = state.conceptMappings.measureOptions;
   state.levelOptions = LEVELS;
   state.selectYearOptions = YEARS;
+  state.selectStateCountyOptions = state.countyGeoMap
+  state.isSelectedStateCounty = false
   state.scheme = "RdYlBu";
   state.schemeOptions = [
     ...Object.entries(state.conceptMappings.colorSchemes),
@@ -444,6 +517,9 @@ function downloadMapGraphs() {
   const downloadFigureThreePNG = () =>
     downloadGraph("plot-demographic-container", "histogram", "map-loading");
 
+  const downloadAllFiguresPNG = () =>
+    downloadGraph("plots-container", "all-figures", "map-loading");
+
   const downloadFigureOneButton = document.getElementById(
     "downloadFigureOnePNG"
   );
@@ -472,6 +548,16 @@ function downloadMapGraphs() {
     downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
     state.downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton;
     state.downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG;
+  }
+
+  const downloadAllFiguresButton = document.getElementById(
+    "downloadAllFiguresPNG"
+  );
+
+  if (downloadAllFiguresButton) {
+    downloadAllFiguresButton.addEventListener("click", downloadAllFiguresPNG);
+    state.downloadGraphRef.pngAllFiguresButton = downloadAllFiguresButton;
+    state.downloadGraphRef.pngAllFiguresCallback = downloadAllFiguresPNG;
   }
 }
 
