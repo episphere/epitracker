@@ -67,7 +67,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   }
 
   const {innerWidth: windowWidth} = window
-  const baseWidthSize = windowWidth * 750 / 1680;
+  const baseWidthSize = windowWidth * 700 / 1680;
   const baseHeightSize = 640;
 
   console.log({windowWidth, baseWidthSize});
