@@ -66,10 +66,17 @@ export const renderMapVisualizationPage = () => {
                   <option >State</option>
                 </select>
 
-                <label for="stateCountySelectSelect">Search State/County</label>
-                <select id="stateCountySelectSelect" class="form-select mb-2" disabled aria-label="State/County select">
+                <label for="stateSelectSelect">Search State</label>
+                <select id="stateSelectSelect" class="form-select mb-2" disabled aria-label="State select">
                   <option hidden >Awaiting data...</option>
                 </select>
+
+                <div id="county-wrapper">
+                  <label for="countySelectSelect">Search County</label>
+                  <select id="countySelectSelect" class="form-select mb-2" disabled aria-label="County select">
+                    <option hidden >Awaiting data...</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

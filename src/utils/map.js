@@ -45,7 +45,10 @@ const SEARCH_SELECT_INPUT_QUERIES = [
     },
   },
   {
-    key: "#stateCountySelectSelect"
+    key: "#stateSelectSelect"
+  },
+  {
+    key: "#countySelectSelect"
   }
 ];
 
@@ -106,10 +109,25 @@ export async function start() {
 
   state.addListener(
     () => {
+      state.selectState = 'all'
+      state.selectCounty = 'all'
+      $("#stateSelectSelect").val('all').trigger('change');
+      if (state.level === 'county') {
+        $("#countySelectSelect").val('all').trigger('change');
+      }
+
+      const countySelectElement = document.querySelector('#county-wrapper')
+      if (countySelectElement) {
+        countySelectElement.style.display = state.level === 'county' ? 'block' : 'none';
+      }
+
       queryData();
       syncDataDependentInputs(state);
       update();
       updateMapTitle();
+      console.log({level: state.level, sss: state.selectState, state})
+      
+      
     },
     "comparePrimary",
     "compareSecondary",
@@ -121,16 +139,37 @@ export async function start() {
   );
 
   state.addListener(() => {
-    const {selectStateCounty} = state
-    state.isSelectedStateCounty = selectStateCounty !== 'all'
-    queryData(selectStateCounty);
-    syncDataDependentInputs(state);
-    console.log('selectStateCounty updated', {state, selectStateCounty})
+    const {selectState, countyGeo, selectCounty} = state
+    if (state.level === 'county') {
+      $("#countySelectSelect").val('all').trigger('change');
+    }
+    
+    const counties = selectState === 'all' ? 
+      countyGeo.features : 
+      countyGeo.features.filter(county => county.state?.id === selectState)
+
+    console.log('1', {state, selectState, selectCounty});
+    const countyOptions = [{
+      text: 'All',
+      value: 'all'
+    }, ...counties.map((feature) => ({text: feature.properties.name + ', ' + feature.id, value: feature.id  }))]
+    state.countyGeoMap = countyOptions
+    state.selectCountyOptions = countyOptions
+    console.log('2', {state, selectState, selectCounty});
+    queryData(selectState);
     update();
     updateMapTitle();
-    state.plotHighlight = selectStateCounty !== 'all' ? selectStateCounty : null
+    state.plotHighlight = selectState !== 'all' ? selectState : null
 
-  }, 'selectStateCounty')
+  }, 'selectState')
+
+  state.addListener(() => {
+    const {selectCounty, selectState} = state
+    queryData(selectState, selectCounty);
+    update();
+    updateMapTitle();
+    state.plotHighlight = selectCounty !== 'all' ? selectCounty : selectState !== 'all' ? selectState : null
+  }, 'selectCounty')
 
   state.addListener(() => {
     update();
@@ -191,7 +230,8 @@ function hookInputs() {
       "#measureSelect",
       "#levelSelect",
       "#schemeSelect",
-      "#stateCountySelectSelect",
+      "#stateSelectSelect",
+      "#countySelectSelect",
     ],
     state,
     "inputsActive"
@@ -200,7 +240,8 @@ function hookInputs() {
   hookSelect("#measureSelect", state, "measureOptions", "measure");
   hookSelect("#levelSelect", state, "levelOptions", "level");
   hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
-  hookSelect("#stateCountySelectSelect", state, "selectStateCountyOptions", "selectStateCounty", true)
+  hookSelect("#stateSelectSelect", state, "selectStateOptions", "selectState", true)
+  hookSelect("#countySelectSelect", state, "selectCountyOptions", "selectCounty", true)
   
 
   hookCheckbox("#showTableCheck", state, "showTable");
@@ -212,7 +253,7 @@ function hookInputs() {
   }, "showTable");
 }
 
-function queryData(fips) {
+function queryData(stateFips, countyFips) {
   //  Get data for map
   console.log('queryData')
 
@@ -230,9 +271,12 @@ function queryData(fips) {
     mapData = mapData.filter((d) => d.county_fips == "All");
   }
   mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
-  if (fips && fips !== 'all') {
-    console.log('queryData: ', {mapData, level: state.level, fips, filters: mapData.filter((row) => row[`${state.level}_fips`] === fips)});
-    mapData = mapData.filter((row) => row[`${state.level}_fips`] === fips)
+  if (stateFips && stateFips !== 'all') {
+    mapData = mapData.filter((row) => row[`state_fips`] === stateFips)
+  }
+
+  if (countyFips && countyFips !== 'all') {
+    mapData = mapData.filter((row) => row[`county_fips`] === countyFips)
   }
   
   state.mapData = [...mapData];
@@ -289,7 +333,11 @@ function addPlotInteractivity() {
   const previousStroke = null;
   gSelect.on("mouseleave.interact", () => {
     if (!state.isSelectedStateCounty) {
-      state.plotHighlight = null;
+      state.plotHighlight = state.selectCounty !== 'all' ? 
+        state.selectCounty : 
+        state.selectState !== 'all' ? 
+          state.selectState : 
+          null;
     }
     tooltip.hide();
   });
@@ -344,7 +392,7 @@ function update() {
       indexField,
       measureField: state.measure,
       scheme: state.scheme,
-      overlayFeatureCollection: state.level == "county" ? state.stateGeo : null,
+      overlayFeatureCollection: state.stateGeo,
       zoom: state.mapZoom
     }
   );
@@ -438,7 +486,8 @@ async function initialDataLoad() {
   state.measureOptions = state.conceptMappings.measureOptions;
   state.levelOptions = LEVELS;
   state.selectYearOptions = YEARS;
-  state.selectStateCountyOptions = state.countyGeoMap
+  state.selectStateOptions = state.stateGeoMap
+  state.selectCountyOptions = state.countyGeoMap
   state.isSelectedStateCounty = false
   state.scheme = "RdYlBu";
   state.schemeOptions = [
