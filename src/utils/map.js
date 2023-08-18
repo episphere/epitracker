@@ -1,4 +1,5 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import panzoom from 'https://cdn.jsdelivr.net/npm/panzoom@9.4.3/+esm';
 
 import { State } from "./DynamicState2.js";
 import {
@@ -58,7 +59,6 @@ let state;
 
 function changeMapZoomRange() {
   const element = document.querySelector('#plot-map-zoom')
-  console.log('handleChangeMapZoomRange', {element});
   if (!element) return;
 
   // element.addEventListener('change', (e) => console.log('range changed: ', {e}))
@@ -66,8 +66,21 @@ function changeMapZoomRange() {
     const parentElement = target.parentElement
     const labelElement = parentElement.querySelector('strong')
     labelElement.innerText = target.value
-    state.mapZoom = Number(target.value);
   }
+}
+
+function zoomToElement(pz, svg, targetElement, scale=.9) {
+  const bbox = svg.getBBox()
+  const svgCentroid = [bbox.x+bbox.width/2, bbox.y+bbox.height/2]
+  const maxSvgDim = bbox.height//Math.max(bbox.width, bbox.height)
+  
+  const targetBbox = targetElement.getBBox()
+  const targetMaxDim = targetBbox.height//Math.max(targetBbox.width, targetBbox.height)
+  const pos = [targetBbox.x+targetBbox.width/2, targetBbox.y+targetBbox.height/2]
+  pz.zoomAbs(0,0,1)
+  pz.moveTo(0,0)
+  pz.moveTo(svgCentroid[0]-pos[0], svgCentroid[1]-pos[1])
+  pz.zoomAbs(bbox.width/2,bbox.height/2,maxSvgDim/targetMaxDim * scale)
 }
 
 export async function start() {
@@ -121,11 +134,11 @@ export async function start() {
         countySelectElement.style.display = state.level === 'county' ? 'block' : 'none';
       }
 
+
       queryData();
       syncDataDependentInputs(state);
       update();
       updateMapTitle();
-      console.log({level: state.level, sss: state.selectState, state})
       
       
     },
@@ -148,19 +161,28 @@ export async function start() {
       countyGeo.features : 
       countyGeo.features.filter(county => county.state?.id === selectState)
 
-    console.log('1', {state, selectState, selectCounty});
     const countyOptions = [{
       text: 'All',
       value: 'all'
     }, ...counties.map((feature) => ({text: feature.properties.name + ', ' + feature.id, value: feature.id  }))]
     state.countyGeoMap = countyOptions
     state.selectCountyOptions = countyOptions
-    console.log('2', {state, selectState, selectCounty});
+
+
     queryData(selectState);
     update();
     updateMapTitle();
     state.plotHighlight = selectState !== 'all' ? selectState : null
 
+    // Zoom to area
+    if (state.selectState != "all") {
+      const targetElement = d3.select(state.choroplethPlot)
+        .select("#area-"+state.selectState).node()
+
+      if (targetElement) {
+        zoomToElement(state.pz, state.choroplethPlot, targetElement, .6)
+      }
+    }
   }, 'selectState')
 
   state.addListener(() => {
@@ -169,12 +191,17 @@ export async function start() {
     update();
     updateMapTitle();
     state.plotHighlight = selectCounty !== 'all' ? selectCounty : selectState !== 'all' ? selectState : null
+
+    if (state.selectCounty != "all") {
+      const targetElement = d3.select(state.choroplethPlot)
+        .select("#area-"+state.selectCounty).node()
+
+      if (targetElement) {
+        zoomToElement(state.pz, state.choroplethPlot, targetElement, .2)
+      }
+    }
   }, 'selectCounty')
 
-  state.addListener(() => {
-    update();
-    console.log('zoom updated: ', {zoom: state.mapZoom})
-  }, 'mapZoom')
 
   state.inputsActive = true;
   state.comparePrimary = "race";
@@ -245,7 +272,6 @@ function hookInputs() {
   
 
   hookCheckbox("#showTableCheck", state, "showTable");
-  console.log({ state });
   state.addListener(() => {
     document.getElementById("map-table-wrapper").style.display = state.showTable
       ? "block"
@@ -255,7 +281,6 @@ function hookInputs() {
 
 function queryData(stateFips, countyFips) {
   //  Get data for map
-  console.log('queryData')
 
   let mapData = [...state.data].filter(
     (d) =>
@@ -393,11 +418,12 @@ function update() {
       measureField: state.measure,
       scheme: state.scheme,
       overlayFeatureCollection: state.stateGeo,
-      zoom: state.mapZoom
     }
   );
   const choropleth = choroplethFigure.plot;
   const figure = choroplethFigure.figure;
+
+  state.pz = panzoom(choroplethFigure.plot)
 
   const mapPlotContainer = document.getElementById("plot-map");
   mapPlotContainer.innerHTML = "";
@@ -493,7 +519,6 @@ async function initialDataLoad() {
   state.schemeOptions = [
     ...Object.entries(state.conceptMappings.colorSchemes),
   ].map(([k, v]) => ({ text: v, value: k }));
-  console.log({state: JSON.parse(JSON.stringify(state))});
 }
 
 async function loadData(year) {

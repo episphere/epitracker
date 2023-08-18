@@ -3,7 +3,7 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 import { colorRampLegendMeanDiverge } from "./helper.js";
 
 const dic = {
-  crude_rate: 'Crude Rate', age_adjusted_rate:'Age Adjsuted Rate' 
+  crude_rate: 'Crude Rate', age_adjusted_rate:'Age Adjusted Rate' 
 }
 
 
@@ -11,7 +11,6 @@ const dic = {
 export function createChoroplethPlot(spatialData, featureCollection, options={}) {
   // indexField, measureField , drawBorders
   const {
-    zoom,
     ...restOptions
   } = options
 
@@ -41,21 +40,6 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
       fill: (d) => spatialDataMap.get(d.id)?.[options.measureField],
       strokeWidth: 0.5,
     }),
-    // Plot.geo(featureCollection, {
-    // r: (d) => 2,
-    // fill: "red",
-    // fillOpacity: 0.2,
-    //   stroke: "red",
-    // title: (d) => {
-    //   console.log('test: ', {d})
-    //   return d
-    // },
-    //   href: (d) => {
-    //     console.log('test: ', {d})
-    //     return d.properties.name
-    //   },
-    //   target: "_blank"
-    // })
   )
 
   if (options.overlayFeatureCollection) {
@@ -73,8 +57,8 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   const plotOptions = {
     projection: "albers-usa",
-    width: baseWidthSize * zoom, 
-    height: baseHeightSize * zoom,
+    width: baseWidthSize, 
+    height: baseHeightSize,
     color: color,
     marks: marks,
   }
@@ -82,15 +66,39 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
     options.scheme, options.measureField, null, true)
+  colorLegend.style.position = "relative"
+  colorLegend.style.zIndex = 100
+
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
+  const plotWrapper = document.createElement("svg")
+  // plotWrapper.style.overflow = "hidden"
+  // plotWrapper.style.width = "fit-content"
+  // plotWrapper.style.height = "fit-content"
+  // plotWrapper.style.display = "block"
+  plotWrapper.appendChild(plot)
   colorLegend && figure.appendChild(colorLegend)
-  figure.appendChild(plot)
+  figure.appendChild(plotWrapper)
   figure.style.width = `${baseWidthSize}px`
   //figure.style.height = `${baseHeightSize}px`
-  //figure.style.overflow = 'auto'
+  figure.style.overflow = 'hidden'
   plot.style.maxWidth = 'initial'
-  return {figure,plot}
+
+  d3.select(plot)
+      .selectAll("g[aria-label='geo']")
+      .filter((_,i) => i == 0)
+        .selectAll("path")
+          .attr("id", (d,i) => "area-"+featureCollection.features[d].id)
+
+  if (options.overlayFeatureCollection) {
+    d3.select(plot)
+      .selectAll("g[aria-label='geo']")
+      .filter((_,i) => i == 1)
+        .selectAll("path")
+          .attr("id", (d,i) => "area-"+options.overlayFeatureCollection.features[d].id)
+  }
+
+  return {figure,plot,plotWrapper}
 }
 
 export function createDemographicsPlot(data, options = {}) {

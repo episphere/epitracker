@@ -37,7 +37,6 @@ const manageRouter = async () => {
     document.getElementById("navBarBtn").click();
   if (hash === "#home") {
     const element = document.getElementById("homePage");
-    console.log(element);
     if (!element) return;
     if (element.classList.contains("navbar-active")) return;
     document.title = "Epitracker";
