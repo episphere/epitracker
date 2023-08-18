@@ -129,13 +129,13 @@ export const renderMapVisualizationPage = () => {
 
             <div id="plots-container" class="d-flex flex-row">
               <div class="position-relative graph" id="plot-map-container">
-                <div class="plot-map-zoom">
+                <!--<div class="plot-map-zoom">
                   <label for="plot-map-zoom" class="form-label">
                     Zoom Map: 
                     <strong id="plot-map-zoom-value">1</strong>
                   </label>
                   <input type="range" class="form-range" min="1" max="5" step="0.5" value="1" id="plot-map-zoom">
-                </div>
+                </div>-->
                 <div id="plot-map"></div>
                 <div>
                   <p id="map-title">Figure 1. Map of <b data-map-item="measure">measure</b> <b data-map-item="level">level</b> level <b data-map-item="selectCause" data-options-key="selectCauseOptions">cause</b>-cause cancer morality rates for <b data-map-item="selectSex">sex</b> sex of <b data-map-item="selectRace">race</b> race and ethnitic groups, <b data-map-item="selectYear">Year</b>.</p>

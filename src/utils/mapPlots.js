@@ -70,7 +70,6 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   const baseWidthSize = windowWidth * 960 / 1680;
   const baseHeightSize = 640;
 
-  console.log({windowWidth, baseWidthSize});
 
   const plotOptions = {
     projection: "albers-usa",
@@ -88,16 +87,16 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   colorLegend && figure.appendChild(colorLegend)
   figure.appendChild(plot)
   figure.style.width = `${baseWidthSize}px`
-  figure.style.height = `${baseHeightSize}px`
-  figure.style.overflow = 'auto'
+  //figure.style.height = `${baseHeightSize}px`
+  //figure.style.overflow = 'auto'
   plot.style.maxWidth = 'initial'
   return {figure,plot}
 }
 
 export function createDemographicsPlot(data, options = {}) {
   options = {
-    width: 440, 
-    height: 360,
+    width: 360, 
+    height: 320,
     xTickFormat: d => d,
     ...options 
   }
@@ -208,8 +207,8 @@ export function createDemographicsPlot(data, options = {}) {
 export function createHistogramPlot(data, options={}) {
 
   options = {
-    width: 440, 
-    height: 360,
+    width: 360, 
+    height: 320,
     markLine: [],
     ...options
   }
