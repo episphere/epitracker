@@ -8,6 +8,8 @@ import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 import { InstructionPage } from "./src/pages/instruction.js"
+import { DictionaryPage } from "./src/pages/dictionarypage.js"
+
 
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
 import {start as startMapPage} from "./src/utils/map.js"
@@ -77,8 +79,15 @@ else if (hash === "#instruction") {
   if (element.classList.contains("navbar-active")) return;
   document.title = "map-visualization";
   assignNavbarActive(element);
-  //aboutepitracker("overview");
   epitrackerDiv.innerHTML = InstructionPage ();
+}
+else if (hash === "#dictionarypage") {
+  const element = document.getElementById("DictionaryPage");
+  if (!element) return;
+  if (element.classList.contains("navbar-active")) return;
+  document.title = "map-visualization";
+  assignNavbarActive(element);
+  epitrackerDiv.innerHTML = DictionaryPage ();
 }
  else window.location.hash = "#home";
 };
