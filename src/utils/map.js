@@ -18,6 +18,7 @@ import {
 import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
 import { paginationHandler, dataPagination } from "../components/pagination.js";
 import { renderTable } from "../components/table.js";
+import { sort } from "../shared.js";
 import { downloadGraph, downloadFiles } from "./download.js";
 import { zoomSVG } from "./svgZoom.js";
 
@@ -28,28 +29,20 @@ const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: "#causeSelectSelect",
     options: {
-      sorter: (items) => {
-        return items.sort((a, b) => {
-          const nameA = a.text.toUpperCase();
-          const nameB = b.text.toUpperCase();
-          if (nameA < nameB) {
-            return -1;
-          }
-          if (nameA > nameB) {
-            return 1;
-          }
-
-          // names must be equal
-          return 0;
-        });
-      },
+      sorter: sort
     },
   },
   {
-    key: "#stateSelectSelect"
+    key: "#stateSelectSelect",
+    options: {
+      sorter: sort
+    },
   },
   {
-    key: "#countySelectSelect"
+    key: "#countySelectSelect",
+    options: {
+      sorter: sort
+    },
   }
 ];
 
@@ -153,6 +146,7 @@ export async function start() {
 
   state.addListener(() => {
     const {selectState, countyGeo, selectCounty} = state
+    queryData(selectState);
     if (state.level === 'county') {
       $("#countySelectSelect").val('all').trigger('change');
     }
@@ -164,19 +158,27 @@ export async function start() {
     const countyOptions = [{
       text: 'All',
       value: 'all'
-    }, ...counties.map((feature) => ({text: feature.properties.name + ', ' + feature.id, value: feature.id  }))]
+    }, ...counties.map((feature) => {
+      const hasData = state.mapData.find(item => item.county_fips === feature.id)
+      const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
+      return {
+        text: feature.properties.name + ', ' + stateName,
+        value: feature.id,
+        hasData: !!hasData
+      }
+    })]
     state.countyGeoMap = countyOptions
     state.selectCountyOptions = countyOptions
 
 
-    queryData(selectState);
+    
     update();
     updateMapTitle();
     state.plotHighlight = selectState !== 'all' ? selectState : null
 
     // Zoom to area
     if (state.selectState != "all") {
-      const targetElement = d3.select(state.choroplethPlot)
+    const targetElement = d3.select(state.choroplethPlot)
         .select("#area-"+state.selectState).node()
 
       if (targetElement) {
@@ -207,6 +209,20 @@ export async function start() {
   state.comparePrimary = "race";
 
   toggleSidebar("plot-map");
+
+  const driver = window.driver.js.driver;
+  const driverObj = driver({
+    overlayColor: 'rgba(0,0,0,0)'
+  });
+  driverObj.highlight({
+    element: "#plot-map",
+    popover: {
+      title: "Map",
+      description: "This is a map visualization",
+      side: "top",
+      align: 'center'
+    }
+  });
 }
 
 function toggleLoading(loading) {
@@ -243,7 +259,6 @@ function updateMapTitle() {
 
 function hookInputs() {
   state.defineDynamicProperty("level", "county");
-  state.defineDynamicProperty("selectStateCounty", "All")
 
   hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES);
   hookInputActivation(
@@ -484,21 +499,35 @@ function updateSidePlots() {
 }
 
 async function initialDataLoad() {
+  state.conceptMappings = await d3.json("data/conceptMappings.json");
   const stateGeo = await d3.json("data/states.json");
   const countyGeo = await d3.json("data/counties.json");
-  state.conceptMappings = await d3.json("data/conceptMappings.json");
+
+  
   state.stateGeo = stateGeo
   state.countyGeo = countyGeo
+
+  await loadData("2020");
+
   state.countyGeoMap = [{
     text: 'All',
     value: 'all'
-  }, ...countyGeo.features.map((feature) => ({text: feature.properties.name + ', ' + feature.id, value: feature.id  }))]
+  }, ...countyGeo.features.map((feature) => {
+    const hasData = state.data.find(item => item.county_fips === feature.id)
+    const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-';
+
+    return {
+      text: feature.properties.name + ', ' + stateName, 
+      value: feature.id,
+      hasData: !!hasData
+    }
+  })]
   state.stateGeoMap = [{
     text: 'All',
     value: 'all'
   }, ...stateGeo.features.map((feature) => ({text: feature.properties.name, value: feature.id  }))]
 
-  await loadData("2020");
+  
 
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv");
 

@@ -18,7 +18,11 @@ export function hookSelect(query, state, optionsProperty, valueProperty, isSelec
       }
   
       const selected = state[valueProperty] == option.value
-      select.appendChild(new Option(option.text, option.value, null, selected))
+      const newOption = new Option(option.text, option.value, null, selected)
+      if (typeof option?.hasData === 'boolean' && !option?.hasData) {
+        newOption.disabled = true
+      }
+      select.appendChild(newOption)
     }
   }
 

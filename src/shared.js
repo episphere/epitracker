@@ -1,3 +1,23 @@
+export const sort = (items = []) => {
+  return items.sort((a, b) => {
+    const nameA = a.text.toUpperCase();
+    const nameB = b.text.toUpperCase();
+
+    if (nameA === 'ALL' || nameB === 'ALL') {
+      return 1
+    }
+    if (nameA < nameB) {
+      return -1;
+    }
+    if (nameA > nameB) {
+      return 1;
+    }
+
+    // names must be equal
+    return 0;
+  });
+}
+
 export const getFolderItems = async (id) => {
   try {
     const access_token = JSON.parse(localStorage.parms).access_token;

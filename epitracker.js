@@ -87,7 +87,9 @@ else if (hash === "#dictionarypage") {
   if (element.classList.contains("navbar-active")) return;
   document.title = "map-visualization";
   assignNavbarActive(element);
-  epitrackerDiv.innerHTML = DictionaryPage ();
+  epitrackerDiv.innerHTML = DictionaryPage();
+  
+
 }
  else window.location.hash = "#home";
 };
