@@ -18,7 +18,7 @@ export const navBarMenutemplate = () => {
         </a>            
         </div>
         <div class="grid-elements">
-        <a class="nav-link nav-menu-links white-font" href="#dictionarypage" id="DictionaryPage">
+        <a class="nav-link nav-menu-links white-font" href="#dictionarypage" id="dictionaryPage">
         Dictionary
         </a>            
         </div>

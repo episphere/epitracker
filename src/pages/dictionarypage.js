@@ -1,4 +1,4 @@
-export const DictionaryPage = () => {
+export const dictionaryPage = () => {
     let template = `
     <div class="general-bg padding-bottom-1rem">
            <div class="container body-min-height">

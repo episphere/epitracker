@@ -8,7 +8,7 @@ import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 import { InstructionPage } from "./src/pages/instruction.js"
-import { DictionaryPage } from "./src/pages/dictionarypage.js"
+import { dictionaryPage } from "./src/pages/dictionarypage.js"
 
 
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
@@ -82,12 +82,12 @@ else if (hash === "#instruction") {
   epitrackerDiv.innerHTML = InstructionPage ();
 }
 else if (hash === "#dictionarypage") {
-  const element = document.getElementById("DictionaryPage");
+  const element = document.getElementById("dictionaryPage");
   if (!element) return;
   if (element.classList.contains("navbar-active")) return;
   document.title = "map-visualization";
   assignNavbarActive(element);
-  epitrackerDiv.innerHTML = DictionaryPage();
+  epitrackerDiv.innerHTML = dictionaryPage();
   
 
 }
