@@ -328,7 +328,24 @@ function queryData(stateFips, countyFips) {
   state.mapData = [...mapData];
   // Get data for demographic plot
 
-  state.demographicData = getDemographicData();
+  const stratifySet = new Set(
+    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
+  );
+  let baseDemographicData = state.data
+  SELECTABLE_FIELDS.forEach((field) => {
+    if (stratifySet.has(field)) {
+      baseDemographicData = baseDemographicData.filter((row) => row[field] != "All");
+    } else {
+      baseDemographicData = baseDemographicData.filter(
+        (row) => row[field] == state[statePropertyName("select", field)]
+      );
+    }
+  });
+  state.dataMap = d3.group(baseDemographicData, d => d.state_fips, d => d.county_fips)
+
+  state.demographicReferenceData = getDemographicData();
+  
+  
 }
 
 function getDemographicData(highlight = null) {
@@ -342,22 +359,12 @@ function getDemographicData(highlight = null) {
     }
   }
 
-  let demographicData = state.data.filter(
-    (d) => d.state_fips == stateFips && d.county_fips == countyFips
-  );
+  let demographicData = state.dataMap.get(stateFips)?.get(countyFips)
 
-  const stratifySet = new Set(
-    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
-  );
-  SELECTABLE_FIELDS.forEach((field) => {
-    if (stratifySet.has(field)) {
-      demographicData = demographicData.filter((row) => row[field] != "All");
-    } else {
-      demographicData = demographicData.filter(
-        (row) => row[field] == state[statePropertyName("select", field)]
-      );
-    }
-  });
+  if (!demographicData) {
+    demographicData = []
+  }
+
 
   return demographicData;
 }
@@ -476,7 +483,7 @@ function updateSidePlots() {
 
   const demographicHighlightData = getDemographicData(state.plotHighlight);
   const demographicsPlot = createDemographicsPlot(demographicHighlightData, {
-    referenceData: state.demographicData,
+    referenceData: state.demographicReferenceData,
     measureField: state.measure,
     comparePrimary: state.comparePrimary,
     compareSecondary: state.compareSecondary,
@@ -573,6 +580,9 @@ async function loadData(year) {
   });
 
   state.data = [...data] || [];
+  if (state.data) {
+    state.dataMap = d3.group(state.data, d => d.state_fips, d => d.county_fips)
+  }
   return data;
 }
 
@@ -618,7 +628,6 @@ function downloadMapGraphs() {
   removeDownloadGraphEventListeners();
 
   const downloadFigureOnePNG = () => {
-    console.log("Downloading 1");
     downloadGraph("plot-map-container", "map", "map-loading");
   };
   const downloadFigureTwoPNG = () =>
