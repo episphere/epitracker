@@ -218,7 +218,7 @@ export async function start() {
     element: "#plot-map",
     popover: {
       title: "Map",
-      description: "This is a map visualization",
+      description: "Hover over the graphs to see more information",
       side: "top",
       align: 'center'
     }
@@ -285,6 +285,12 @@ function hookInputs() {
   hookSelect("#stateSelectSelect", state, "selectStateOptions", "selectState", true)
   hookSelect("#countySelectSelect", state, "selectCountyOptions", "selectCounty", true)
   
+  // hookCheckbox("#showOutlineCheck", state, "showOuline");
+  // state.addListener(() => {
+  //   document.getElementById("map-table-wrapper").style.display = state.showOutline
+  //     ? "block"
+  //     : "none";
+  // }, "showOutline");
 
   hookCheckbox("#showTableCheck", state, "showTable");
   state.addListener(() => {

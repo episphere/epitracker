@@ -2404,3 +2404,6 @@ button.previous-btn {
 .plot-map-zoom > label {
   font-size: 14px;
 }
+svg path{
+  stroke:#706e6e;
+}
