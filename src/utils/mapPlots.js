@@ -247,7 +247,7 @@ export function createHistogramPlot(data, options={}) {
         data,
         Plot.binX(
           { y: "count" },
-          { x: options.measureField, stroke: null, fill: "lightblue" }
+          { x: options.measureField, stroke: null, fill: "lightgray" }
         )
       ),
       Plot.ruleX(options.markLine, {
