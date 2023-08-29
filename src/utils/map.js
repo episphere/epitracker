@@ -155,11 +155,12 @@ export async function start() {
       countyGeo.features : 
       countyGeo.features.filter(county => county.state?.id === selectState)
 
+
     const countyOptions = [{
       text: 'All',
       value: 'all'
     }, ...counties.map((feature) => {
-      const hasData = state.mapData.find(item => item.county_fips === feature.id)
+      const hasData = state.countySet.has(feature.id)
       const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
       return {
         text: feature.properties.name + ', ' + stateName,
@@ -169,8 +170,6 @@ export async function start() {
     })]
     state.countyGeoMap = countyOptions
     state.selectCountyOptions = countyOptions
-
-
     
     update();
     updateMapTitle();
@@ -522,17 +521,18 @@ async function initialDataLoad() {
 
   await loadData("2020");
 
+  state.countySet = new Set(state.data.map(item => item.county_fips))
   state.countyGeoMap = [{
     text: 'All',
     value: 'all'
   }, ...countyGeo.features.map((feature) => {
-    const hasData = state.data.find(item => item.county_fips === feature.id)
+    const hasData = state.countySet.has(feature.id)
     const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-';
 
     return {
       text: feature.properties.name + ', ' + stateName, 
       value: feature.id,
-      hasData: !!hasData
+      hasData: hasData
     }
   })]
   state.stateGeoMap = [{
