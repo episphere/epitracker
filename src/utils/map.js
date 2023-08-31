@@ -1,5 +1,7 @@
+/** @format */
+
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import panzoom from 'https://cdn.jsdelivr.net/npm/panzoom@9.4.3/+esm';
+import panzoom from "https://cdn.jsdelivr.net/npm/panzoom@9.4.3/+esm";
 
 import { State } from "./DynamicState2.js";
 import {
@@ -18,30 +20,27 @@ import {
 import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
 import { paginationHandler, dataPagination } from "../components/pagination.js";
 import { renderTable } from "../components/table.js";
-import { sort } from "../shared.js";
+import { getQueryParams, sort } from "../shared.js";
 import { downloadGraph, downloadFiles } from "./download.js";
 import { zoomSVG } from "./svgZoom.js";
+import { insertParamsToUrl } from "../shared.js";
 
 // Static
 const LEVELS = ["state", "county"];
 const YEARS = ["2018", "2019", "2020", "2018-2020"];
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
-    key: "#causeSelectSelect",
-    options: {
-      sorter: sort
-    },
-  },
-  {
-    key: "#stateSelectSelect",
-    options: {
-      sorter: sort
-    },
-  },
-  {
     key: "#countySelectSelect",
     options: {
-      sorter: sort
+      sorter: (items = []) => {
+        const groupBy = (input, key) => input.reduce((acc, currentValue) => {
+            (acc[currentValue[key]] ??= []).push(currentValue);
+            return acc;
+        }, {})
+        const groupByDisabledItems = groupBy(items, 'disabled')
+
+        return [...sort(groupByDisabledItems['false']), ...sort(groupByDisabledItems['true'])]
+      },
     },
   }
 ];
@@ -50,35 +49,44 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 
 let state;
 
+let params = getQueryParams(window.location.search);
+
 function changeMapZoomRange() {
-  const element = document.querySelector('#plot-map-zoom')
+  const element = document.querySelector("#plot-map-zoom");
   if (!element) return;
 
   // element.addEventListener('change', (e) => console.log('range changed: ', {e}))
-  element.onchange = ({target}) => {
-    const parentElement = target.parentElement
-    const labelElement = parentElement.querySelector('strong')
-    labelElement.innerText = target.value
-  }
+  element.onchange = ({ target }) => {
+    const parentElement = target.parentElement;
+    const labelElement = parentElement.querySelector("strong");
+    labelElement.innerText = target.value;
+  };
 }
 
-function zoomToElement(pz, svg, targetElement, scale=.9) {
-  const bbox = svg.getBBox()
-  const svgCentroid = [bbox.x+bbox.width/2, bbox.y+bbox.height/2]
-  const maxSvgDim = bbox.height//Math.max(bbox.width, bbox.height)
-  
-  const targetBbox = targetElement.getBBox()
-  const targetMaxDim = targetBbox.height//Math.max(targetBbox.width, targetBbox.height)
-  const pos = [targetBbox.x+targetBbox.width/2, targetBbox.y+targetBbox.height/2]
-  pz.zoomAbs(0,0,1)
-  pz.moveTo(0,0)
-  pz.moveTo(svgCentroid[0]-pos[0], svgCentroid[1]-pos[1])
-  pz.zoomAbs(bbox.width/2,bbox.height/2,maxSvgDim/targetMaxDim * scale)
+function zoomToElement(pz, svg, targetElement, scale = 0.9) {
+  const bbox = svg.getBBox();
+  const svgCentroid = [bbox.x + bbox.width / 2, bbox.y + bbox.height / 2];
+  const maxSvgDim = bbox.height; //Math.max(bbox.width, bbox.height)
+
+  const targetBbox = targetElement.getBBox();
+  const targetMaxDim = targetBbox.height; //Math.max(targetBbox.width, targetBbox.height)
+  const pos = [
+    targetBbox.x + targetBbox.width / 2,
+    targetBbox.y + targetBbox.height / 2,
+  ];
+  pz.zoomAbs(0, 0, 1);
+  pz.moveTo(0, 0);
+  pz.moveTo(svgCentroid[0] - pos[0], svgCentroid[1] - pos[1]);
+  pz.zoomAbs(
+    bbox.width / 2,
+    bbox.height / 2,
+    (maxSvgDim / targetMaxDim) * scale
+  );
 }
 
 export async function start() {
   toggleLoading(true);
-  changeMapZoomRange()
+  changeMapZoomRange();
 
   state = new State();
   state.defineDynamicProperty("data", []);
@@ -102,6 +110,7 @@ export async function start() {
 
   state.addListener(() => {
     loadData(state.selectYear);
+    insertParamsToUrl("year", state.selectYear);
   }, "selectYear");
 
   state.addListener(() => {
@@ -115,25 +124,26 @@ export async function start() {
 
   state.addListener(
     () => {
-      state.selectState = 'all'
-      state.selectCounty = 'all'
-      $("#stateSelectSelect").val('all').trigger('change');
-      if (state.level === 'county') {
-        $("#countySelectSelect").val('all').trigger('change');
+      state.selectState = "all";
+      state.selectCounty = "all";
+      if (getQueryParams(window.location.search).state) {
+        state.selectState = getQueryParams(window.location.search).state;
+      }
+      $("#stateSelectSelect").val("all").trigger("change");
+      if (state.level === "county") {
+        $("#countySelectSelect").val("all").trigger("change");
       }
 
-      const countySelectElement = document.querySelector('#county-wrapper')
+      const countySelectElement = document.querySelector("#county-wrapper");
       if (countySelectElement) {
-        countySelectElement.style.display = state.level === 'county' ? 'block' : 'none';
+        countySelectElement.style.display =
+          state.level === "county" ? "block" : "none";
       }
-
 
       queryData();
       syncDataDependentInputs(state);
       update();
       updateMapTitle();
-      
-      
     },
     "comparePrimary",
     "compareSecondary",
@@ -145,73 +155,88 @@ export async function start() {
   );
 
   state.addListener(() => {
-    const {selectState, countyGeo, selectCounty} = state
+    const { selectState, countyGeo, selectCounty } = state;
     queryData(selectState);
-    if (state.level === 'county') {
-      $("#countySelectSelect").val('all').trigger('change');
+    if (state.level === "county") {
+      $("#countySelectSelect").val("all").trigger("change");
     }
-    
-    const counties = selectState === 'all' ? 
-      countyGeo.features : 
-      countyGeo.features.filter(county => county.state?.id === selectState)
 
+    const counties =
+      selectState === "all"
+        ? countyGeo.features
+        : countyGeo.features.filter(
+            (county) => county.state?.id === selectState
+          );
 
-    const countyOptions = [{
-      text: 'All',
-      value: 'all'
-    }, ...counties.map((feature) => {
-      const hasData = state.countySet.has(feature.id)
-      const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
-      return {
-        text: feature.properties.name + ', ' + stateName,
-        value: feature.id,
-        hasData: !!hasData
-      }
-    })]
-    state.countyGeoMap = countyOptions
-    state.selectCountyOptions = countyOptions
-    
+      const countyOptions = [{
+        text: 'All',
+        value: 'all'
+      }, ...counties.map((feature) => {
+          const hasData = state.countySet.has(feature.id)
+          const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
+          return {
+            text: feature.properties.name + ', ' + stateName,
+            value: feature.id,
+            hasData: !!hasData
+          }
+        })]
+    state.countyGeoMap = countyOptions;
+    state.selectCountyOptions = countyOptions;
+
     update();
     updateMapTitle();
-    state.plotHighlight = selectState !== 'all' ? selectState : null
+    state.plotHighlight = selectState !== "all" ? selectState : null;
 
     // Zoom to area
     if (state.selectState != "all") {
-    const targetElement = d3.select(state.choroplethPlot)
-        .select("#area-"+state.selectState).node()
+      const targetElement = d3
+        .select(state.choroplethPlot)
+        .select("#area-" + state.selectState)
+        .node();
 
       if (targetElement) {
-        zoomToElement(state.pz, state.choroplethPlot, targetElement, .6)
+        zoomToElement(state.pz, state.choroplethPlot, targetElement, 0.6);
       }
     }
-  }, 'selectState')
+    insertParamsToUrl("state", state.selectState);
+  }, "selectState");
 
   state.addListener(() => {
-    const {selectCounty, selectState} = state
+    const { selectCounty, selectState } = state;
     queryData(selectState, selectCounty);
     update();
     updateMapTitle();
-    state.plotHighlight = selectCounty !== 'all' ? selectCounty : selectState !== 'all' ? selectState : null
+    state.plotHighlight =
+      selectCounty !== "all"
+        ? selectCounty
+        : selectState !== "all"
+        ? selectState
+        : null;
 
     if (state.selectCounty != "all") {
-      const targetElement = d3.select(state.choroplethPlot)
-        .select("#area-"+state.selectCounty).node()
+      const targetElement = d3
+        .select(state.choroplethPlot)
+        .select("#area-" + state.selectCounty)
+        .node();
 
       if (targetElement) {
-        zoomToElement(state.pz, state.choroplethPlot, targetElement, .2)
+        zoomToElement(state.pz, state.choroplethPlot, targetElement, 0.2);
       }
     }
-  }, 'selectCounty')
-
+    insertParamsToUrl("county", selectCounty);
+  }, "selectCounty");
 
   state.inputsActive = true;
   state.comparePrimary = "race";
+  if (params.comparePrimary) {
+    state.comparePrimary = params.comparePrimary;
+  }
 
   toggleSidebar("plot-map");
 
   const driver = window.driver.js.driver;
   const driverObj = driver({
-    overlayColor: 'rgba(0,0,0,0)'
+    overlayColor: "rgba(0,0,0,0)",
   });
   driverObj.highlight({
     element: "#plot-map",
@@ -219,8 +244,8 @@ export async function start() {
       title: "Map",
       description: "Hover over the graphs to see more information",
       side: "top",
-      align: 'center'
-    }
+      align: "center",
+    },
   });
 }
 
@@ -281,9 +306,21 @@ function hookInputs() {
   hookSelect("#measureSelect", state, "measureOptions", "measure");
   hookSelect("#levelSelect", state, "levelOptions", "level");
   hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
-  hookSelect("#stateSelectSelect", state, "selectStateOptions", "selectState", true)
-  hookSelect("#countySelectSelect", state, "selectCountyOptions", "selectCounty", true)
-  
+  hookSelect(
+    "#stateSelectSelect",
+    state,
+    "selectStateOptions",
+    "selectState",
+    true
+  );
+  hookSelect(
+    "#countySelectSelect",
+    state,
+    "selectCountyOptions",
+    "selectCounty",
+    true
+  );
+
   // hookCheckbox("#showOutlineCheck", state, "showOuline");
   // state.addListener(() => {
   //   document.getElementById("map-table-wrapper").style.display = state.showOutline
@@ -293,6 +330,7 @@ function hookInputs() {
 
   hookCheckbox("#showTableCheck", state, "showTable");
   state.addListener(() => {
+    insertParamsToUrl("showTable", state.showTable);
     document.getElementById("map-table-wrapper").style.display = state.showTable
       ? "block"
       : "none";
@@ -310,41 +348,51 @@ function queryData(stateFips, countyFips) {
       d.state_fips != "All"
   );
 
+  insertParamsToUrl("sex", state.selectSex);
+  insertParamsToUrl("race", state.selectRace);
+  insertParamsToUrl("cause", state.selectCause);
+  insertParamsToUrl("measure", state.measure);
+  insertParamsToUrl("level", state.level);
+  
   if (state.level == "county") {
     mapData = mapData.filter((d) => d.county_fips != "All");
   } else {
     mapData = mapData.filter((d) => d.county_fips == "All");
   }
   mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
-  if (stateFips && stateFips !== 'all') {
-    mapData = mapData.filter((row) => row[`state_fips`] === stateFips)
+  if (stateFips && stateFips !== "all") {
+    mapData = mapData.filter((row) => row[`state_fips`] === stateFips);
   }
 
-  if (countyFips && countyFips !== 'all') {
-    mapData = mapData.filter((row) => row[`county_fips`] === countyFips)
+  if (countyFips && countyFips !== "all") {
+    mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
   }
-  
+
   state.mapData = [...mapData];
   // Get data for demographic plot
 
   const stratifySet = new Set(
     [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
   );
-  let baseDemographicData = state.data
+  let baseDemographicData = state.data;
   SELECTABLE_FIELDS.forEach((field) => {
     if (stratifySet.has(field)) {
-      baseDemographicData = baseDemographicData.filter((row) => row[field] != "All");
+      baseDemographicData = baseDemographicData.filter(
+        (row) => row[field] != "All"
+      );
     } else {
       baseDemographicData = baseDemographicData.filter(
         (row) => row[field] == state[statePropertyName("select", field)]
       );
     }
   });
-  state.dataMap = d3.group(baseDemographicData, d => d.state_fips, d => d.county_fips)
+  state.dataMap = d3.group(
+    baseDemographicData,
+    (d) => d.state_fips,
+    (d) => d.county_fips
+  );
 
   state.demographicReferenceData = getDemographicData();
-  
-  
 }
 
 function getDemographicData(highlight = null) {
@@ -358,12 +406,11 @@ function getDemographicData(highlight = null) {
     }
   }
 
-  let demographicData = state.dataMap.get(stateFips)?.get(countyFips)
+  let demographicData = state.dataMap.get(stateFips)?.get(countyFips);
 
   if (!demographicData) {
-    demographicData = []
+    demographicData = [];
   }
-
 
   return demographicData;
 }
@@ -385,11 +432,12 @@ function addPlotInteractivity() {
   const previousStroke = null;
   gSelect.on("mouseleave.interact", () => {
     if (!state.isSelectedStateCounty) {
-      state.plotHighlight = state.selectCounty !== 'all' ? 
-        state.selectCounty : 
-        state.selectState !== 'all' ? 
-          state.selectState : 
-          null;
+      state.plotHighlight =
+        state.selectCounty !== "all"
+          ? state.selectCounty
+          : state.selectState !== "all"
+          ? state.selectState
+          : null;
     }
     tooltip.hide();
   });
@@ -450,7 +498,7 @@ function update() {
   const choropleth = choroplethFigure.plot;
   const figure = choroplethFigure.figure;
 
-  state.pz = panzoom(choroplethFigure.plot)
+  state.pz = panzoom(choroplethFigure.plot);
 
   const mapPlotContainer = document.getElementById("plot-map");
   mapPlotContainer.innerHTML = "";
@@ -490,6 +538,9 @@ function updateSidePlots() {
     facetTickFormat: (d) => l(d),
   });
 
+  insertParamsToUrl("comparePrimary", state.comparePrimary);
+  insertParamsToUrl("compareSecondary", state.compareSecondary);
+
   const demographicsPlotContainer = document.getElementById("plot-demographic");
   demographicsPlotContainer.innerHTML = "";
   demographicsPlotContainer.appendChild(demographicsPlot);
@@ -511,36 +562,53 @@ function updateSidePlots() {
 }
 
 async function initialDataLoad() {
+  if (params.race) {
+    state.selectRace = params.race;
+  }
+  if (params.sex) {
+    state.selectSex = params.sex;
+  }
+  if (params.cause) {
+    state.selectCause = params.cause;
+  }
+
   state.conceptMappings = await d3.json("data/conceptMappings.json");
   const stateGeo = await d3.json("data/states.json");
   const countyGeo = await d3.json("data/counties.json");
 
-  
-  state.stateGeo = stateGeo
-  state.countyGeo = countyGeo
+  state.stateGeo = stateGeo;
+  state.countyGeo = countyGeo;
 
   await loadData("2020");
 
-  state.countySet = new Set(state.data.map(item => item.county_fips))
-  state.countyGeoMap = [{
-    text: 'All',
-    value: 'all'
-  }, ...countyGeo.features.map((feature) => {
-    const hasData = state.countySet.has(feature.id)
-    const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-';
+  state.countySet = new Set(state.data.map((item) => item.county_fips));
+  state.countyGeoMap = [
+    {
+      text: "All",
+      value: "all",
+    },
+    ...countyGeo.features.map((feature) => {
+      const hasData = state.countySet.has(feature.id);
+      const stateName =
+        typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
 
-    return {
-      text: feature.properties.name + ', ' + stateName, 
+      return {
+        text: feature.properties.name + ", " + stateName,
+        value: feature.id,
+        hasData: hasData,
+      };
+    }),
+  ];
+  state.stateGeoMap = [
+    {
+      text: "All",
+      value: "all",
+    },
+    ...stateGeo.features.map((feature) => ({
+      text: feature.properties.name,
       value: feature.id,
-      hasData: hasData
-    }
-  })]
-  state.stateGeoMap = [{
-    text: 'All',
-    value: 'all'
-  }, ...stateGeo.features.map((feature) => ({text: feature.properties.name, value: feature.id  }))]
-
-  
+    })),
+  ];
 
   const causeDictData = await d3.csv("data/icd10_39recode_dict.csv");
 
@@ -550,13 +618,21 @@ async function initialDataLoad() {
     ...causeDictData.map((row) => [row.code, row.abbr]),
   ]);
 
+  if (params.measure) {
+    state.measure = params.measure;
+  }
+
+  if (params.level) {
+    state.level = params.level;
+  }
+
   //  Update the input state
   state.measureOptions = state.conceptMappings.measureOptions;
   state.levelOptions = LEVELS;
   state.selectYearOptions = YEARS;
-  state.selectStateOptions = state.stateGeoMap
-  state.selectCountyOptions = state.countyGeoMap
-  state.isSelectedStateCounty = false
+  state.selectStateOptions = state.stateGeoMap;
+  state.selectCountyOptions = state.countyGeoMap;
+  state.isSelectedStateCounty = false;
   state.scheme = "RdYlBu";
   state.schemeOptions = [
     ...Object.entries(state.conceptMappings.colorSchemes),
@@ -564,12 +640,18 @@ async function initialDataLoad() {
 }
 
 async function loadData(year) {
+  const urlQueryYear = getQueryParams(window.location.search).year;
+  if (urlQueryYear) {
+    state.selectYear = getQueryParams(window.location.search).year;
+  }
   toggleLoading(true);
-  const {measureOptions} = state.conceptMappings
+  const { measureOptions } = state.conceptMappings;
 
   let data = await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`);
   data = data.map((row) => {
-    measureOptions.forEach((field) => (row[field.name] = parseFloat(row[field.name])));
+    measureOptions.forEach(
+      (field) => (row[field.name] = parseFloat(row[field.name]))
+    );
     const { stateName, countyName } = mapStateAndCounty(
       row["state_fips"],
       row["county_fips"],
@@ -581,7 +663,11 @@ async function loadData(year) {
 
   state.data = [...data] || [];
   if (state.data) {
-    state.dataMap = d3.group(state.data, d => d.state_fips, d => d.county_fips)
+    state.dataMap = d3.group(
+      state.data,
+      (d) => d.state_fips,
+      (d) => d.county_fips
+    );
   }
   return data;
 }

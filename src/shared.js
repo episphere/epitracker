@@ -1851,3 +1851,41 @@ export const applicationURLs = {
   stage: "https://epitracker-stage.cancer.gov",
   prod: "34.98.117.145",
 };
+
+export function insertParamsToUrl(key, value) {
+  let urlParams = new URLSearchParams(window.location.search);
+  let newParamName = key;
+  let newParamValue = value;
+  
+  if (urlParams.has(newParamName)) {
+    urlParams.set(newParamName, newParamValue);
+  } else {
+    urlParams.append(newParamName, newParamValue);
+  }
+  
+  // Preserve the part of the URL after the hash
+  let hashPart = window.location.hash;
+  
+  // Construct the new query string
+  let updatedQueryString = urlParams.toString();
+  
+  // Combine the hash part, pathname, and query parameters to form the new URL
+  let newUrl = window.location.pathname + (updatedQueryString ? "?" + updatedQueryString : "") + hashPart;
+  
+  // Push the new URL to the history, updating the parameters without changing the route
+  window.history.pushState({}, "", newUrl);
+}
+
+export function getQueryParams(qs) {
+  qs = qs.split('+').join(' ');
+
+  var params = {},
+      tokens,
+      re = /[?&]?([^=]+)=([^&]*)/g;
+
+  while (tokens = re.exec(qs)) {
+      params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+  }
+
+  return params;
+}
