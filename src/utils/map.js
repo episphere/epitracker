@@ -30,6 +30,18 @@ const LEVELS = ["state", "county"];
 const YEARS = ["2018", "2019", "2020", "2018-2020"];
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
+    key: "#causeSelectSelect",
+    options: {
+      sorter: sort
+    },
+  },
+  {
+    key: "#stateSelectSelect",
+    options: {
+      sorter: sort
+    },
+  },
+  {
     key: "#countySelectSelect",
     options: {
       sorter: (items = []) => {
