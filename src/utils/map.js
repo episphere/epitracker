@@ -1,7 +1,6 @@
 /** @format */
 
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import panzoom from "https://cdn.jsdelivr.net/npm/panzoom@9.4.3/+esm";
 
 import { State } from "./DynamicState2.js";
 import {
@@ -17,7 +16,12 @@ import {
   createDemographicsPlot,
   createHistogramPlot,
 } from "./mapPlots.js";
-import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
+import {
+  addPopperTooltip,
+  addTooltip,
+  enableZoom,
+  toggleSidebar,
+} from "./helper.js";
 import { paginationHandler, dataPagination } from "../components/pagination.js";
 import { renderTable } from "../components/table.js";
 import { getQueryParams, sort } from "../shared.js";
@@ -56,6 +60,8 @@ const SEARCH_SELECT_INPUT_QUERIES = [
     },
   }
 ];
+
+
 
 // Note: Using standard object properties unless listeners required
 
@@ -180,18 +186,22 @@ export async function start() {
             (county) => county.state?.id === selectState
           );
 
-      const countyOptions = [{
-        text: 'All',
-        value: 'all'
-      }, ...counties.map((feature) => {
-          const hasData = state.countySet.has(feature.id)
-          const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
-          return {
-            text: feature.properties.name + ', ' + stateName,
-            value: feature.id,
-            hasData: !!hasData
-          }
-        })]
+    const countyOptions = [
+      {
+        text: "All",
+        value: "all",
+      },
+      ...counties.map((feature) => {
+        const hasData = state.countySet.has(feature.id);
+        const stateName =
+          typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
+        return {
+          text: feature.properties.name + ", " + stateName,
+          value: feature.id,
+          hasData: !!hasData,
+        };
+      }),
+    ];
     state.countyGeoMap = countyOptions;
     state.selectCountyOptions = countyOptions;
 
@@ -365,7 +375,7 @@ function queryData(stateFips, countyFips) {
   insertParamsToUrl("cause", state.selectCause);
   insertParamsToUrl("measure", state.measure);
   insertParamsToUrl("level", state.level);
-  
+
   if (state.level == "county") {
     mapData = mapData.filter((d) => d.county_fips != "All");
   } else {
@@ -510,8 +520,6 @@ function update() {
   const choropleth = choroplethFigure.plot;
   const figure = choroplethFigure.figure;
 
-  state.pz = panzoom(choroplethFigure.plot);
-
   const mapPlotContainer = document.getElementById("plot-map");
   mapPlotContainer.innerHTML = "";
   mapPlotContainer.appendChild(figure);
@@ -530,6 +538,7 @@ function update() {
   updateMapTitle();
 
   toggleLoading(false);
+  enableZoom(state, choroplethFigure, "lock-map");
 
   // const svgImage = document.querySelector('#plot-map > figure > svg:last-of-type')
   // const svgContainer = document.querySelector('#plot-map')
