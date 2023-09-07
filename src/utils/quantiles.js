@@ -130,7 +130,7 @@ function update() {
 }
 
 function updateLegend() {
-  const colorField = state.comparePrimary == "none" ? "race" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "sex" : state.comparePrimary
   
   let colorValues = null 
   const legendContainer = document.getElementById("plot-legend")
@@ -157,7 +157,7 @@ function updateLegend() {
 }
 
 function updateQuantilePlot() {
-  const colorField = state.comparePrimary == "none" ? "race" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "sex" : state.comparePrimary
 
   let colorValues = [...new Set(state.plotData.map(d => d[colorField]))] 
   colorValues.sort()

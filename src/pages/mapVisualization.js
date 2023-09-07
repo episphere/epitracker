@@ -138,7 +138,7 @@ export const renderMapVisualizationPage = () => {
             <div id="plots-container" class="d-flex flex-row">
               <div class="position-relative graph" id="plot-map-container">
                 <div style="display: flex; flex-direction: column; justify-content:center; flex-end; margin-bottom: 12px; margin-left: 8px;">
-                <span class="label">Zoom on the Map</span>
+                <span class="label">Zoom in/out on the map</span>
                    <label class="switch">
                    <input type="checkbox" id="lock-map">
                    <span class="slider round"></span>
