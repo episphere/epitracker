@@ -130,16 +130,15 @@ function update() {
 }
 
 function updateLegend() {
-  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "race" : state.comparePrimary
   
   let colorValues = null 
   const legendContainer = document.getElementById("plot-legend")
   legendContainer.innerHTML = ``
+
   if (state.comparePrimary != "none") {
     colorValues = [...new Set(state.plotData.map(d => d[colorField]))]
     colorValues.sort()
-
-
     state.displayColorValues = colorValues.filter(d => state.displayColorValues.includes(d))
     if (state.displayColorValues.length == 0) {
       state.displayColorValues = colorValues
@@ -150,18 +149,18 @@ function updateLegend() {
     legend.addEventListener("change", () => {
       state.displayColorValues = legend.getValues()
     })
-  } 
+  } else {
+    colorValues = [...new Set(state.plotData.map(d => d[colorField]))]// ['All']
+    state.displayColorValues = colorValues 
+  }
 
 }
 
 function updateQuantilePlot() {
-  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "race" : state.comparePrimary
 
-  let colorValues = null 
-  if (state.comparePrimary != "none") {
-    colorValues = [...new Set(state.plotData.map(d => d[state.comparePrimary]))]
-    colorValues.sort()
-  }
+  let colorValues = [...new Set(state.plotData.map(d => d[colorField]))] 
+  colorValues.sort()
 
   if (state.displayColorValues == null) {
     state.displayColorValues = colorValues
@@ -188,12 +187,16 @@ function updateQuantilePlot() {
     drawLines: state.showLines,
     yStartZero: state.startZero,
     xTickFormat: xTickFormat, 
-    xLabel, yLabel, color: d => d[colorField],
+    xLabel, 
+    yLabel, 
+    color: d => d[colorField],
     colorDomain: colorValues
   })
   state.quantilePlot = plot
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
+
+  console.log({plotData: state.plotData, filteredPlotData});
 
   addPlotInteractivity()
   downloadFiles(state.plotData, "first_data", true)
