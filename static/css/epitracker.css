@@ -2407,3 +2407,30 @@ button.previous-btn {
 svg path{
   stroke:#706e6e;
 }
+
+.map-grid-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+}
+
+#maps-container {
+  width: 100%;
+}
+
+.legend-wrapper {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 3px 3px 8px 1px lightgrey;
+  padding-block: 5px;
+}
+
+.map-grid-label {
+  font-weight: bold;
+  font-size: .9em;
+}
+
+#plots-container {
+  overflow: auto;
+  max-height: 1200px;
+}

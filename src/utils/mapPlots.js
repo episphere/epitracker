@@ -6,7 +6,6 @@ const dic = {
   crude_rate: 'Crude Rate', age_adjusted_rate:'Age Adjusted Rate' 
 }
 
-
 // Just the static plot.
 export function createChoroplethPlot(spatialData, featureCollection, options={}) {
   // indexField, measureField , drawBorders
@@ -18,6 +17,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   options = {
     drawBorders: false,
     scheme: "RdYlBu",
+    color: {},
     ...restOptions
   }
 
@@ -31,6 +31,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     symmetric: true,
     reverse: true,
     label: options.measureField,
+    ...options.color
   }
 
   const marks = []
@@ -50,18 +51,15 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     )
   }
 
-  const {innerWidth: windowWidth} = window
-  const baseWidthSize = windowWidth * 960 / 1680;
-  const baseHeightSize = 640;
-
-
   const plotOptions = {
-    projection: "albers-usa",
-    width: baseWidthSize, 
-    height: baseHeightSize,
+    projection: { type: "albers-usa", domain: options.overlayFeatureCollection},
     color: color,
     marks: marks,
   }
+
+  if (options.width) plotOptions.width = options.width
+  if (options.height) plotOptions.height = options.height
+
 
   const colorLegend = colorRampLegendMeanDiverge(
     spatialData.map((d) => d[options.measureField]), 
@@ -79,7 +77,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   plotWrapper.appendChild(plot)
   colorLegend && figure.appendChild(colorLegend)
   figure.appendChild(plotWrapper)
-  figure.style.width = `${baseWidthSize}px`
+  //figure.style.width = `${baseWidthSize}px`
   //figure.style.height = `${baseHeightSize}px`
   figure.style.overflow = 'hidden'
   plot.style.maxWidth = 'initial'
@@ -98,7 +96,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
           .attr("id", (d,i) => "area-"+options.overlayFeatureCollection.features[d].id)
   }
 
-  return {figure,plot,plotWrapper}
+  return {figure,plot,plotWrapper,colorLegend}
 }
 
 export function createDemographicsPlot(data, options = {}) {

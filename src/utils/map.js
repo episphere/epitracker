@@ -1,9 +1,5 @@
-/** @format */
-
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import panzoom from "https://cdn.jsdelivr.net/npm/panzoom@9.4.3/+esm";
-
-import { State } from "./DynamicState2.js";
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import {
   hookDemographicInputs,
   syncDataDependentInputs,
@@ -11,19 +7,19 @@ import {
   COMPARABLE_FIELDS,
   SELECTABLE_FIELDS,
 } from "./demographicControls.js";
-import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
-import {
-  createChoroplethPlot,
-  createDemographicsPlot,
-  createHistogramPlot,
-} from "./mapPlots.js";
-import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
-import { paginationHandler, dataPagination } from "../components/pagination.js";
-import { renderTable } from "../components/table.js";
 import { getQueryParams, sort } from "../shared.js";
-import { downloadGraph, downloadFiles } from "./download.js";
-import { zoomSVG } from "./svgZoom.js";
+import { State } from "./DynamicState2.js";
+import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
 import { insertParamsToUrl } from "../shared.js";
+import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
+import { createChoroplethPlot } from "./mapPlots.js";
+import { colorRampLegendMeanDiverge } from "./helper.js";
+
+
+
+let state;
+let params = getQueryParams(window.location.search);
+
 
 // Static
 const LEVELS = ["state", "county"];
@@ -45,48 +41,8 @@ const SEARCH_SELECT_INPUT_QUERIES = [
   }
 ];
 
-// Note: Using standard object properties unless listeners required
-
-let state;
-
-let params = getQueryParams(window.location.search);
-
-function changeMapZoomRange() {
-  const element = document.querySelector("#plot-map-zoom");
-  if (!element) return;
-
-  // element.addEventListener('change', (e) => console.log('range changed: ', {e}))
-  element.onchange = ({ target }) => {
-    const parentElement = target.parentElement;
-    const labelElement = parentElement.querySelector("strong");
-    labelElement.innerText = target.value;
-  };
-}
-
-function zoomToElement(pz, svg, targetElement, scale = 0.9) {
-  const bbox = svg.getBBox();
-  const svgCentroid = [bbox.x + bbox.width / 2, bbox.y + bbox.height / 2];
-  const maxSvgDim = bbox.height; //Math.max(bbox.width, bbox.height)
-
-  const targetBbox = targetElement.getBBox();
-  const targetMaxDim = targetBbox.height; //Math.max(targetBbox.width, targetBbox.height)
-  const pos = [
-    targetBbox.x + targetBbox.width / 2,
-    targetBbox.y + targetBbox.height / 2,
-  ];
-  pz.zoomAbs(0, 0, 1);
-  pz.moveTo(0, 0);
-  pz.moveTo(svgCentroid[0] - pos[0], svgCentroid[1] - pos[1]);
-  pz.zoomAbs(
-    bbox.width / 2,
-    bbox.height / 2,
-    (maxSvgDim / targetMaxDim) * scale
-  );
-}
-
 export async function start() {
   toggleLoading(true);
-  changeMapZoomRange();
 
   state = new State();
   state.defineDynamicProperty("data", []);
@@ -97,16 +53,6 @@ export async function start() {
 
   state.comparePrimaryOptions = COMPARABLE_FIELDS;
 
-  state.downloadGraphRef = {
-    pngFigureOneButton: null,
-    pngFigureOneCallback: null,
-    pngFigureTwoButton: null,
-    pngFigureTwoCallback: null,
-    pngFigureThreeButton: null,
-    pngFigureThreeCallback: null,
-    pngAllFiguresButton: null,
-    pngAllFiguresCallback: null,
-  };
 
   state.addListener(() => {
     loadData(state.selectYear);
@@ -124,26 +70,25 @@ export async function start() {
 
   state.addListener(
     () => {
-      state.selectState = "all";
-      state.selectCounty = "all";
-      if (getQueryParams(window.location.search).state) {
-        state.selectState = getQueryParams(window.location.search).state;
-      }
-      $("#stateSelectSelect").val("all").trigger("change");
-      if (state.level === "county") {
-        $("#countySelectSelect").val("all").trigger("change");
-      }
+      // state.selectState = "all";
+      // state.selectCounty = "all";
+      // if (getQueryParams(window.location.search).state) {
+      //   state.selectState = getQueryParams(window.location.search).state;
+      // }
+      // $("#stateSelectSelect").val("all").trigger("change");
+      // if (state.level === "county") {
+      //   $("#countySelectSelect").val("all").trigger("change");
+      // }
 
-      const countySelectElement = document.querySelector("#county-wrapper");
-      if (countySelectElement) {
-        countySelectElement.style.display =
-          state.level === "county" ? "block" : "none";
-      }
+      // const countySelectElement = document.querySelector("#county-wrapper");
+      // if (countySelectElement) {
+      //   countySelectElement.style.display =
+      //     state.level === "county" ? "block" : "none";
+      // }
 
       queryData();
       syncDataDependentInputs(state);
       update();
-      updateMapTitle();
     },
     "comparePrimary",
     "compareSecondary",
@@ -153,6 +98,17 @@ export async function start() {
     "measure",
     "level"
   );
+
+  // state.addListener(
+  //   () => {
+  //     if (state.comparePrimary == "race") {
+  //       console.log(" === Update Compare Primary Race ===")
+  //       state.selectRace = "all"
+  //     }
+  //   },
+  //   "comparePrimary",
+  //   "compareSecondary",
+  // );
 
   state.addListener(() => {
     const { selectState, countyGeo, selectCounty } = state;
@@ -184,7 +140,6 @@ export async function start() {
     state.selectCountyOptions = countyOptions;
 
     update();
-    updateMapTitle();
     state.plotHighlight = selectState !== "all" ? selectState : null;
 
     // Zoom to area
@@ -205,7 +160,7 @@ export async function start() {
     const { selectCounty, selectState } = state;
     queryData(selectState, selectCounty);
     update();
-    updateMapTitle();
+    //updateMapTitle();
     state.plotHighlight =
       selectCounty !== "all"
         ? selectCounty
@@ -232,22 +187,217 @@ export async function start() {
     state.comparePrimary = params.comparePrimary;
   }
 
-  toggleSidebar("plot-map");
+  toggleSidebar("plots-container");
 
-  const driver = window.driver.js.driver;
-  const driverObj = driver({
-    overlayColor: "rgba(0,0,0,0)",
-  });
-  driverObj.highlight({
-    element: "#plot-map",
-    popover: {
-      title: "Map",
-      description: "Hover over the graphs to see more information",
-      side: "top",
-      align: "center",
-    },
-  });
 }
+
+function update() {
+  toggleLoading(false);
+
+  state.featureCollection = state.level == "county" ? state.countyGeo : state.stateGeo;
+
+  plotMapGrid(state.mapData, state.comparePrimary != "none" ? state.comparePrimary : null, 
+    state.compareSeconday != "none" ? state.compareSecondary : null)
+
+  // let valuesPrimary = null;
+  // let valuesSecondary = null; 
+
+  // if (state.comparePrimary) {
+  //   valuesPrimary = [...new Set(state.mapData.map(d => d[state.comparePrimary]))]
+  // }
+  // if (state.compareSecondary) {
+  //   valuesSecondary = [...new Set(state.mapData.map(d => d[state.compareSecondary]))]
+  // }
+
+  // const mapsContainer = document.getElementById("maps-container")
+
+  // console.log(state.comparePrimary, state.mapData, valuesPrimary)
+  // if (valuesPrimary) {
+  //   for (const value of valuesPrimary) {
+  //     const subMapData = state.mapData.filter(d => d[state.comparePrimary] == value)
+  //     console.log("Draw map", value, subMapData, state.featureCollection, {
+  //       indexField:  state.level + "_fips",
+  //       measureField: state.measure,
+  //       scheme: state.scheme,
+  //       overlayFeatureCollection: state.stateGeo,
+  //     })
+
+  //     const {plot} = createChoroplethPlot(
+  //       subMapData,
+  //       state.featureCollection,
+  //       {
+  //         indexField:  state.level + "_fips",
+  //         measureField: state.measure,
+  //         scheme: state.scheme,
+  //         overlayFeatureCollection: state.stateGeo,
+  //       }
+  //     );
+
+  //     mapsContainer.appendChild(plot);
+  //   }
+  // }
+}
+
+function generateCombinations(arr1, arr2, varName1, varName2) {
+  const combinations = [];
+
+  for (let i = 0; i < arr1.length; i++) {
+    for (let j = 0; j < arr2.length; j++) {
+      const obj = {};
+      obj[`${varName1}Value`] = arr1[i];
+      obj[`${varName1}Index`] = i;
+      obj[`${varName2}Value`] = arr2[j];
+      obj[`${varName2}Index`] = j;
+      combinations.push(obj);
+    }
+  }
+
+  return combinations;
+}
+
+function plotMapGrid(data, rowField, columnField) {
+
+  // let currentData;
+  // if (state.selectCounty != "All") {
+  //   currentData = data.filter(d => d.county_fips == state.selectCounty)
+  // } else if (state.selectState != "All") {
+  //   //currentData = data.filter(d => d.county_fips.startsWith())
+  // }
+
+  let valuesRow = ["All"]
+  let valuesColumn = ["All"]
+
+  if (rowField) {
+    valuesRow = [...new Set(data.map(d => d[rowField]))]
+  }
+  if (columnField) {
+    valuesColumn = [...new Set(data.map(d => d[columnField]))]
+  }
+
+  const mapConfigs = generateCombinations(valuesRow, valuesColumn, "row", "column")
+  mapConfigs.forEach(config => {
+    config.rowIndex = config.rowIndex + 1 
+    config.columnIndex = config.columnIndex + 1
+    config.data = data.filter(d => 
+      (d[rowField] == config.rowValue || !rowField) && 
+      (d[columnField] == config.columnValue || !columnField))
+  })
+
+  const nRows = Math.max(valuesColumn.length, 1)
+  const nColumns = Math.max(valuesColumn.length, 1)
+
+  const mapsContainer = document.getElementById("maps-container")
+  mapsContainer.innerHTML = ``
+  mapsContainer.style.display = 'grid';
+  mapsContainer.style.gridTemplateRows = `repeat(${rowField ? nRows + 1 : nRows}, auto)`; 
+  mapsContainer.style.gridTemplateColumns = `repeat(${columnField ? nColumns + 1 : nColumns}, auto)`;
+
+  if (rowField != "none") {
+    valuesRow.forEach((value,i) => {
+      const label = document.createElement("div")
+      label.classList.add("map-grid-label")
+      label.classList.add("map-grid-cell")
+      label.innerText = value 
+      label.style.gridRow = `${i+2}`
+      label.style.gridColumn = `1`
+      mapsContainer.appendChild(label)
+    })
+  }
+
+  if (columnField  != "none") {
+    valuesColumn.forEach((value,i) => {
+      const label = document.createElement("div")
+      label.classList.add("map-grid-label")
+      label.classList.add("map-grid-cell")
+      label.innerText = value 
+      label.style.gridColumn = `${i+2}`
+      label.style.gridRow = ``
+      mapsContainer.appendChild(label)
+    })
+  }
+
+  const bbox = mapsContainer.getBoundingClientRect()
+  const mapWidth = 0.9 * bbox.width / nColumns
+
+  const mean = d3.mean(data, d => d[state.measure])
+  const domain = d3.extent(data, d => d[state.measure])
+
+  const baseHistogramConfig = {
+    options: {
+      width: 140,
+      height: 60,
+      margin: 15,
+      x: {ticks: domain, label: null, tickSize:0, tickPadding: 4},
+      y: {ticks: [], label: null, margin: 0},
+      style: {
+        background: 'none',
+        color: 'black',
+      }
+    },
+    marks: [
+      Plot.rectY(data, Plot.binX({y: "count"}, {x: state.measure, thresholds: 16, fill: "#c3d1c0"})),
+    ]
+  }
+
+  let sharedColorLegend = colorRampLegendMeanDiverge(
+    data.map(d => d[state.measure]), state.scheme, state.measure, null, true)
+
+  let mainFeatureCollection = state.featureCollection; 
+  let overlayFeatureCollection = state.stateGeo;
+  if (state.selectCounty != "all") {
+    mainFeatureCollection = 
+      {type: "FeatureCollection", features: state.featureCollection.features.filter(d => d.id == state.selectCounty)}
+    overlayFeatureCollection = 
+      {type: "FeatureCollection", features: state.featureCollection.features.filter(d => d.id == state.selectCounty)}
+  } else if (state.selectState != "all") {
+    mainFeatureCollection = 
+      {type: "FeatureCollection", features: state.featureCollection.features.filter(d => d.id.slice(0,2) == state.selectState)}
+    overlayFeatureCollection = 
+      {type: "FeatureCollection", features: state.stateGeo.features.filter(d => d.id == state.selectState)}
+  }
+  
+  
+
+  for (const config of mapConfigs) {
+    const mapDiv = document.createElement("div")
+    mapDiv.classList.add("map-grid-cell")
+    //mapDiv.innerText = `[${config.rowValue}, ${config.columnValue}]`
+    mapDiv.style.gridRow = `${(config.rowIndex ?? 1)+1} `
+    mapDiv.style.gridColumn = `${(config.columnIndex ?? 1)+1}`
+
+    const {plot, colorLegend} = createChoroplethPlot(
+      config.data,
+      mainFeatureCollection,
+      {
+        indexField:  state.level + "_fips",
+        measureField: state.measure,
+        scheme: state.scheme,
+        overlayFeatureCollection: overlayFeatureCollection,
+        width: mapWidth,
+        color: {pivot:mean, domain}
+      }
+    );
+
+    mapDiv.appendChild(plot);
+    mapsContainer.appendChild(mapDiv)
+
+    addChoroplethInteractivity(plot, mapDiv, config, baseHistogramConfig, mainFeatureCollection)
+  }
+
+  const legendDiv = document.createElement("div")
+  legendDiv.classList.add("legend-wrapper")
+  legendDiv.appendChild(sharedColorLegend)
+  // sharedColorLegend.style.border = "1px solid grey"
+  // sharedColorLegend.style.borderRadius = "3px"
+  // sharedColorLegend.style.background = "white"
+  // sharedColorLegend.style.padding = "10px"
+  document.getElementById("color-legend").style.top = "50px"
+  document.getElementById("color-legend").innerHTML = ``
+  document.getElementById("color-legend").appendChild(legendDiv)
+
+
+}
+
 
 function toggleLoading(loading) {
   if (loading) {
@@ -257,308 +407,6 @@ function toggleLoading(loading) {
     document.getElementById("plots-container").style.visibility = "visible";
     document.getElementById("loader-container").style.visibility = "hidden";
   }
-}
-
-function updateMapTitle() {
-  if (!state?.properties) return;
-
-  const mapSelectionElements = document.querySelectorAll("[data-map-item]");
-
-  mapSelectionElements.forEach((element) => {
-    const { mapItem, optionsKey } = element.dataset;
-    let mapItemValue = state.properties[mapItem];
-    if (optionsKey) {
-      const options = state.properties[optionsKey];
-      const selectedOption = options.find(
-        (option) => option.value === mapItemValue
-      );
-      if (selectedOption) {
-        mapItemValue = selectedOption.text;
-      }
-    }
-
-    element.innerHTML = mapItemValue;
-  });
-}
-
-function hookInputs() {
-  state.defineDynamicProperty("level", "county");
-
-  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES);
-  hookInputActivation(
-    [
-      "#comparePrimarySelect",
-      "#compareSecondarySelect",
-      "#yearSelectSelect",
-      "#causeSelectSelect",
-      "#sexSelectSelect",
-      "#raceSelectSelect",
-      "#measureSelect",
-      "#levelSelect",
-      "#schemeSelect",
-      "#stateSelectSelect",
-      "#countySelectSelect",
-    ],
-    state,
-    "inputsActive"
-  );
-
-  hookSelect("#measureSelect", state, "measureOptions", "measure");
-  hookSelect("#levelSelect", state, "levelOptions", "level");
-  hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
-  hookSelect(
-    "#stateSelectSelect",
-    state,
-    "selectStateOptions",
-    "selectState",
-    true
-  );
-  hookSelect(
-    "#countySelectSelect",
-    state,
-    "selectCountyOptions",
-    "selectCounty",
-    true
-  );
-
-  // hookCheckbox("#showOutlineCheck", state, "showOuline");
-  // state.addListener(() => {
-  //   document.getElementById("map-table-wrapper").style.display = state.showOutline
-  //     ? "block"
-  //     : "none";
-  // }, "showOutline");
-
-  hookCheckbox("#showTableCheck", state, "showTable");
-  state.addListener(() => {
-    insertParamsToUrl("showTable", state.showTable);
-    document.getElementById("map-table-wrapper").style.display = state.showTable
-      ? "block"
-      : "none";
-  }, "showTable");
-}
-
-function queryData(stateFips, countyFips) {
-  //  Get data for map
-
-  let mapData = [...state.data].filter(
-    (d) =>
-      d.cause == state.selectCause &&
-      d.sex == state.selectSex &&
-      d.race == state.selectRace &&
-      d.state_fips != "All"
-  );
-
-  insertParamsToUrl("sex", state.selectSex);
-  insertParamsToUrl("race", state.selectRace);
-  insertParamsToUrl("cause", state.selectCause);
-  insertParamsToUrl("measure", state.measure);
-  insertParamsToUrl("level", state.level);
-  
-  if (state.level == "county") {
-    mapData = mapData.filter((d) => d.county_fips != "All");
-  } else {
-    mapData = mapData.filter((d) => d.county_fips == "All");
-  }
-  mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
-  if (stateFips && stateFips !== "all") {
-    mapData = mapData.filter((row) => row[`state_fips`] === stateFips);
-  }
-
-  if (countyFips && countyFips !== "all") {
-    mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
-  }
-
-  state.mapData = [...mapData];
-  // Get data for demographic plot
-
-  const stratifySet = new Set(
-    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
-  );
-  let baseDemographicData = state.data;
-  SELECTABLE_FIELDS.forEach((field) => {
-    if (stratifySet.has(field)) {
-      baseDemographicData = baseDemographicData.filter(
-        (row) => row[field] != "All"
-      );
-    } else {
-      baseDemographicData = baseDemographicData.filter(
-        (row) => row[field] == state[statePropertyName("select", field)]
-      );
-    }
-  });
-  state.dataMap = d3.group(
-    baseDemographicData,
-    (d) => d.state_fips,
-    (d) => d.county_fips
-  );
-
-  state.demographicReferenceData = getDemographicData();
-}
-
-function getDemographicData(highlight = null) {
-  let stateFips = "All";
-  let countyFips = "All";
-  if (highlight) {
-    if (highlight.length == 2) {
-      stateFips = highlight;
-    } else {
-      countyFips = highlight;
-    }
-  }
-
-  let demographicData = state.dataMap.get(stateFips)?.get(countyFips);
-
-  if (!demographicData) {
-    demographicData = [];
-  }
-
-  return demographicData;
-}
-
-function addPlotInteractivity() {
-  const indexField = state.level + "_fips";
-  const spatialDataMap = d3.index(state.mapData, (d) => d[indexField]);
-
-  const plotSelect = d3.select(state.choroplethPlot);
-
-  const gSelect = d3.select(
-    plotSelect.selectAll("g[aria-label='geo'").nodes()[0]
-  );
-
-  const geoSelect = gSelect.selectAll("path");
-
-  const tooltip = addPopperTooltip(document.getElementById("plot-map"));
-
-  const previousStroke = null;
-  gSelect.on("mouseleave.interact", () => {
-    if (!state.isSelectedStateCounty) {
-      state.plotHighlight =
-        state.selectCounty !== "all"
-          ? state.selectCounty
-          : state.selectState !== "all"
-          ? state.selectState
-          : null;
-    }
-    tooltip.hide();
-  });
-
-  // TODO: it called after right click on map
-  // geoSelect.on("contextmenu.interact", (e, d) => {
-  //   console.log('click clicked', {e, d, fc: state.featureCollection.features[d]})
-  // })
-
-  geoSelect
-    .on("mouseover.interact", (e, d) => {
-      const feature = state.featureCollection.features[d];
-      state.plotHighlight = feature.id;
-      d3.select(e.target)
-        .attr("stroke", "mediumseagreen")
-        .attr("stroke-opacity", 0.6)
-        .attr("stroke-width", 3)
-        .raise();
-
-      const row = spatialDataMap.get(feature.id);
-      const text = `
-        <b>${feature.properties.name}, ${
-        state.conceptMappings.states[feature.id.slice(0, 2)].short
-      }</b></br>
-        ${row[state.measure].toFixed(2)}
-      `;
-
-      tooltip.show(e.target, text);
-    })
-    .on("mouseleave.interact", (e, d) => {
-      d3.select(e.target)
-        .attr("stroke", previousStroke)
-        .attr("stroke-width", 0.5)
-        .raise();
-    });
-
-  state.defineDynamicProperty("plotHighlight");
-  state.addListener(() => {
-    updateSidePlots();
-  }, "plotHighlight");
-}
-
-function update() {
-  const indexField = state.level + "_fips";
-
-  state.featureCollection =
-    state.level == "county" ? state.countyGeo : state.stateGeo;
-  const choroplethFigure = createChoroplethPlot(
-    state.mapData,
-    state.featureCollection,
-    {
-      indexField,
-      measureField: state.measure,
-      scheme: state.scheme,
-      overlayFeatureCollection: state.stateGeo,
-    }
-  );
-  const choropleth = choroplethFigure.plot;
-  const figure = choroplethFigure.figure;
-
-  state.pz = panzoom(choroplethFigure.plot);
-
-  const mapPlotContainer = document.getElementById("plot-map");
-  mapPlotContainer.innerHTML = "";
-  mapPlotContainer.appendChild(figure);
-
-  state.choroplethPlot = choropleth;
-  updateSidePlots(indexField);
-
-  addPlotInteractivity();
-
-  downloadMapGraphs();
-
-  downloadFiles(state.mapData, "first_data");
-  renderTable("map-table", dataPagination(0, 200, state.mapData));
-  paginationHandler(state.mapData, 200);
-
-  updateMapTitle();
-
-  toggleLoading(false);
-
-  // const svgImage = document.querySelector('#plot-map > figure > svg:last-of-type')
-  // const svgContainer = document.querySelector('#plot-map')
-  // console.log({svgContainer, svgImage});
-  // zoomSVG(svgImage, svgContainer)
-}
-
-function updateSidePlots() {
-  const spatialIndexField = state.level + "_fips";
-
-  const demographicHighlightData = getDemographicData(state.plotHighlight);
-  const demographicsPlot = createDemographicsPlot(demographicHighlightData, {
-    referenceData: state.demographicReferenceData,
-    measureField: state.measure,
-    comparePrimary: state.comparePrimary,
-    compareSecondary: state.compareSecondary,
-    xTickFormat: (d) => l(d),
-    facetTickFormat: (d) => l(d),
-  });
-
-  insertParamsToUrl("comparePrimary", state.comparePrimary);
-  insertParamsToUrl("compareSecondary", state.compareSecondary);
-
-  const demographicsPlotContainer = document.getElementById("plot-demographic");
-  demographicsPlotContainer.innerHTML = "";
-  demographicsPlotContainer.appendChild(demographicsPlot);
-
-  const highlightRow = state.mapData
-    .filter((d) => d[spatialIndexField] == state.plotHighlight)
-    .slice(0, 1);
-  const histogramPlot = createHistogramPlot(state.mapData, {
-    measureField: state.measure,
-    markLine: highlightRow,
-  });
-
-  const histogramPlotContainer = document.getElementById("plot-histogram");
-  histogramPlotContainer.innerHTML = "";
-  histogramPlotContainer.appendChild(histogramPlot);
-
-  state.demographicsPlot = demographicsPlot;
-  state.histogramPlot = histogramPlot;
 }
 
 async function initialDataLoad() {
@@ -672,99 +520,181 @@ async function loadData(year) {
   return data;
 }
 
-function l(word, sub = null) {
-  if (sub == null) {
-    for (const key of Object.keys(state.dictionary)) {
-      if (state.dictionary[key][word]) {
-        return state.dictionary[key][word];
-      }
+function hookInputs() {
+  state.defineDynamicProperty("level", "county");
+
+  hookDemographicInputs(state, SEARCH_SELECT_INPUT_QUERIES);
+  hookInputActivation(
+    [
+      "#comparePrimarySelect",
+      "#compareSecondarySelect",
+      "#yearSelectSelect",
+      "#causeSelectSelect",
+      "#sexSelectSelect",
+      "#raceSelectSelect",
+      "#measureSelect",
+      "#levelSelect",
+      "#schemeSelect",
+      "#stateSelectSelect",
+      "#countySelectSelect",
+    ],
+    state,
+    "inputsActive"
+  );
+
+  hookSelect("#measureSelect", state, "measureOptions", "measure");
+  hookSelect("#levelSelect", state, "levelOptions", "level");
+  hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
+  hookSelect(
+    "#stateSelectSelect",
+    state,
+    "selectStateOptions",
+    "selectState",
+    true
+  );
+  hookSelect(
+    "#countySelectSelect",
+    state,
+    "selectCountyOptions",
+    "selectCounty",
+    true
+  );
+
+  hookCheckbox("#showTableCheck", state, "showTable");
+  state.addListener(() => {
+    insertParamsToUrl("showTable", state.showTable);
+    document.getElementById("map-table-wrapper").style.display = state.showTable
+      ? "block"
+      : "none";
+  }, "showTable");
+}
+
+function queryData(stateFips, countyFips) {
+  //  Get data for map
+
+  let mapData = [...state.data]
+
+  const stratifySet = new Set(
+    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
+  );
+  SELECTABLE_FIELDS.forEach((field) => {
+    if (stratifySet.has(field)) {
+      mapData = mapData.filter(
+        (row) => row[field] != "All"
+      );
+    } else {
+      mapData = mapData.filter(
+        (row) => row[field] == state[statePropertyName("select", field)]
+      );
     }
+  });
+
+  const geoField = state.level + "_fips"
+  if (state.level == "county") {
+    mapData = mapData.filter((d) => d.county_fips != "All");
+    mapData = mapData.filter((d) => d.state_fips == "All");
   } else {
-    if (state.dictionary[sub][word]) {
-      return state.dictionary[sub][word];
+    mapData = mapData.filter((d) => d.county_fips == "All");
+    mapData = mapData.filter((d) => d.state_fips != "All");
+  }
+  mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
+  // if (stateFips && stateFips !== "All") {
+  //   mapData = mapData.filter((row) => row[`state_fips`] === stateFips);
+  // }
+  // if (countyFips && countyFips !== "All") {
+  //   mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
+  // }
+ 
+  if (state.selectCounty != "all"){
+    mapData = mapData.filter(d => d.county_fips == state.selectCounty)
+  } else if (state.selectState != "all") {
+    if (state.level == "county") {
+      mapData = mapData.filter(d => d.county_fips.slice(0,2) == state.selectState)
+    } else {
+      mapData = mapData.filter(d => d.state_fips == state.selectState)
     }
   }
-
-  return word;
+  
+  state.mapData = mapData;
+  state.mapDataGeoMap = d3.group(state.mapData, d => d[geoField])
 }
-
-const removeDownloadGraphEventListeners = () => {
-  if (state.downloadGraphRef.pngFigureOneButton) {
-    state.downloadGraphRef.pngFigureOneButton.removeEventListener(
-      "click",
-      state.downloadGraphRef.pngFigureOneCallback
-    );
-  }
-
-  if (state.downloadGraphRef.pngFigureTwoButton) {
-    state.downloadGraphRef.pngFigureTwoButton.removeEventListener(
-      "click",
-      state.downloadGraphRef.pngFigureTwoCallback
-    );
-  }
-
-  if (state.downloadGraphRef.pngFigureTreeButton) {
-    state.downloadGraphRef.pngFigureTreeButton.removeEventListener(
-      "click",
-      state.downloadGraphRef.pngFigureTreeCallback
-    );
-  }
-};
-function downloadMapGraphs() {
-  removeDownloadGraphEventListeners();
-
-  const downloadFigureOnePNG = () => {
-    downloadGraph("plot-map-container", "map", "map-loading");
-  };
-  const downloadFigureTwoPNG = () =>
-    downloadGraph("plot-histogram-container", "histogram", "map-loading");
-  const downloadFigureThreePNG = () =>
-    downloadGraph("plot-demographic-container", "histogram", "map-loading");
-
-  const downloadAllFiguresPNG = () =>
-    downloadGraph("plots-container", "all-figures", "map-loading");
-
-  const downloadFigureOneButton = document.getElementById(
-    "downloadFigureOnePNG"
-  );
-
-  if (downloadFigureOneButton) {
-    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
-    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton;
-    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG;
-  }
-
-  const downloadFigureTwoButton = document.getElementById(
-    "downloadFigureTwoPNG"
-  );
-
-  if (downloadFigureTwoButton) {
-    downloadFigureTwoButton.addEventListener("click", downloadFigureTwoPNG);
-    state.downloadGraphRef.pngFigureTwoButton = downloadFigureTwoButton;
-    state.downloadGraphRef.pngFigureTwoCallback = downloadFigureTwoPNG;
-  }
-
-  const downloadFigureThreeButton = document.getElementById(
-    "downloadFigureThreePNG"
-  );
-
-  if (downloadFigureThreeButton) {
-    downloadFigureThreeButton.addEventListener("click", downloadFigureThreePNG);
-    state.downloadGraphRef.pngFigureThreeButton = downloadFigureThreeButton;
-    state.downloadGraphRef.pngFigureThreeCallback = downloadFigureThreePNG;
-  }
-
-  const downloadAllFiguresButton = document.getElementById(
-    "downloadAllFiguresPNG"
-  );
-
-  if (downloadAllFiguresButton) {
-    downloadAllFiguresButton.addEventListener("click", downloadAllFiguresPNG);
-    state.downloadGraphRef.pngAllFiguresButton = downloadAllFiguresButton;
-    state.downloadGraphRef.pngAllFiguresCallback = downloadAllFiguresPNG;
-  }
-}
+  
 
 function statePropertyName(operation, field) {
   return operation + field[0].toUpperCase() + field.slice(1);
+}
+
+function addChoroplethInteractivity(plot, plotContainer, config, baseHistogramConfig, featureCollection) {
+  const indexField = state.level + "_fips";
+  const spatialDataMap = d3.index(config.data, (d) => d[indexField]);
+
+  const plotSelect = d3.select(plot);
+
+  const gSelect = d3.select(
+    plotSelect.selectAll("g[aria-label='geo'").nodes()[0]
+  );
+
+  const geoSelect = gSelect.selectAll("path");
+
+  const tooltip = addPopperTooltip(plotContainer);
+
+  const previousStroke = null;
+  gSelect.on("mouseleave.interact", () => {
+    if (!state.isSelectedStateCounty) {
+      state.plotHighlight =
+        state.selectCounty !== "all"
+          ? state.selectCounty
+          : state.selectState !== "all"
+          ? state.selectState
+          : null;
+    }
+    tooltip.hide();
+  });
+
+  geoSelect
+    .on("mouseover.interact", (e, d) => {
+      const feature = featureCollection.features[d];
+      state.plotHighlight = feature.id;
+      d3.select(e.target)
+        .attr("stroke", "mediumseagreen")
+        .attr("stroke-opacity", 0.6)
+        .attr("stroke-width", 3)
+        .raise();
+
+      const row = spatialDataMap.get(feature.id);
+
+      const div = document.createElement('div')
+      div.style.display = "flex"
+      div.style.flexDirection = "column"
+      div.style.justifyContent = "space-between"
+      
+      const infoDiv =  document.createElement('div')
+      infoDiv.style.display = "flex"
+      infoDiv.style.justifyContent = "space-between"
+      infoDiv.style.gap = "10px"
+      infoDiv.innerHTML = `<b>${feature.properties.name}, 
+      ${state.conceptMappings.states[feature.id.slice(0, 2)].short}</b>${row[state.measure].toFixed(2)}`
+      
+      div.appendChild(infoDiv)
+      
+      const histogramOptions = baseHistogramConfig.options
+      histogramOptions.marks = [...baseHistogramConfig.marks]
+
+      const otherRows = state.mapDataGeoMap.get(feature.id).filter(d => d != row)
+      histogramOptions.marks.push(Plot.dot(otherRows, {
+        x: state.measure, y: 0, stroke: "red", r:2, strokeWidth: 1}))
+      //histogramOptions.marks.push(Plot.ruleX(state.mapDataGeoMap.get(feature.id).map(d => d[state.measure]), {stroke: "pink", strokeWidth: 1}))
+      histogramOptions.marks.push(Plot.ruleX([row[state.measure]], {stroke: "red", strokeWidth: 1.5}))
+      div.appendChild(Plot.plot(histogramOptions))
+
+      tooltip.show(e.target, div);
+    })
+    .on("mouseleave.interact", (e, d) => {
+      d3.select(e.target)
+        .attr("stroke", previousStroke)
+        .attr("stroke-width", 0.5)
+        .raise();
+    });
+
+  state.defineDynamicProperty("plotHighlight");
 }

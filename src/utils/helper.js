@@ -71,7 +71,14 @@ export function addPopperTooltip(element) {
                 },
             ],
         })
-        tooltipElement.innerHTML = html 
+
+        if (html instanceof Element) {
+            tooltipElement.innerHTML = ``
+            tooltipElement.appendChild(html)
+        } else {
+            tooltipElement.innerHTML = html 
+        }
+        
         tooltipElement.style.display = "block"
     }
   
@@ -277,19 +284,19 @@ export function colorRampLegendMeanDiverge(values, schemeName, label=null, size=
 }
 
 const reSizePlots = (id, large, scale = 1.5) => {
-    const element = document.getElementById(id)
-    const svgElements = element.querySelectorAll('svg')
+    // const element = document.getElementById(id)
+    // const svgElements = element.querySelectorAll('svg')
 
-    svgElements.forEach(svg => {
-        const { clientWidth: width, clientHeight: height } = svg
-        if (large) {
-            svg.setAttribute("height", `${height * scale}px`);
-            svg.setAttribute("width", `${width * scale}px`);
-        } else {
-            svg.setAttribute("height", `${height / scale}px`);
-            svg.setAttribute("width", `${width / scale}px`);
-        }
-    })
+    // svgElements.forEach(svg => {
+    //     const { clientWidth: width, clientHeight: height } = svg
+    //     if (large) {
+    //         svg.setAttribute("height", `${height * scale}px`);
+    //         svg.setAttribute("width", `${width * scale}px`);
+    //     } else {
+    //         svg.setAttribute("height", `${height / scale}px`);
+    //         svg.setAttribute("width", `${width / scale}px`);
+    //     }
+    // })
 }
 
 export function toggleSidebar(graphId) {
