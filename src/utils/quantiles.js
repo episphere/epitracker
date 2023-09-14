@@ -1,11 +1,11 @@
 import { State } from "./DynamicState2.js"
 import { hookSelect, hookCheckbox, hookInputActivation } from "./input.js"
 import { createQuantilePlot } from "./quantilePlots.js"
-import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
+import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort, addPopperTooltip, addProximityHover } from "./helper.js"
+import { toggleSidebar, sort, addPopperTooltip, addProximityHover, getDictionaryWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -170,7 +170,7 @@ function updateQuantilePlot() {
   const xTicks = quantileDetailsToTicks(quantileDetails)
   const xTickFormat = (_,i) => xTicks[i]
 
-  const xLabel = state.quantileField + " (quantile)"
+  const xLabel = state.quantileField + ` (${getDictionaryWord(state, state.quantileField, 'quantile_fields')})`
   const yLabel = state.valueField
 
   let filteredPlotData = state.plotData 
@@ -255,6 +255,7 @@ async function initialDataLoad() {
 
   // Load files and put processed data into state 
   state.conceptMappings = await d3.json("data/conceptMappings.json");
+  state.dictionary = await d3.json("data/dictionary.json");
 
   await loadData("2020")
   
@@ -263,7 +264,7 @@ async function initialDataLoad() {
   
   const quantileDetails = await d3.json("data/quantile_details.json")
   state.quantileDetailsMap = d3.index(quantileDetails, d => d.field)
-
+  
 
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions

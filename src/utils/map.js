@@ -18,9 +18,9 @@ import {
 } from "./mapPlots.js";
 import {
   addPopperTooltip,
-  addTooltip,
   enableZoom,
   toggleSidebar,
+  getDictionaryWord
 } from "./helper.js";
 import { paginationHandler, dataPagination } from "../components/pagination.js";
 import { renderTable } from "../components/table.js";
@@ -343,12 +343,14 @@ function hookInputs() {
     true
   );
 
-  // hookCheckbox("#showOutlineCheck", state, "showOuline");
-  // state.addListener(() => {
-  //   document.getElementById("map-table-wrapper").style.display = state.showOutline
-  //     ? "block"
-  //     : "none";
-  // }, "showOutline");
+  hookCheckbox("#showOutlineCheck", state, "showOutline");
+  state.addListener((value) => {
+    console.log({value, sss: state['showOutline']});
+    updateChoroplethPlot()
+    // document.getElementById("map-table-wrapper").style.display = state.showOutline
+    //   ? "block"
+    //   : "none";
+  }, "showOutline");
 
   hookCheckbox("#showTableCheck", state, "showTable");
   state.addListener(() => {
@@ -515,6 +517,7 @@ function update() {
       measureField: state.measure,
       scheme: state.scheme,
       overlayFeatureCollection: state.stateGeo,
+      showOutline: state.showOutline
     }
   );
   const choropleth = choroplethFigure.plot;
@@ -546,6 +549,45 @@ function update() {
   // zoomSVG(svgImage, svgContainer)
 }
 
+function updateChoroplethPlot() {
+  const indexField = state.level + "_fips";
+  
+  const choroplethFigure = createChoroplethPlot(
+    state.mapData,
+    state.featureCollection,
+    {
+      indexField,
+      measureField: state.measure,
+      scheme: state.scheme,
+      overlayFeatureCollection: state.stateGeo,
+      showOutline: state.showOutline
+    }
+  );
+  const choropleth = choroplethFigure.plot;
+  const figure = choroplethFigure.figure;
+  const mapPlotContainer = document.getElementById("plot-map");
+  mapPlotContainer.innerHTML = "";
+  mapPlotContainer.appendChild(figure);
+  state.choroplethPlot = choropleth;
+
+  // const plotContainer = document.getElementById("plot-quantiles")
+  // const {plot} = createQuantilePlot(filteredPlotData, {
+  //   valueField: state.measure,
+  //   intervalFields: [state.measure+"_low", state.measure+"_high"],
+  //   facet: state.compareSecondary != "none" ? state.compareSecondary : null,
+  //   drawLines: state.showLines,
+  //   yStartZero: state.startZero,
+  //   xTickFormat: xTickFormat, 
+  //   xLabel, 
+  //   yLabel, 
+  //   color: d => d[colorField],
+  //   colorDomain: colorValues
+  // })
+  // state.quantilePlot = plot
+  // plotContainer.innerHTML = ''
+  // plotContainer.appendChild(plot)
+}
+
 function updateSidePlots() {
   const spatialIndexField = state.level + "_fips";
 
@@ -555,8 +597,8 @@ function updateSidePlots() {
     measureField: state.measure,
     comparePrimary: state.comparePrimary,
     compareSecondary: state.compareSecondary,
-    xTickFormat: (d) => l(d),
-    facetTickFormat: (d) => l(d),
+    xTickFormat: (d) => getDictionaryWord(state, d),
+    facetTickFormat: (d) => getDictionaryWord(state, d),
   });
 
   insertParamsToUrl("comparePrimary", state.comparePrimary);

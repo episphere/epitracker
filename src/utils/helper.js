@@ -390,3 +390,19 @@ export function sort(items, key) {
     return 0;
   });
 }
+
+export function getDictionaryWord(state, word, sub = null) {
+  if (sub == null) {
+    for (const key of Object.keys(state.dictionary)) {
+      if (state.dictionary[key][word]) {
+        return state.dictionary[key][word];
+      }
+    }
+  } else {
+    if (state.dictionary[sub][word]) {
+      return state.dictionary[sub][word];
+    }
+  }
+
+  return word;
+}

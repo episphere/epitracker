@@ -88,6 +88,7 @@ export const renderMapVisualizationPage = () => {
   `;
   template += renderSettingsVisualization([
     SETTINGS.SHOW_HIDE_TABLE,
+    SETTINGS.SHOW_HIDE_OUTLINE,
     SETTINGS.COLOR_SCHEME,
   ]);
 
