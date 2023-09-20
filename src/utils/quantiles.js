@@ -103,7 +103,10 @@ function hookInputs() {
 }
 
 function queryData() {  
-  let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
+  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.split('(')[0].trim().replaceAll(' ', '_'))
+  if (state.quantileNum !== 'All') {
+    plotData = plotData.filter(item => item.quantile == state.quantileNum)
+  }
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
   SELECTABLE_FIELDS.forEach(field => {
@@ -170,7 +173,7 @@ function updateQuantilePlot() {
   const xTicks = quantileDetailsToTicks(quantileDetails)
   const xTickFormat = (_,i) => xTicks[i]
 
-  const xLabel = state.quantileField + ` (${getDictionaryWord(state, state.quantileField, 'quantile_fields')})`
+  const xLabel = state.quantileField
   const yLabel = state.valueField
 
   let filteredPlotData = state.plotData 
@@ -263,15 +266,15 @@ async function initialDataLoad() {
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.abbr])])
   
   const quantileDetails = await d3.json("data/quantile_details.json")
-  state.quantileDetailsMap = d3.index(quantileDetails, d => d.field)
-  
+  state.quantileDetailsMap = d3.index(quantileDetails, d => `${d.field.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[d.field]})`)
 
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
-  state.quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
+  const quantileFieldOptions = unique(quantileDetails, d => d.field)
+  state.quantileFieldOptions = quantileFieldOptions.map(item => `${item.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[item]})`)
+  state.quantileNumOptions = ['All', ...unique(state.data, d => String(d.quantile))]
   state.selectYearOptions = YEARS
-
+  
   queryData()
   syncDataDependentInputs(state)
   //toggleInputActivation(true)

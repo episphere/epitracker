@@ -406,3 +406,16 @@ export function getDictionaryWord(state, word, sub = null) {
 
   return word;
 }
+
+
+export function capitalizeWords(str) {
+  const words = str.split(" ");
+  const capitalizedWords = [];
+
+  for (const word of words) {
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    capitalizedWords.push(capitalizedWord);
+  }
+
+  return capitalizedWords.join(" ");
+}
