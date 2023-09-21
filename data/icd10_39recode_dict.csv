@@ -1,7 +1,7 @@
 code,name,icd10,abbr
 01,Tuberculosis,A16-A19,Tuberculosis
 02,Syphilis,A50-A53,Syphilis
-03,Human immunodeficiency virus (HIV) disease,B20-B24,Human Immunodeficiency Virus (HIV) Disease
+03,Human immunodeficiency virus (HIV) disease,B20-B24,Human Immunodeficiency Virus (HIV) (1987+)
 04,Malignant neoplasms,C00-C97,Malignant Neoplasms
 05,Malignant neoplasm of stomach,C16,Stomach (Malignant Neoplasm)
 06,"Malignant neoplasms of colon, rectum and anus",C18-C21,"Colon, Rectum and Anus (Malignant Neoplasms)"
