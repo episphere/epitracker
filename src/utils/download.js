@@ -15,15 +15,16 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
 }
 
 export function downloadHtmlAsImage(html, fileName) {
-  toggleLoading('map-loading', 'download-graph-btn', true)
+  //toggleLoading('map-loading', 'download-graph-btn', true)
 
   setTimeout(() => {
     html2canvas(html).then(function(canvas) {
       downloadImage(canvas, fileName)
-      toggleLoading('map-loading', 'download-graph-btn', false)
+      //toggleLoading('map-loading', 'download-graph-btn', false)
     });
   }, 10)
 }
+
   
 function downloadImage(image, fileName) {
   var dataUrl = image.toDataURL();

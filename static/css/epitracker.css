@@ -2434,3 +2434,20 @@ svg path{
   overflow: auto;
   max-height: 1200px;
 }
+
+.download-item {
+  cursor: pointer;
+}
+
+.map-grid-cell .dropdown-toggle {
+  opacity: .4;
+}
+
+#color-legend {
+  /* To prevent the legend preventing interaction with DL button...kind of hacky*/
+  pointer-events: none;
+}
+/* 
+.map-grid-cell:hover .dropdown {
+  opacity: 1;
+} */

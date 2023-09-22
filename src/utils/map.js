@@ -11,9 +11,10 @@ import { getQueryParams, sort } from "../shared.js";
 import { State } from "./DynamicState2.js";
 import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
 import { insertParamsToUrl } from "../shared.js";
-import { addPopperTooltip, addTooltip, toggleSidebar } from "./helper.js";
+import { addPopperTooltip, addTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
 import { createChoroplethPlot } from "./mapPlots.js";
 import { colorRampLegendMeanDiverge } from "./helper.js";
+import { downloadHtmlAsImage } from "./download.js";
 
 
 
@@ -188,7 +189,7 @@ export async function start() {
   }
 
   toggleSidebar("plots-container");
-
+  addGroupDownloadButton(document.getElementById("plots-container"), {data: state.mapData}, false)
 }
 
 function update() {
@@ -287,6 +288,7 @@ function plotMapGrid(data, rowField, columnField) {
   const nColumns = Math.max(valuesColumn.length, 1)
 
   const mapsContainer = document.getElementById("maps-container")
+  state.mapsContainer = mapsContainer
   mapsContainer.innerHTML = ``
   mapsContainer.style.display = 'grid';
   mapsContainer.style.gridTemplateRows = `repeat(${rowField ? nRows + 1 : nRows}, auto)`; 
@@ -360,10 +362,24 @@ function plotMapGrid(data, rowField, columnField) {
 
   for (const config of mapConfigs) {
     const mapDiv = document.createElement("div")
+    mapDiv.style.position = "relative"
+
     mapDiv.classList.add("map-grid-cell")
     //mapDiv.innerText = `[${config.rowValue}, ${config.columnValue}]`
     mapDiv.style.gridRow = `${(config.rowIndex ?? 1)+1} `
     mapDiv.style.gridColumn = `${(config.columnIndex ?? 1)+1}`
+
+    // const plotToolbar = document.createElement("div")
+    // plotToolbar.style.position = "absolute"
+    // plotToolbar.style.top = "5px"
+    // plotToolbar.style.right = "5px"
+    // const downloadDropdown = document.createElement("div")
+    // downloadDropdown.classList.add("dropdown")
+    // plotToolbar.appendChild(downloadDropdown)
+    // const downloadButton = document.createElement("button")
+    // downloadButton.innerHTML = "Download"
+    // downloadButton.className = "transparent-btn form-control dropdown-toggle dropdown-btn"
+    // downloadDropdown.appendChild(downloadButton)
 
     const {plot, colorLegend} = createChoroplethPlot(
       config.data,
@@ -379,6 +395,7 @@ function plotMapGrid(data, rowField, columnField) {
     );
 
     mapDiv.appendChild(plot);
+    addIndividualDownloadButton(mapDiv, config)
     mapsContainer.appendChild(mapDiv)
 
     addChoroplethInteractivity(plot, mapDiv, config, baseHistogramConfig, mainFeatureCollection)
@@ -391,13 +408,102 @@ function plotMapGrid(data, rowField, columnField) {
   // sharedColorLegend.style.borderRadius = "3px"
   // sharedColorLegend.style.background = "white"
   // sharedColorLegend.style.padding = "10px"
-  document.getElementById("color-legend").style.top = "50px"
+  document.getElementById("color-legend").style.top = "5px"
   document.getElementById("color-legend").innerHTML = ``
   document.getElementById("color-legend").appendChild(legendDiv)
 
 
 }
 
+function createDownloadButton(small=true){ 
+  const template = /*html*/`<div class="dropdown d-flex justify-content-end position-absolute">
+  <button id="download-button" class="btn ${small ? "btn-sm" : ""} btn-outline-secondary dropdown-toggle" 
+    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    ${small ? "" : "<span class='me-1'>Download</span>"}
+    <span class="download-icon">
+      <i class="fas fa-download" style="color:#000000 !important"></i>
+    </span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+      <li><a id="download-data-csv" class="dropdown-item download-item">Download Data (CSV)</a></li>
+      <li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (PNG)</a></li>
+      <!--<li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (SVG)</a></li>-->
+
+  </ul>
+</div>`
+
+  //element.style.paddingTop = "20px"
+
+  const tempDiv = document.createElement("div")
+  tempDiv.innerHTML = template
+  const buttonElement = tempDiv.firstChild
+  buttonElement.style.top = "5px"
+  buttonElement.style.right = "5px"
+
+  return buttonElement
+}
+
+function addIndividualDownloadButton(element, config) {
+  const buttonElement = createDownloadButton(true) 
+
+  const baseFilename = ["epitracker_map_data", config.rowValue, config.columnValue].filter(d => d).join("_")
+
+  buttonElement.querySelector("#download-data-csv").addEventListener("click", () => {
+    const filename = baseFilename + ".csv"
+    const content = d3.csvFormat(prepareDataForDownload(config.data))
+    downloadStringAsFile(content, filename, "text/csv")
+  })
+
+  buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
+    const filename = baseFilename + ".png"
+    const downloadElement = prepareMapElementForDownload(element, config)
+
+    const tempWrapper = document.createElement("div")
+    tempWrapper.style.opacity = "0"
+    tempWrapper.style.position = "absolute"
+    tempWrapper.appendChild(downloadElement)
+    state.mapsContainer.appendChild(tempWrapper)
+
+    downloadHtmlAsImage(downloadElement, filename)
+  })
+
+  element.appendChild(buttonElement)
+}
+
+function addGroupDownloadButton(element) {
+  const buttonElement = createDownloadButton(false) 
+
+  const baseFilename = "epitracker_map_data"
+
+  buttonElement.querySelector("#download-data-csv").addEventListener("click", () => {
+    const filename = baseFilename + ".csv"
+    const content = d3.csvFormat(prepareDataForDownload(state.mapData))
+    downloadStringAsFile(content, filename, "text/csv")
+  })
+
+  buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
+    const filename = baseFilename + ".png"
+
+    const legend = document.getElementById("color-legend").cloneNode(true)
+
+    const downloadElement = document.createElement("div")
+    downloadElement.appendChild(legend)
+    downloadElement.appendChild(element.cloneNode(true))
+
+    const tempWrapper = document.createElement("div")
+    tempWrapper.style.opacity = "0"
+    tempWrapper.style.position = "absolute"
+    tempWrapper.appendChild(downloadElement)
+    state.mapsContainer.appendChild(tempWrapper)
+
+    downloadHtmlAsImage(downloadElement, filename)
+  })
+
+  // TODO: Remove when dashboard PNG feature is implemented
+  console.log(element.querySelector("#download-plot-png"))
+  buttonElement.querySelector("#download-plot-png").classList.add("disabled")
+  element.appendChild(buttonElement)
+}
 
 function toggleLoading(loading) {
   if (loading) {
@@ -697,4 +803,41 @@ function addChoroplethInteractivity(plot, plotContainer, config, baseHistogramCo
     });
 
   state.defineDynamicProperty("plotHighlight");
+}
+
+function prepareDataForDownload(data) {
+  // More readable, appropriate data for download. // TODO: Finish.
+
+
+  const outputData = []
+  for (const row of data) {
+    const outputRow = {...row}
+    for (const geoField of ["state", "state_fips", "county", "county_fips"]) {
+      if (outputRow[geoField] == "All") {
+        delete outputRow[geoField]
+      }
+    }
+    outputData.push(outputRow)
+  }
+
+  return outputData
+}
+
+function prepareMapElementForDownload(element, config) {
+  // TODO: Better mapping to human readable names for a cleaner title.
+
+  const legend = document.getElementById("color-legend").cloneNode(true)
+
+  const stratifications = [config.rowValue, config.columnValue].filter(d => d)
+  const cause = state.selectCause == "All" ? "All Cancers" : state.selectCause
+  const title = `${state.measure} | ${stratifications.join(", ")} | ${cause}`
+  const titleDiv = document.createElement("div")
+  titleDiv.innerText = title
+  
+  const div = document.createElement("div")
+  div.appendChild(titleDiv)
+  div.appendChild(legend)
+  div.appendChild(element.querySelector("svg").cloneNode(true))
+
+  return div 
 }
