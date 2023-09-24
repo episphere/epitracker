@@ -2423,45 +2423,118 @@ button.previous-btn {
   transition: 0.4s;
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+.map-grid-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
 }
 
-input:checked + .slider {
-  background-color: #2196f3;
+.main-plot-panel {
+  width: 100%;
+  overflow: auto;
+  max-height: 1028px;
+  border: 1px solid rgb(200, 200, 200);
+  padding: 20px;
+  border-radius: 8px 0 0 8px;
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196f3;
-}
+/* #maps-container {
 
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.slider.round span {
-  color: red;
-  margin-right: 20px;
-}
-/* svg path {
-  stroke: #706e6e;
 } */
+
+.legend-wrapper {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 3px 3px 8px 1px lightgrey;
+  padding-block: 5px;
+}
+
+.map-grid-label {
+  font-weight: bold;
+  font-size: .9em;
+}
+
+.download-item {
+  cursor: pointer;
+}
+
+.map-grid-cell .dropdown-toggle {
+  opacity: .4;
+}
+
+#color-legend {
+  /* To prevent the legend preventing interaction with DL button...kind of hacky*/
+  pointer-events: none;
+}
+/* 
+.map-grid-cell:hover .dropdown {
+  opacity: 1;
+} */
+
+/* .nav-pills .nav-link:not(.active) {
+  background-color: slategrey;
+  color: black;
+} */
+
+#display-mode-control .nav-item {
+  cursor: pointer;
+}
+
+.map-grid-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.main-plot-panel {
+  width: 100%;
+  overflow: auto;
+  max-height: 1028px;
+  border: 1px solid rgb(200, 200, 200);
+  padding: 20px;
+  border-radius: 8px 0 0 8px;
+}
+
+/* #maps-container {
+
+} */
+
+.legend-wrapper {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 3px 3px 8px 1px lightgrey;
+  padding-block: 5px;
+}
+
+.map-grid-label {
+  font-weight: bold;
+  font-size: .9em;
+}
+
+.download-item {
+  cursor: pointer;
+}
+
+.map-grid-cell .dropdown-toggle {
+  opacity: .4;
+}
+
+#color-legend {
+  /* To prevent the legend preventing interaction with DL button...kind of hacky*/
+  pointer-events: none;
+}
+/* 
+.map-grid-cell:hover .dropdown {
+  opacity: 1;
+} */
+
+/* .nav-pills .nav-link:not(.active) {
+  background-color: slategrey;
+  color: black;
+} */
+
+#display-mode-control .nav-item {
+  cursor: pointer;
+}

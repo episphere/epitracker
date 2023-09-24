@@ -41,6 +41,7 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
       }
     }
   }, "comparePrimary", "compareSecondary")
+
 }
 
 export function syncDataDependentInputs(state) {
@@ -50,6 +51,10 @@ export function syncDataDependentInputs(state) {
     d => d.sex) 
   state.selectRaceOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.cause == state.selectCause),
     d => d.race) 
+
+  if (state.comparePrimary == "race") state.selectRace = "All"
+  if (state.comparePrimary == "sex") state.compareSex = "All"
+  if (state.comparePrimary == "cause") state.compareCause = "All"
 }
 
 

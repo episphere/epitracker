@@ -54,13 +54,14 @@ export class State {
         listener.fs.forEach(f => f())
       }
     })
-
   }
 
-  _setProperty(property, value) {
+  _setProperty(property, value, fire=true) {
     if (value != this.properties[property]) {
       this.properties[property] = value
-      this.fireListeners(property)
+      if (fire) {
+        this.fireListeners(property)
+      }
     }
   }
     

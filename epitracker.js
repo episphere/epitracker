@@ -98,7 +98,6 @@ window.onload = async () => {
   const epitrackerDiv = document.getElementById("epitrackerDiv");
   epitrackerDiv.innerHTML = "";
   await epitracker();
-  console.log("Loading epitracker");
 };
 
 window.onhashchange = () => {
