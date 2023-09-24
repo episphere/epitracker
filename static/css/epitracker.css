@@ -1,10 +1,14 @@
-/* h4 {
-  color: gray;
-  /* font-family:sans-serif; //
-  font-family: "Montserrat";
-} */
+/**
+ * h4 {
+ *   color: gray;
+ *   /* font-family:sans-serif; //
+ *   font-family: "Montserrat";
+ * }
+ *
+ * @format
+ */
 
-li {
+ li {
   list-style: none;
 }
 
@@ -1375,7 +1379,7 @@ span.icon {
   margin-bottom: 30px;
 }
 .custom-tooltip {
-  background-color: rgba(255,255,255,1);
+  background-color: rgba(255, 255, 255, 1);
   font-family: sans-serif;
   font-size: 0.7em;
   padding: 8px;
@@ -1469,8 +1473,8 @@ span.icon {
   width: 100%; /* Full width */
   height: 100%; /* Full height */
   overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
 #loadingAnimation {
@@ -1863,13 +1867,12 @@ form {
   margin-bottom: 15px;
 }
 
-
 .image-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width:100 px /* adjust as needed */
+  width: 100 px; /* adjust as needed */
 }
 
 .banner-logo {
@@ -1996,7 +1999,7 @@ p {
 
 .input-group2 {
   margin-top: 0.25rem;
-  padding: 0.5rem 1.0rem;
+  padding: 0.5rem 1rem;
 }
 
 .contact-form label {
@@ -2328,33 +2331,33 @@ th {
 }
 
 .step {
-  Display: None;
+  display: None;
 }
 .step.active {
-  Display: Block;
+  display: Block;
 }
 
 button.next-btn,
 button.previous-btn,
 button.submit-btn {
-    Float: Right;
-    Margin-Top: 20px;
-    Padding: 10px 30px;
-    Border: None;
-    Outline: None;
-    /*Font-Family: "Montserrat";*/
-    Font-Size: 18px;
-    Cursor: Pointer; /* Text-Align: Right; */
+  float: Right;
+  margin-top: 20px;
+  padding: 10px 30px;
+  border: None;
+  outline: None;
+  /*Font-Family: "Montserrat";*/
+  font-size: 18px;
+  cursor: Pointer; /* Text-Align: Right; */
 }
 button.previous-btn {
-    Float: Left;
+  float: Left;
 }
 
 .tab {
   display: none;
 }
 
-.form-inline {  
+.form-inline {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
@@ -2384,7 +2387,7 @@ button.previous-btn {
 }
 
 #map-title {
-  max-width:  800px;
+  max-width: 800px;
 }
 
 #histogram-title {
@@ -2395,17 +2398,87 @@ button.previous-btn {
   max-width: 400px;
 }
 
-.plot-map-zoom {
-  position: absolute;
-  width: 200px;
-  right: 30px;
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
 }
 
-.plot-map-zoom > label {
-  font-size: 14px;
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
-svg path{
-  stroke:#706e6e;
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.map-grid-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.main-plot-panel {
+  width: 100%;
+  overflow: auto;
+  max-height: 1028px;
+  border: 1px solid rgb(200, 200, 200);
+  padding: 20px;
+  border-radius: 8px 0 0 8px;
+}
+
+/* #maps-container {
+
+} */
+
+.legend-wrapper {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 3px 3px 8px 1px lightgrey;
+  padding-block: 5px;
+}
+
+.map-grid-label {
+  font-weight: bold;
+  font-size: .9em;
+}
+
+.download-item {
+  cursor: pointer;
+}
+
+.map-grid-cell .dropdown-toggle {
+  opacity: .4;
+}
+
+#color-legend {
+  /* To prevent the legend preventing interaction with DL button...kind of hacky*/
+  pointer-events: none;
+}
+/* 
+.map-grid-cell:hover .dropdown {
+  opacity: 1;
+} */
+
+/* .nav-pills .nav-link:not(.active) {
+  background-color: slategrey;
+  color: black;
+} */
+
+#display-mode-control .nav-item {
+  cursor: pointer;
 }
 
 .map-grid-cell {

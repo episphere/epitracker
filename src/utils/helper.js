@@ -362,3 +362,32 @@ export function downloadStringAsFile(content, filename, contentType) {
     a.click();
     window.URL.revokeObjectURL(url);
 }
+
+export function getDictionaryWord(state, word, sub = null) {
+    if (sub == null) {
+      for (const key of Object.keys(state.dictionary)) {
+        if (state.dictionary[key][word]) {
+          return state.dictionary[key][word];
+        }
+      }
+    } else {
+      if (state.dictionary[sub][word]) {
+        return state.dictionary[sub][word];
+      }
+    }
+  
+    return word;
+  }
+  
+  
+  export function capitalizeWords(str) {
+    const words = str.split(" ");
+    const capitalizedWords = [];
+  
+    for (const word of words) {
+      const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      capitalizedWords.push(capitalizedWord);
+    }
+  
+    return capitalizedWords.join(" ");
+  }

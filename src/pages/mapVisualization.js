@@ -1,4 +1,9 @@
-import { renderSettingsVisualization, SETTINGS } from "../components/visualization/settingsVisualization.js"
+/** @format */
+
+import {
+  renderSettingsVisualization,
+  SETTINGS,
+} from "../components/visualization/settingsVisualization.js";
 
 export const renderMapVisualizationPage = () => {
   let template = /*html*/`

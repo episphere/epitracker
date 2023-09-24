@@ -15,7 +15,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
 
   options = {
-    drawBorders: false,
+    drawBorders: true,
     scheme: "RdYlBu",
     color: {},
     ...restOptions
@@ -34,12 +34,13 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
     ...options.color
   }
 
+  console.log({featureCollection});
   const marks = []
   marks.push(
     Plot.geo(featureCollection, {
-      stroke: (d) => options.drawBorders ? "lightgrey" : spatialDataMap.get(d.id)?.[options.measureField],
+      stroke: (d) => options.showOutline ? options.drawBorders ? "lightgrey" : spatialDataMap.get(d.id)?.[options.measureField]: 'transparent',
       fill: (d) => spatialDataMap.get(d.id)?.[options.measureField],
-      strokeWidth: 0.5,
+      strokeWidth: 1,
     }),
   )
 
@@ -245,7 +246,7 @@ export function createHistogramPlot(data, options={}) {
         data,
         Plot.binX(
           { y: "count" },
-          { x: options.measureField, stroke: null, fill: "lightgray" }
+          { x: options.measureField, stroke: null, fill: "green" }
         )
       ),
       Plot.ruleX(options.markLine, {

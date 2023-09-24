@@ -2,6 +2,7 @@
 export const SETTINGS = {
   GRAPH_TYPE: 'graph-type',
   SHOW_HIDE_TABLE: 'show-hide-table',
+  SHOW_HIDE_OUTLINE: 'show-hide-outline',
   START_ZERO: 'start-zero',
   COLOR_SCHEME: 'RdYlBu',
 };
@@ -9,7 +10,7 @@ export const SETTINGS = {
 const SETTINGS_CONTENTS = {
   [SETTINGS.GRAPH_TYPE]: { render: getGraphType },
   [SETTINGS.SHOW_HIDE_TABLE]: { render: getShowHideTable },
- // [SETTINGS.SHOW_HIDE_OUTLINE]: { render: getShowHideOutline },
+  [SETTINGS.SHOW_HIDE_OUTLINE]: { render: getShowHideOutline },
   [SETTINGS.START_ZERO]: { render: getStartZero },
   [SETTINGS.COLOR_SCHEME]: { render: getColorScheme },
 };
@@ -36,16 +37,17 @@ function getShowHideTable() {
     </div>
   `
 }
-// function getShowHideOutline() {
-//   return `
-//     <div class="form-check">
-//       <input class="form-check-input" type="checkbox" value="" id="showOutlineCheck">
-//       <label class="form-check-label" for="showOutlineCheck">
-//         Show Map's Outline
-//       </label>
-//     </div>
-//   `
-// }
+
+function getShowHideOutline() {
+  return `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="showOutlineCheck">
+      <label class="form-check-label" for="showOutlineCheck">
+        Show Map's Outline
+      </label>
+    </div>
+  `
+}
 //The function getColorScheme() generates and returns an HTML string representing a form-selection input with selection choices and label for 'Scheme select' in both quantile and map pages.
 
 function getColorScheme() {

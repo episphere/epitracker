@@ -11,12 +11,12 @@ export const renderQuantileVisualizationPage = () => {
           </div>
           <div class="card-body">
           <h5 class="">Compare</h5>
-            <label for="comparePrimarySelect">Primary</label>
+            <label for="comparePrimarySelect">Color by</label>
             <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="compareSecondarySelect">Secondary</label>
+            <label for="compareSecondarySelect">Sub-plot by</label>
             <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
               <option hidden >Awaiting data...</option>
             </select>

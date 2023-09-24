@@ -1,11 +1,11 @@
 import { State } from "./DynamicState2.js"
 import { hookSelect, hookCheckbox, hookInputActivation } from "./input.js"
 import { createQuantilePlot } from "./quantilePlots.js"
-import { hookDemographicInputs, syncDataDependentInputs, mapStateAndCounty, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
+import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELECTABLE_FIELDS } from "./demographicControls.js"
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort, addPopperTooltip, addProximityHover } from "./helper.js"
+import { toggleSidebar, sort, addPopperTooltip, addProximityHover, getDictionaryWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -103,7 +103,10 @@ function hookInputs() {
 }
 
 function queryData() {  
-  let plotData = state.data.filter(d => d.quantile_field == state.quantileField)
+  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.split('(')[0].trim().replaceAll(' ', '_'))
+  if (state.quantileNum !== 'All') {
+    plotData = plotData.filter(item => item.quantile == state.quantileNum)
+  }
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
   SELECTABLE_FIELDS.forEach(field => {
@@ -130,16 +133,15 @@ function update() {
 }
 
 function updateLegend() {
-  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "sex" : state.comparePrimary
   
   let colorValues = null 
   const legendContainer = document.getElementById("plot-legend")
   legendContainer.innerHTML = ``
+
   if (state.comparePrimary != "none") {
     colorValues = [...new Set(state.plotData.map(d => d[colorField]))]
     colorValues.sort()
-
-
     state.displayColorValues = colorValues.filter(d => state.displayColorValues.includes(d))
     if (state.displayColorValues.length == 0) {
       state.displayColorValues = colorValues
@@ -150,18 +152,18 @@ function updateLegend() {
     legend.addEventListener("change", () => {
       state.displayColorValues = legend.getValues()
     })
-  } 
+  } else {
+    colorValues = [...new Set(state.plotData.map(d => d[colorField]))]// ['All']
+    state.displayColorValues = colorValues 
+  }
 
 }
 
 function updateQuantilePlot() {
-  const colorField = state.comparePrimary == "none" ? "slateblue" : state.comparePrimary
+  const colorField = state.comparePrimary == "none" ? "sex" : state.comparePrimary
 
-  let colorValues = null 
-  if (state.comparePrimary != "none") {
-    colorValues = [...new Set(state.plotData.map(d => d[state.comparePrimary]))]
-    colorValues.sort()
-  }
+  let colorValues = [...new Set(state.plotData.map(d => d[colorField]))] 
+  colorValues.sort()
 
   if (state.displayColorValues == null) {
     state.displayColorValues = colorValues
@@ -171,7 +173,7 @@ function updateQuantilePlot() {
   const xTicks = quantileDetailsToTicks(quantileDetails)
   const xTickFormat = (_,i) => xTicks[i]
 
-  const xLabel = state.quantileField + " (quantile)"
+  const xLabel = state.quantileField
   const yLabel = state.valueField
 
   let filteredPlotData = state.plotData 
@@ -188,12 +190,16 @@ function updateQuantilePlot() {
     drawLines: state.showLines,
     yStartZero: state.startZero,
     xTickFormat: xTickFormat, 
-    xLabel, yLabel, color: d => d[colorField],
+    xLabel, 
+    yLabel, 
+    color: d => d[colorField],
     colorDomain: colorValues
   })
   state.quantilePlot = plot
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
+
+  console.log({plotData: state.plotData, filteredPlotData});
 
   addPlotInteractivity()
   downloadFiles(state.plotData, "first_data", true)
@@ -252,6 +258,7 @@ async function initialDataLoad() {
 
   // Load files and put processed data into state 
   state.conceptMappings = await d3.json("data/conceptMappings.json");
+  state.dictionary = await d3.json("data/dictionary.json");
 
   await loadData("2020")
   
@@ -259,15 +266,15 @@ async function initialDataLoad() {
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.abbr])])
   
   const quantileDetails = await d3.json("data/quantile_details.json")
-  state.quantileDetailsMap = d3.index(quantileDetails, d => d.field)
-
+  state.quantileDetailsMap = d3.index(quantileDetails, d => `${d.field.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[d.field]})`)
 
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
-  state.quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
+  const quantileFieldOptions = unique(quantileDetails, d => d.field)
+  state.quantileFieldOptions = quantileFieldOptions.map(item => `${item.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[item]})`)
+  state.quantileNumOptions = ['All', ...unique(state.data, d => String(d.quantile))]
   state.selectYearOptions = YEARS
-
+  
   queryData()
   syncDataDependentInputs(state)
   //toggleInputActivation(true)
