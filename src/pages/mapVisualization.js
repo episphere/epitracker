@@ -83,7 +83,7 @@ export const renderMapVisualizationPage = () => {
             </div>
           
   `
-  template += renderSettingsVisualization([SETTINGS.SHOW_HIDE_TABLE, SETTINGS.COLOR_SCHEME])
+  template += renderSettingsVisualization([ SETTINGS.COLOR_SCHEME])
         
   template += /*html*/`
         </div>
@@ -101,8 +101,25 @@ export const renderMapVisualizationPage = () => {
             </div>
 
             <div id="plots-container" class="d-flex flex-column pe-2 position-relative">
-              <div id="color-legend" class="d-flex justify-content-start ps-3 sticky-top"></div>
-              <div id="maps-container" class="mt-3"></div>
+              <div id="plots-bar" class="d-inline-flex justify-content-between ps-2">
+                <div id="color-legend" class="d-inline-flex"></div>
+                <div class="d-inline-flex align-self-end">
+                  <div id="display-mode-control">
+                    <ul class="nav nav-pills">
+                      <li class="nav-item">
+                        <a id="map-nav-link" class="nav-link active"><i class="bi bi-map"></i></a>
+                      </li>
+                      <li class="nav-item">
+                        <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
+                      </li>
+                    <ul>
+                  </div> 
+                  <div id="group-download-container" ></div>
+                </div>
+                
+              </div>
+              <div id="maps-container" class="mt-3 main-plot-panel" style="display: grid"></div>
+              <div id="table-container" class="mt-3 main-plot-panel" style="display: none"></div>
             </div>
           </div>
       

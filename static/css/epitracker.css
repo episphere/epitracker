@@ -2411,12 +2411,22 @@ svg path{
 .map-grid-cell {
   display: flex;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
+  padding-top: 10px;
 }
 
-#maps-container {
+.main-plot-panel {
   width: 100%;
+  overflow: auto;
+  max-height: 1028px;
+  border: 1px solid rgb(200, 200, 200);
+  padding: 20px;
+  border-radius: 8px 0 0 8px;
 }
+
+/* #maps-container {
+
+} */
 
 .legend-wrapper {
   background: white;
@@ -2428,11 +2438,6 @@ svg path{
 .map-grid-label {
   font-weight: bold;
   font-size: .9em;
-}
-
-#plots-container {
-  overflow: auto;
-  max-height: 1200px;
 }
 
 .download-item {
@@ -2451,3 +2456,12 @@ svg path{
 .map-grid-cell:hover .dropdown {
   opacity: 1;
 } */
+
+/* .nav-pills .nav-link:not(.active) {
+  background-color: slategrey;
+  color: black;
+} */
+
+#display-mode-control .nav-item {
+  cursor: pointer;
+}

@@ -13,8 +13,9 @@ import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
 import { insertParamsToUrl } from "../shared.js";
 import { addPopperTooltip, addTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
 import { createChoroplethPlot } from "./mapPlots.js";
-import { colorRampLegendMeanDiverge } from "./helper.js";
+import { colorRampLegendMeanDiverge, dataToTableData } from "./helper.js";
 import { downloadHtmlAsImage } from "./download.js";
+import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
 
 
 
@@ -44,6 +45,7 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 
 export async function start() {
   toggleLoading(true);
+
 
   state = new State();
   state.defineDynamicProperty("data", []);
@@ -189,7 +191,18 @@ export async function start() {
   }
 
   toggleSidebar("plots-container");
-  addGroupDownloadButton(document.getElementById("plots-container"), {data: state.mapData}, false)
+  addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
+}
+
+function plotTable() {
+  const tableContainer = document.getElementById("table-container")
+  tableContainer.innerHTML = ``
+  new DataTable(tableContainer, {
+    data: dataToTableData(state.mapData),
+    perPage: 20,
+    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]]
+  })
+    
 }
 
 function update() {
@@ -197,8 +210,16 @@ function update() {
 
   state.featureCollection = state.level == "county" ? state.countyGeo : state.stateGeo;
 
-  plotMapGrid(state.mapData, state.comparePrimary != "none" ? state.comparePrimary : null, 
+  // For the map plotting, defer if the map grid is not currently being show (to ensure layout is correct).
+  const plotFunction = () => plotMapGrid(state.mapData, state.comparePrimary != "none" ? state.comparePrimary : null, 
     state.compareSeconday != "none" ? state.compareSecondary : null)
+  if (state.plotMode == "map") {
+    plotFunction()
+  } else {
+    state.deferPlotFunction = plotFunction
+  }
+
+  plotTable()
 
   // let valuesPrimary = null;
   // let valuesSecondary = null; 
@@ -290,7 +311,7 @@ function plotMapGrid(data, rowField, columnField) {
   const mapsContainer = document.getElementById("maps-container")
   state.mapsContainer = mapsContainer
   mapsContainer.innerHTML = ``
-  mapsContainer.style.display = 'grid';
+  //mapsContainer.style.display = 'grid';
   mapsContainer.style.gridTemplateRows = `repeat(${rowField ? nRows + 1 : nRows}, auto)`; 
   mapsContainer.style.gridTemplateColumns = `repeat(${columnField ? nColumns + 1 : nColumns}, auto)`;
 
@@ -415,8 +436,21 @@ function plotMapGrid(data, rowField, columnField) {
 
 }
 
+function createMapDownloadButton() {
+
+  const buttonElement = createDownloadButton(true)
+  buttonElement.style.position = "absolute"
+
+  
+  buttonElement.style.top = "5px"
+  buttonElement.style.right = "5px"
+
+  return buttonElement
+
+}
+
 function createDownloadButton(small=true){ 
-  const template = /*html*/`<div class="dropdown d-flex justify-content-end position-absolute">
+  const template = /*html*/`<div class="dropdown d-flex justify-content-end">
   <button id="download-button" class="btn ${small ? "btn-sm" : ""} btn-outline-secondary dropdown-toggle" 
     type="button" data-bs-toggle="dropdown" aria-expanded="false">
     ${small ? "" : "<span class='me-1'>Download</span>"}
@@ -427,24 +461,23 @@ function createDownloadButton(small=true){
   <ul class="dropdown-menu dropdown-menu-end">
       <li><a id="download-data-csv" class="dropdown-item download-item">Download Data (CSV)</a></li>
       <li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (PNG)</a></li>
-      <!--<li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (SVG)</a></li>-->
-
+      <!--<li><a id="download-plot-svg" class="dropdown-item download-item">Download Plot (SVG)</a></li>-->
   </ul>
 </div>`
 
+const tempDiv = document.createElement("div")
+tempDiv.innerHTML = template
+const buttonElement = tempDiv.firstChild
+
+return buttonElement 
+
   //element.style.paddingTop = "20px"
 
-  const tempDiv = document.createElement("div")
-  tempDiv.innerHTML = template
-  const buttonElement = tempDiv.firstChild
-  buttonElement.style.top = "5px"
-  buttonElement.style.right = "5px"
 
-  return buttonElement
 }
 
 function addIndividualDownloadButton(element, config) {
-  const buttonElement = createDownloadButton(true) 
+  const buttonElement = createMapDownloadButton(true) 
 
   const baseFilename = ["epitracker_map_data", config.rowValue, config.columnValue].filter(d => d).join("_")
 
@@ -500,8 +533,8 @@ function addGroupDownloadButton(element) {
   })
 
   // TODO: Remove when dashboard PNG feature is implemented
-  console.log(element.querySelector("#download-plot-png"))
   buttonElement.querySelector("#download-plot-png").classList.add("disabled")
+  
   element.appendChild(buttonElement)
 }
 
@@ -666,13 +699,39 @@ function hookInputs() {
     true
   );
 
-  hookCheckbox("#showTableCheck", state, "showTable");
+  const mapNavLink = document.getElementById("map-nav-link")
+  const tableNavLink = document.getElementById("table-nav-link")
+
+  state.defineDynamicProperty("plotMode", "map")
   state.addListener(() => {
-    insertParamsToUrl("showTable", state.showTable);
-    document.getElementById("map-table-wrapper").style.display = state.showTable
-      ? "block"
-      : "none";
-  }, "showTable");
+    if (state.plotMode == "map") {
+      tableNavLink.classList.remove("active")
+      mapNavLink.classList.add("active")
+      document.getElementById("maps-container").style.display = "grid"
+      document.getElementById("table-container").style.display = "none"
+
+      if (state.deferPlotFunction) {
+        state.deferPlotFunction()
+        state.deferPlotFunction = null
+      }
+    } else if (state.plotMode == "table") {
+      mapNavLink.classList.remove("active")
+      tableNavLink.classList.add("active")
+      document.getElementById("maps-container").style.display = "none"
+      document.getElementById("table-container").style.display = "block"
+    }
+  }, "plotMode")
+
+
+
+  mapNavLink.addEventListener("click", () => {
+    state.plotMode = "map"
+  })
+
+  tableNavLink.addEventListener("click", () => {
+    state.plotMode = "table"
+  })
+
 }
 
 function queryData(stateFips, countyFips) {

@@ -1,6 +1,16 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm'
 
+export function dataToTableData(data) {
+    const keys = Object.keys(data[0]) 
+    const array = []
+    for (const row of data) {
+        array.push(keys.map(key => row[key]))
+    }
+
+    return {headings: keys, data: array}
+}
+
 export function addProximityHover(elementsSelect, plotSelect, listener, minDistance=30) {
     const plotRect = plotSelect.node().getBoundingClientRect()
     
