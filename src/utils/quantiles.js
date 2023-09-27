@@ -5,7 +5,7 @@ import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELE
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort, addPopperTooltip, addProximityHover, getDictionaryWord } from "./helper.js"
+import { toggleSidebar, sort, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -69,6 +69,10 @@ export async function start() {
         "measure", "quantileField", "quantileNum")
 
   state.addListener(() => {
+    updateQuantileTitle()
+}, "quantileField")
+
+  state.addListener(() => {
     updateQuantilePlot()
   }, "displayColorValues", "showLines", "startZero")
 
@@ -103,10 +107,7 @@ function hookInputs() {
 }
 
 function queryData() {  
-  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.split('(')[0].trim().replaceAll(' ', '_'))
-  if (state.quantileNum !== 'All') {
-    plotData = plotData.filter(item => item.quantile == state.quantileNum)
-  }
+  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.split('(')[0].trim().replaceAll(' ', '_').toLowerCase())
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
   SELECTABLE_FIELDS.forEach(field => {
@@ -266,17 +267,18 @@ async function initialDataLoad() {
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.abbr])])
   
   const quantileDetails = await d3.json("data/quantile_details.json")
-  state.quantileDetailsMap = d3.index(quantileDetails, d => `${d.field.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[d.field]})`)
+  state.quantileDetailsMap = d3.index(quantileDetails, d => `${capitalizeFirstWord(d.field.replaceAll('_', ' '))} (${state.dictionary.quantile_fields[d.field].title})`)
 
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
   const quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileFieldOptions = quantileFieldOptions.map(item => `${item.replaceAll('_', ' ')} (${state.dictionary.quantile_fields[item]})`)
-  state.quantileNumOptions = ['All', ...unique(state.data, d => String(d.quantile))]
+  state.quantileFieldOptions = quantileFieldOptions.map(item => `${capitalizeFirstWord(item.replaceAll('_', ' '))} (${state.dictionary.quantile_fields[item].title})`)
+  state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
   state.selectYearOptions = YEARS
   
   queryData()
   syncDataDependentInputs(state)
+  updateQuantileTitle()
   //toggleInputActivation(true)
   state.inputsActive = true 
 
@@ -363,4 +365,14 @@ function quantileDetailsToTicks(quantileDetails) {
 
 function unique(data, accessor=d=>d) {
   return [...new Set(data.map(accessor))]
+}
+
+function updateQuantileTitle() {
+  if (!state?.properties) return;
+
+  const quantileSelectionElement = document.querySelector("[data-quantile-item]");
+  const {quantile_fields} = state.dictionary
+  const {quantileField} = state.properties
+  const key = quantileField.split('(')[0].trim().replaceAll(' ', '_').toLowerCase()
+  quantileSelectionElement.innerHTML = quantile_fields[key].description;
 }

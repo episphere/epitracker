@@ -123,6 +123,9 @@ export const renderQuantileVisualizationPage = () => {
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
               <div id="plot-quantiles"></div>
             </figure>
+            <div>
+              <p id="quantiles-title"><b data-quantile-item="quantile">quantile</b></p>
+            </div>
           </div>
   
   

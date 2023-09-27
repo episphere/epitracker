@@ -365,7 +365,7 @@ export function downloadStringAsFile(content, filename, contentType) {
 
 export function getDictionaryWord(state, word, sub = null) {
     if (sub == null) {
-      for (const key of Object.keys(state.dictionary)) {
+      for (const key of Object.keys(state.dictionary)) { 
         if (state.dictionary[key][word]) {
           return state.dictionary[key][word];
         }
@@ -380,14 +380,9 @@ export function getDictionaryWord(state, word, sub = null) {
   }
   
   
-  export function capitalizeWords(str) {
-    const words = str.split(" ");
-    const capitalizedWords = [];
+  export function capitalizeFirstWord(str) {
+    const [firstWord, ...otherWords] = str.split(" ");
+    const capitalizedWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
   
-    for (const word of words) {
-      const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      capitalizedWords.push(capitalizedWord);
-    }
-  
-    return capitalizedWords.join(" ");
+    return [capitalizedWord, ...otherWords].join(" ");
   }
