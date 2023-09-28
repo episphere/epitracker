@@ -1,7 +1,7 @@
 // An export statement defining a constant object called SETTINGS that contains various properties related to settings, each with a corresponding string value.
 export const SETTINGS = {
   GRAPH_TYPE: 'graph-type',
-  SHOW_HIDE_TABLE: 'show-hide-table',
+  // SHOW_HIDE_TABLE: 'show-hide-table',
   SHOW_HIDE_OUTLINE: 'show-hide-outline',
   START_ZERO: 'start-zero',
   COLOR_SCHEME: 'RdYlBu',
@@ -9,7 +9,7 @@ export const SETTINGS = {
 // defining a constant object, SETTINGS_CONTENTS that uses computed property names to map each property from SETTINGS to an object with a 'render' property, which contains a function.
 const SETTINGS_CONTENTS = {
   [SETTINGS.GRAPH_TYPE]: { render: getGraphType },
-  [SETTINGS.SHOW_HIDE_TABLE]: { render: getShowHideTable },
+  // [SETTINGS.SHOW_HIDE_TABLE]: { render: getShowHideTable },
   [SETTINGS.SHOW_HIDE_OUTLINE]: { render: getShowHideOutline },
   [SETTINGS.START_ZERO]: { render: getStartZero },
   [SETTINGS.COLOR_SCHEME]: { render: getColorScheme },
@@ -27,16 +27,16 @@ function getGraphType() {
   `
 }
 //The function getShowHideTable()generates and returns an HTML string representing a form-check input with a checkbox and label for 'Show table' in both quantile and map pages.
-function getShowHideTable() {
-  return `
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="showTableCheck">
-      <label class="form-check-label" for="showTableCheck">
-        Show Table
-      </label>
-    </div>
-  `
-}
+// function getShowHideTable() {
+//   return `
+//     <div class="form-check">
+//       <input class="form-check-input" type="checkbox" value="" id="showTableCheck">
+//       <label class="form-check-label" for="showTableCheck">
+//         Show Table
+//       </label>
+//     </div>
+//   `
+// }
 
 function getShowHideOutline() {
   return `

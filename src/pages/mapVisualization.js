@@ -95,14 +95,14 @@ export const renderMapVisualizationPage = () => {
         </div>
 
         <div class="col-md-10 px-3 position-relative" id="main-content">
-          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i
-              class="fas fa-lg fa-caret-left"></i></button>
+          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0">
+            <i class="fas fa-lg fa-caret-left"></i>
+          </button>
 
           <div class="tab-pane fade show px-4 py-1" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
 
             <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
-              <div class="spinner-border" role="status">
-              </div>
+              <div class="spinner-border" role="status"></div>
             </div>
 
             <div id="plots-container" class="d-flex flex-column pe-2 position-relative">

@@ -45,8 +45,8 @@ export async function start() {
   state.comparePrimary = "none"
 
   state.downloadGraphRef = {
-    pngFigureOneButton: null, 
-    pngFigureOneCallback: null,
+    graphButton: null, 
+    graphCallback: null,
   }
 
   update()
@@ -78,7 +78,7 @@ export async function start() {
 
   state.comparePrimary = "race"
 
-  toggleSidebar('plot-quantiles')
+  toggleSidebar()
 
 }
 
@@ -95,15 +95,15 @@ function hookInputs() {
   hookSelect("#quantileNumSelect", state, "quantileNumOptions", "quantileNum")
   hookCheckbox("#showLinesCheck", state, "showLines")
   hookCheckbox("#startZeroCheck", state, "startZero")
-  hookCheckbox("#showTableCheck", state, "showTable")
+  // hookCheckbox("#showTableCheck", state, "showTable")
 
   hookInputActivation(["#comparePrimarySelect", "#compareSecondarySelect", "#causeSelectSelect", "#sexSelectSelect",
    "#raceSelectSelect", "#yearSelectSelect", "#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, 
    "inputsActive")
 
-  state.addListener(() => {
-    document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
-  }, "showTable")
+  // state.addListener(() => {
+  //   document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
+  // }, "showTable")
 }
 
 function queryData() {  
@@ -127,9 +127,9 @@ function update() {
   const headers = Object.keys(state.plotData[0])
   downloadFiles(state.plotData, headers, "first_data", true)
   downloadQuantileGraphs()
-  renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
-  paginationHandler(state.plotData, 200, headers)
-  updateQuantileTable(state.plotData)
+  // renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
+  // paginationHandler(state.plotData, 200, headers)
+  // updateQuantileTable(state.plotData)
   toggleLoading(false)
 }
 
@@ -205,9 +205,9 @@ function updateQuantilePlot() {
   addPlotInteractivity()
   downloadFiles(state.plotData, "first_data", true)
   downloadQuantileGraphs()
-  renderTable("quantile-table", dataPagination(0, 200, state.plotData))
-  paginationHandler(state.plotData, 200)
-  updateQuantileTable(state.plotData)
+  // renderTable("quantile-table", dataPagination(0, 200, state.plotData))
+  // paginationHandler(state.plotData, 200)
+  // updateQuantileTable(state.plotData)
 }
 
 function addPlotInteractivity() {
@@ -320,21 +320,21 @@ const updateQuantileTable = (data) => {
 } 
 
 const removeDownloadGraphEventListeners = () => {
-  if (state.downloadGraphRef.pngFigureOneButton) {
-    state.downloadGraphRef.pngFigureOneButton.removeEventListener('click', state.downloadGraphRef.pngFigureOneCallback)
+  if (state.downloadGraphRef.graphButton) {
+    state.downloadGraphRef.graphButton.removeEventListener('click', state.downloadGraphRef.graphCallback)
   }
 }
 
 function downloadQuantileGraphs() {
   removeDownloadGraphEventListeners()
-  const downloadFigureOnePNG = () => downloadGraph('plot-quantiles', 'quantile')
-  const downloadFigureOneButton = document.getElementById(
-    "downloadFigureOnePNG"
+  const downloadGraphFunction = () => downloadGraph('plot-quantiles', 'quantile')
+  const downloadGraphButton = document.getElementById(
+    "downloadGraph"
   );
-  if (downloadFigureOneButton) {
-    downloadFigureOneButton.addEventListener("click", downloadFigureOnePNG);
-    state.downloadGraphRef.pngFigureOneButton = downloadFigureOneButton
-    state.downloadGraphRef.pngFigureOneCallback = downloadFigureOnePNG
+  if (downloadGraphButton) {
+    downloadGraphButton.addEventListener("click", downloadGraphFunction);
+    state.downloadGraphRef.graphButton = downloadGraphButton
+    state.downloadGraphRef.graphCallback = downloadGraphFunction
   }
 }
 

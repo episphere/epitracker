@@ -202,7 +202,7 @@ export async function start() {
     state.comparePrimary = params.comparePrimary;
   }
 
-  toggleSidebar("plots-container");
+  toggleSidebar();
   addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
 }
 
