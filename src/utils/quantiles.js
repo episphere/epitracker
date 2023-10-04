@@ -68,9 +68,9 @@ export async function start() {
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
 
-  state.addListener(() => {
-    updateQuantileTitle()
-}, "quantileField")
+//   state.addListener(() => {
+//     updateQuantileTitle()
+// }, "quantileField")
 
   state.addListener(() => {
     updateQuantilePlot()
@@ -101,13 +101,46 @@ function hookInputs() {
    "#raceSelectSelect", "#yearSelectSelect", "#measureSelect", "#quantileFieldSelect", "#quantileNumSelect"], state, 
    "inputsActive")
 
+   const graphNavLink = document.getElementById("graph-nav-link")
+   const tableNavLink = document.getElementById("table-nav-link")
+ 
+   state.defineDynamicProperty("plotMode", "graph")
+   state.addListener(() => {
+     if (state.plotMode == "graph") {
+       tableNavLink.classList.remove("active")
+       graphNavLink.classList.add("active")
+       document.getElementById("graph-container").style.display = "grid"
+       document.getElementById("table-container").style.display = "none"
+ 
+       if (state.deferPlotFunction) {
+         state.deferPlotFunction()
+         state.deferPlotFunction = null
+       }
+     } else if (state.plotMode == "table") {
+      graphNavLink.classList.remove("active")
+       tableNavLink.classList.add("active")
+       document.getElementById("graph-container").style.display = "none"
+       document.getElementById("table-container").style.display = "block"
+     }
+   }, "plotMode")
+ 
+ 
+ 
+   graphNavLink.addEventListener("click", () => {
+     state.plotMode = "graph"
+   })
+ 
+   tableNavLink.addEventListener("click", () => {
+     state.plotMode = "table"
+   })
+
   // state.addListener(() => {
   //   document.getElementById("quantile-table-wrapper").style.display = state.showTable ? "block" : "none"
   // }, "showTable")
 }
 
 function queryData() {  
-  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.split('(')[0].trim().replaceAll(' ', '_').toLowerCase())
+  let plotData = state.data.filter(d => d.quantile_field == state.quantileField.replaceAll(' ', '_').toLowerCase())
   const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter(d => d != "none"))
 
   SELECTABLE_FIELDS.forEach(field => {
@@ -125,11 +158,11 @@ function update() {
   updateLegend()
 
   const headers = Object.keys(state.plotData[0])
-  downloadFiles(state.plotData, headers, "first_data", true)
+  downloadFiles(state.plotData, "first_data")
   downloadQuantileGraphs()
-  // renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
-  // paginationHandler(state.plotData, 200, headers)
-  // updateQuantileTable(state.plotData)
+  renderTable("quantile-table", dataPagination(0, 200, state.plotData), headers)
+  paginationHandler(state.plotData, 200, headers)
+  updateQuantileTable(state.plotData)
   toggleLoading(false)
 }
 
@@ -174,7 +207,7 @@ function updateQuantilePlot() {
   const xTicks = quantileDetailsToTicks(quantileDetails)
   const xTickFormat = (_,i) => xTicks[i]
 
-  const xLabel = state.quantileField
+  const xLabel = updateQuantileTitle()
   const yLabel = state.valueField
 
   let filteredPlotData = state.plotData 
@@ -203,11 +236,11 @@ function updateQuantilePlot() {
   console.log({plotData: state.plotData, filteredPlotData});
 
   addPlotInteractivity()
-  downloadFiles(state.plotData, "first_data", true)
+  downloadFiles(state.plotData, "first_data")
   downloadQuantileGraphs()
-  // renderTable("quantile-table", dataPagination(0, 200, state.plotData))
-  // paginationHandler(state.plotData, 200)
-  // updateQuantileTable(state.plotData)
+  renderTable("quantile-table", dataPagination(0, 200, state.plotData))
+  paginationHandler(state.plotData, 200)
+  updateQuantileTable(state.plotData)
 }
 
 function addPlotInteractivity() {
@@ -267,18 +300,18 @@ async function initialDataLoad() {
   state.causeMap = new Map([["All", "All"],  ...causeDictData.map(row => [row.code, row.abbr])])
   
   const quantileDetails = await d3.json("data/quantile_details.json")
-  state.quantileDetailsMap = d3.index(quantileDetails, d => `${capitalizeFirstWord(d.field.replaceAll('_', ' '))} (${state.dictionary.quantile_fields[d.field].title})`)
+  state.quantileDetailsMap = d3.index(quantileDetails, d => `${capitalizeFirstWord(d.field.replaceAll('_', ' '))}`)
 
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
   const quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileFieldOptions = quantileFieldOptions.map(item => `${capitalizeFirstWord(item.replaceAll('_', ' '))} (${state.dictionary.quantile_fields[item].title})`)
+  state.quantileFieldOptions = quantileFieldOptions.map(item => `${capitalizeFirstWord(item.replaceAll('_', ' '))}`)
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
   state.selectYearOptions = YEARS
   
   queryData()
   syncDataDependentInputs(state)
-  updateQuantileTitle()
+  // updateQuantileTitle()
   //toggleInputActivation(true)
   state.inputsActive = true 
 
@@ -370,9 +403,8 @@ function unique(data, accessor=d=>d) {
 function updateQuantileTitle() {
   if (!state?.properties) return;
 
-  const quantileSelectionElement = document.querySelector("[data-quantile-item]");
   const {quantile_fields} = state.dictionary
   const {quantileField} = state.properties
-  const key = quantileField.split('(')[0].trim().replaceAll(' ', '_').toLowerCase()
-  quantileSelectionElement.innerHTML = quantile_fields[key].description;
+  const key = quantileField.replaceAll(' ', '_').toLowerCase()
+  return quantile_fields[key].description
 }

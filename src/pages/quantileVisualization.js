@@ -109,15 +109,24 @@ export const renderQuantileVisualizationPage = () => {
             <div class="ml-auto" id="downloadContainer">
               <div class="col-md-12 p-0 dropdown">
                 <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-                  data-bs-toggle="dropdown" id="download-graph-btn" style="color:#000000 !important">
+                  data-bs-toggle="dropdown" id="download-dropdown-btn" style="color:#000000 !important">
                   Download <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
                 </button>
-                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
+                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-dropdown-btn">
                   <div class="position-relative d-flex align-items-center">
                     <ul class="navbar-dropdown w-100">
                       <li>
-                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as PNG" id="downloadGraph">Download Graph (PNG)</button>
+                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as PNG" id="downloadGraph">Download Plot (PNG)</button>
                       </li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                          id="download-table-csv">Download Data(CSV) </button></li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                          id="download-table-tsv">Download Data (TSV)</button></li>
+                      <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                        <div class="top-50 start-50 translate-middle position-absolute">
+                          <div class="spinner-border" role="status"></div>
+                        </div>
+                      </div>
                     </ul>
                     <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
                       <div class="top-50 start-50 translate-middle position-absolute">
@@ -135,43 +144,18 @@ export const renderQuantileVisualizationPage = () => {
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
               <div id="plot-quantiles"></div>
             </figure>
-            <div>
-              <p id="quantiles-title"><b data-quantile-item="quantile">quantile</b></p>
-            </div>
           </div>
           <div id="table-container" class="mt-3 main-plot-panel" style="display: none">
-            <div class="row" id="quantile-table-wrapper" style="display: none;">
-              <div class="d-flex flex-row-reverse justify-content-between">
-                <div class="ml-auto mt-3 mb-3" id="downloadContainer">
-                  <div class="col-md-12 p-0 dropdown">
-                    <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-                      data-bs-toggle="dropdown" id="download-table-btn" style="color:#000000 !important">
-                      Download Table<span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></i>
-                    </button>
-                    <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
-                      <div class="position-relative d-flex align-items-center">
-                        <ul class="navbar-dropdown w-100">
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
-                              id="download-table-csv">CSV</button></li>
-                          <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
-                              id="download-table-tsv">TSV</button></li>
-                        </ul>
-                        <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
-                          <div class="top-50 start-50 translate-middle position-absolute">
-                            <div class="spinner-border" role="status"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="row" id="quantile-table-wrapper">
+              <div class="d-flex flex-row-reverse justify-content-end">
+                
                 <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
               </div>
 
               <div class="table-responsive">
                 <table class="table" id="quantile-table"></table>
                 <div>
-                </div>
+              </div>
               </div>
             </div>
           </div>
