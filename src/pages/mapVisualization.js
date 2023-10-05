@@ -107,7 +107,7 @@ export const renderMapVisualizationPage = () => {
 
             <div id="plots-container" class="d-flex flex-column pe-2 position-relative">
               <div id="plots-bar" class="d-inline-flex justify-content-between ps-2">
-                <div id="color-legend" class="d-inline-flex"></div>
+                <div id="color-legend" style="display:inline-block"></div>
                 <div class="d-inline-flex align-self-end">
                   <div id="display-mode-control">
                     <ul class="nav nav-pills">

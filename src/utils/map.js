@@ -723,6 +723,7 @@ function hookInputs() {
       mapNavLink.classList.add("active")
       document.getElementById("maps-container").style.display = "grid"
       document.getElementById("table-container").style.display = "none"
+      document.getElementById("color-legend").style.opacity = 1
 
       if (state.deferPlotFunction) {
         state.deferPlotFunction()
@@ -733,6 +734,7 @@ function hookInputs() {
       tableNavLink.classList.add("active")
       document.getElementById("maps-container").style.display = "none"
       document.getElementById("table-container").style.display = "block"
+      document.getElementById("color-legend").style.opacity = 0
     }
   }, "plotMode")
 
