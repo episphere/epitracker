@@ -197,7 +197,7 @@ export async function start() {
   }, "selectCounty");
 
   state.inputsActive = true;
-  state.comparePrimary = "race";
+  state.comparePrimary = "sex";
   if (params.comparePrimary) {
     state.comparePrimary = params.comparePrimary;
   }
@@ -307,6 +307,10 @@ function plotMapGrid(data, rowField, columnField) {
   if (columnField) {
     valuesColumn = [...new Set(data.map(d => d[columnField]))]
   }
+
+  // TODO: Better sorting in the future. 
+  valuesRow.sort()
+  valuesColumn.sort()
 
   const mapConfigs = generateCombinations(valuesRow, valuesColumn, "row", "column")
   mapConfigs.forEach(config => {
@@ -773,7 +777,7 @@ function queryData(stateFips, countyFips) {
   const geoField = state.level + "_fips"
   if (state.level == "county") {
     mapData = mapData.filter((d) => d.county_fips != "All");
-    mapData = mapData.filter((d) => d.state_fips == "All");
+    //mapData = mapData.filter((d) => d.state_fips == "All");
   } else {
     mapData = mapData.filter((d) => d.county_fips == "All");
     mapData = mapData.filter((d) => d.state_fips != "All");
