@@ -16,10 +16,11 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
 
 export function downloadHtmlAsImage(html, fileName) {
   //toggleLoading('map-loading', 'download-graph-btn', true)
-
+  html.style.maxHeight = 'initial'
   setTimeout(() => {
     html2canvas(html).then(function(canvas) {
       downloadImage(canvas, fileName)
+      html.style.maxHeight = '1028px'
       //toggleLoading('map-loading', 'download-graph-btn', false)
     });
   }, 10)
@@ -43,8 +44,9 @@ export function downloadGraph(graphId, fileName) {
 }
 
 const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
+  console.log({fileName});
   e.stopPropagation();
-  toggleLoading('table-loading', 'download-table-btn', true)
+  toggleLoading('table-loading', 'download-dropdown-btn', true)
   setTimeout(() => {
     const type = isTsv ? 'tsv' : 'csv';
     const content =
@@ -57,7 +59,7 @@ const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) =>
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toggleLoading('table-loading', 'download-table-btn', false)
+    toggleLoading('table-loading', 'download-dropdown-btn', false)
   }, 1000)
   
 }

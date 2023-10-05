@@ -2538,3 +2538,9 @@ button.previous-btn {
 #display-mode-control .nav-item {
   cursor: pointer;
 }
+
+.datatable-bottom {
+  position: sticky;
+  bottom: -20px;
+  background-color: #f5f5f5;
+}

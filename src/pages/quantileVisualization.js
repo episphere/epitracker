@@ -74,7 +74,97 @@ export const renderQuantileVisualizationPage = () => {
         </div>
   `
 
-  template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.START_ZERO, SETTINGS.SHOW_HIDE_TABLE, ])
+  template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.START_ZERO])
+
+
+  template += `
+    </div>
+    <div class="col-md-10 px-3 position-relative" id="main-content">
+      <button id="sidebar-toggle" class="btn btn-light position-absolute start-0">
+        <i class="fas fa-lg fa-caret-left"></i>
+      </button>
+
+      <div class="tab-pane fade show px-4 py-1" id="plot-map-pane" role="tabpanel" aria-labelledby="plot-map-tab">
+
+        <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
+          <div class="spinner-border" role="status"></div>
+        </div>
+
+        <div id="plots-container" class="d-flex flex-column pe-2 position-relative">
+          <div id="plots-bar" class="d-inline-flex justify-content-end ps-2">
+            
+            <div class="d-inline-flex align-self-end">
+              <div id="display-mode-control">
+                <ul class="nav nav-pills">
+                  <li class="nav-item">
+                    <a id="graph-nav-link" class="nav-link active"><i class="bi bi-map"></i></a>
+                  </li>
+                  <li class="nav-item">
+                    <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
+                  </li>
+                <ul>
+              </div> 
+            </div>
+
+            <div class="ml-auto" id="downloadContainer">
+              <div class="col-md-12 p-0 dropdown">
+                <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+                  data-bs-toggle="dropdown" id="download-dropdown-btn" style="color:#000000 !important">
+                  Download <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
+                </button>
+                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-dropdown-btn">
+                  <div class="position-relative d-flex align-items-center">
+                    <ul class="navbar-dropdown w-100">
+                      <li>
+                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as PNG" id="downloadGraph">Download Plot (PNG)</button>
+                      </li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                          id="download-table-csv">Download Data(CSV) </button></li>
+                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                          id="download-table-tsv">Download Data (TSV)</button></li>
+                      <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                        <div class="top-50 start-50 translate-middle position-absolute">
+                          <div class="spinner-border" role="status"></div>
+                        </div>
+                      </div>
+                    </ul>
+                    <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                      <div class="top-50 start-50 translate-middle position-absolute">
+                        <div class="spinner-border" role="status"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          <div id="graph-container" class="mt-3 main-plot-panel" style="display: grid">
+            <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
+              <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
+              <div id="plot-quantiles"></div>
+            </figure>
+          </div>
+          <div id="table-container" class="mt-3 main-plot-panel" style="display: none">
+            <div class="row" id="quantile-table-wrapper">
+              <div class="d-flex flex-row-reverse justify-content-end">
+                
+                <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table" id="quantile-table"></table>
+                <div>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `
+  return template
 
   template += `
     </div>
@@ -123,6 +213,9 @@ export const renderQuantileVisualizationPage = () => {
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
               <div id="plot-quantiles"></div>
             </figure>
+            <div>
+              <p id="quantiles-title"><b data-quantile-item="quantile">quantile</b></p>
+            </div>
           </div>
   
   

@@ -202,7 +202,7 @@ export async function start() {
     state.comparePrimary = params.comparePrimary;
   }
 
-  toggleSidebar("plots-container");
+  toggleSidebar();
   addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
 }
 
@@ -529,23 +529,25 @@ function addGroupDownloadButton(element) {
   buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
     const filename = baseFilename + ".png"
 
-    const legend = document.getElementById("color-legend").cloneNode(true)
+    const maps = document.getElementById("maps-container")
+    
+    console.log({maps});
+    // const downloadElement = document.createElement("div")
+    // downloadElement.appendChild(maps)
+    // downloadElement.appendChild(element.cloneNode(true))
 
-    const downloadElement = document.createElement("div")
-    downloadElement.appendChild(legend)
-    downloadElement.appendChild(element.cloneNode(true))
+    // const tempWrapper = document.createElement("div")
+    // tempWrapper.style.opacity = "0"
+    // tempWrapper.style.position = "absolute"
+    // tempWrapper.appendChild(downloadElement)
+    // state.mapsContainer.appendChild(downloadElement)
 
-    const tempWrapper = document.createElement("div")
-    tempWrapper.style.opacity = "0"
-    tempWrapper.style.position = "absolute"
-    tempWrapper.appendChild(downloadElement)
-    state.mapsContainer.appendChild(tempWrapper)
-
-    downloadHtmlAsImage(downloadElement, filename)
+    downloadHtmlAsImage(maps, filename)
+    
   })
 
   // TODO: Remove when dashboard PNG feature is implemented
-  buttonElement.querySelector("#download-plot-png").classList.add("disabled")
+  // buttonElement.querySelector("#download-plot-png").classList.add("disabled")
   
   element.appendChild(buttonElement)
 }
