@@ -14,7 +14,7 @@ import { insertParamsToUrl } from "../shared.js";
 import { addPopperTooltip, addTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
 import { createChoroplethPlot } from "./mapPlots.js";
 import { colorRampLegendMeanDiverge, dataToTableData } from "./helper.js";
-import { downloadHtmlAsImage } from "./download.js";
+import { downloadHtmlAsImage, downloadHtmlAsSVG } from "./download.js";
 import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
 
 
@@ -477,7 +477,7 @@ function createDownloadButton(small=true){
   <ul class="dropdown-menu dropdown-menu-end">
       <li><a id="download-data-csv" class="dropdown-item download-item">Download Data (CSV)</a></li>
       <li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (PNG)</a></li>
-      <!--<li><a id="download-plot-svg" class="dropdown-item download-item">Download Plot (SVG)</a></li>-->
+      <li><a id="download-plot-svg" class="dropdown-item download-item">Download Plot (SVG)</a></li>
   </ul>
 </div>`
 
@@ -512,9 +512,22 @@ function addIndividualDownloadButton(element, config) {
     tempWrapper.style.position = "absolute"
     tempWrapper.appendChild(downloadElement)
     state.mapsContainer.appendChild(tempWrapper)
-
+    // console.log('ssssaeeeed');
     downloadHtmlAsImage(downloadElement, filename)
   })
+
+  // buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
+  //   const filename = baseFilename + ".svg"
+  //   const downloadElement = prepareMapElementForDownload(element, config)
+
+  //   const tempWrapper = document.createElement("div")
+  //   tempWrapper.style.opacity = "0"
+  //   tempWrapper.style.position = "absolute"
+  //   tempWrapper.appendChild(downloadElement)
+  //   state.mapsContainer.appendChild(tempWrapper)
+
+  //   downloadHtmlAsImage(downloadElement, filename)
+  // })
 
   element.appendChild(buttonElement)
 }
@@ -547,6 +560,16 @@ function addGroupDownloadButton(element) {
     // state.mapsContainer.appendChild(downloadElement)
 
     downloadHtmlAsImage(maps, filename)
+    
+  })
+
+  buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
+    const filename = baseFilename
+
+    const maps = document.getElementById("maps-container")
+    // const svgs = maps.getElementsByTagName('svg')
+    console.log({maps});
+    downloadHtmlAsSVG(maps, filename)
     
   })
 
@@ -722,12 +745,14 @@ function hookInputs() {
 
   state.defineDynamicProperty("plotMode", "map")
   state.addListener(() => {
+    const downloadMapPNG = document.getElementById("download-plot-png")
     if (state.plotMode == "map") {
       tableNavLink.classList.remove("active")
       mapNavLink.classList.add("active")
       document.getElementById("maps-container").style.display = "grid"
       document.getElementById("table-container").style.display = "none"
       document.getElementById("color-legend").style.opacity = 1
+      downloadMapPNG.style.display = 'block'
 
       if (state.deferPlotFunction) {
         state.deferPlotFunction()
@@ -739,6 +764,7 @@ function hookInputs() {
       document.getElementById("maps-container").style.display = "none"
       document.getElementById("table-container").style.display = "block"
       document.getElementById("color-legend").style.opacity = 0
+      downloadMapPNG.style.display = 'none'
     }
   }, "plotMode")
 
