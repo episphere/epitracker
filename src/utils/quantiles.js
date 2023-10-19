@@ -49,6 +49,11 @@ export async function start() {
     graphCallback: null,
   }
 
+  state.downloadGraphSVGRef = {
+    graphButton: null, 
+    graphCallback: null,
+  }
+
   update()
 
   state.addListener(() => {
@@ -106,11 +111,15 @@ function hookInputs() {
  
    state.defineDynamicProperty("plotMode", "graph")
    state.addListener(() => {
+    const downloadGraphPNGButton = document.getElementById("downloadGraph")
+    const downloadGraphSVGButton = document.getElementById("download-graph-svg")
      if (state.plotMode == "graph") {
        tableNavLink.classList.remove("active")
        graphNavLink.classList.add("active")
        document.getElementById("graph-container").style.display = "grid"
        document.getElementById("table-container").style.display = "none"
+       downloadGraphPNGButton.style.display = "block"
+       downloadGraphSVGButton.style.display = "block"
  
        if (state.deferPlotFunction) {
          state.deferPlotFunction()
@@ -121,6 +130,8 @@ function hookInputs() {
        tableNavLink.classList.add("active")
        document.getElementById("graph-container").style.display = "none"
        document.getElementById("table-container").style.display = "block"
+       downloadGraphPNGButton.style.display = "none"
+       downloadGraphSVGButton.style.display = "none"
      }
    }, "plotMode")
  
@@ -356,18 +367,32 @@ const removeDownloadGraphEventListeners = () => {
   if (state.downloadGraphRef.graphButton) {
     state.downloadGraphRef.graphButton.removeEventListener('click', state.downloadGraphRef.graphCallback)
   }
+
+  if (state.downloadGraphSVGRef.graphButton) {
+    state.downloadGraphSVGRef.graphButton.removeEventListener('click', state.downloadGraphSVGRef.graphCallback)
+  }
 }
 
 function downloadQuantileGraphs() {
   removeDownloadGraphEventListeners()
-  const downloadGraphFunction = () => downloadGraph('plot-quantiles', 'quantile')
+  const downloadGraphPNGFunction = () => downloadGraph('plot-quantiles', 'quantile', 'png')
+  const downloadGraphSVGFunction = () => downloadGraph('plot-quantiles', 'quantile', 'svg')
   const downloadGraphButton = document.getElementById(
     "downloadGraph"
   );
+  const downloadGraphSVGButton = document.getElementById(
+    "download-graph-svg"
+  );
   if (downloadGraphButton) {
-    downloadGraphButton.addEventListener("click", downloadGraphFunction);
+    downloadGraphButton.addEventListener("click", downloadGraphPNGFunction);
     state.downloadGraphRef.graphButton = downloadGraphButton
-    state.downloadGraphRef.graphCallback = downloadGraphFunction
+    state.downloadGraphRef.graphCallback = downloadGraphPNGFunction
+  }
+
+  if (downloadGraphSVGButton) {
+    downloadGraphSVGButton.addEventListener("click", downloadGraphSVGFunction);
+    state.downloadGraphSVGRef.graphButton = downloadGraphSVGButton
+    state.downloadGraphSVGRef.graphCallback = downloadGraphSVGFunction
   }
 }
 

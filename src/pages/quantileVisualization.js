@@ -118,6 +118,9 @@ export const renderQuantileVisualizationPage = () => {
                       <li>
                         <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as PNG" id="downloadGraph">Download Plot (PNG)</button>
                       </li>
+                      <li>
+                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as SVG" id="download-graph-svg">Download Plot (SVG)</button>
+                      </li>
                       <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
                           id="download-table-csv">Download Data(CSV) </button></li>
                       <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"

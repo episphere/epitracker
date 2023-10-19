@@ -2437,6 +2437,7 @@ button.previous-btn {
   border: 1px solid rgb(200, 200, 200);
   padding: 20px;
   border-radius: 8px 0 0 8px;
+  background-color: #fff;
 }
 
 /* #maps-container {
@@ -2488,14 +2489,14 @@ button.previous-btn {
   padding-top: 10px;
 }
 
-.main-plot-panel {
+/* .main-plot-panel {
   width: 100%;
   overflow: auto;
   max-height: 1028px;
   border: 1px solid rgb(200, 200, 200);
   padding: 20px;
   border-radius: 8px 0 0 8px;
-}
+} */
 
 /* #maps-container {
 

@@ -14,32 +14,90 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
   }
 }
 
-export function downloadHtmlAsImage(html, fileName) {
-  //toggleLoading('map-loading', 'download-graph-btn', true)
-  html.style.maxHeight = 'initial'
+export function downloadHtmlAsImage(html, fileName, canRemove = true) {
+  if (canRemove) {
+    html.style.opacity = "1"
+    html.style.position = "absolute"
+    html.style.zIndex = "-1"
+  }
+
   setTimeout(() => {
     html2canvas(html).then(function(canvas) {
-      downloadImage(canvas, fileName)
-      html.style.maxHeight = '1028px'
-      //toggleLoading('map-loading', 'download-graph-btn', false)
+      downloadImage(canvas, fileName, 'png')
+      canRemove && html.remove()
     });
   }, 10)
 }
 
+export function downloadHtmlAsSVG(html, fileName) {
+  html.style.maxHeight = 'initial'
+  var svgs = html.getElementsByTagName('svg');
+  var serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svgs[0]);
+  console.log({svgs});
+    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = '<svg xmlns="http://www.w3.org/2000/svg"';
+    }
+    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = '<svg xmlns:xlink="http://www.w3.org/1999/xlink"';
+    }
+
+    [...svgs[0].attributes].forEach((attr) => {
+      if (attr.name === 'height') {
+        source += ` ${attr.name}="${attr.value * svgs.length}"`
+      } else if (attr.name === 'viewBox') {
+        const [,,,height] = attr.value.split(' ')
+        const totalHeight = height * svgs.length
+        const newValue = attr.value.split(' ')
+        newValue.pop()
+        const viewBox = newValue.join(' ') + ' ' + totalHeight
+        source += ` ${attr.name}="${viewBox}"`
+      } else {
+        source += ` ${attr.name}="${attr.value}"`
+      }
+    })
+  let svgSource = '<?xml version="1.0" standalone="no"?>\r\n' + source + ' xmlns="http://www.w3.org/2000/svg">';
+  [...svgs].forEach((item, index) => {
+    
+    const height = [...item.attributes].find(attr => attr.name === 'height')
+    console.log({item, height});
+    svgSource += `<g style="transform: translateY(${height.value * index}px)">`
+    const children = [...item.children];
+
+    children.forEach(child => {
+      // if ()
+      const childSource = serializer.serializeToString(child);
+      svgSource += childSource
+    })
+    svgSource += '</g>'
+    console.log({svgSource});
+    
+    // svgSource += source
+  })
+  svgSource += '</svg>'
   
-function downloadImage(image, fileName) {
-  var dataUrl = image.toDataURL();
+  var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgSource);
   var link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = `${fileName}.jpg`;
+  link.href = url;
+  link.download = `${fileName}.svg`;
   link.click();
-  
 }
 
-export function downloadGraph(graphId, fileName) {
+  
+function downloadImage(image, fileName, fileExtension) {
+  let dataUrl = image.toDataURL();
+  var link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = `${fileName}.${fileExtension}`;
+  link.click();
+}
+
+export function downloadGraph(graphId, fileName, fileExtension) {
   const html = document.getElementById(graphId)
   if (html) {
-    downloadHtmlAsImage(html, fileName)
+    fileExtension === 'svg' 
+      ? downloadHtmlAsSVG(html, fileName)
+      : downloadHtmlAsImage(html, fileName, false)
   }
 }
 
@@ -112,3 +170,4 @@ export const downloadFiles = (data, fileName) => {
     downloadFileRef.tsvCallback = downloadTableTSV
   }
 };
+
