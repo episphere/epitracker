@@ -506,14 +506,11 @@ function addIndividualDownloadButton(element, config) {
   buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
     const filename = baseFilename + ".png"
     const downloadElement = prepareMapElementForDownload(element, config)
-
     const tempWrapper = document.createElement("div")
-    tempWrapper.style.opacity = "0"
-    tempWrapper.style.position = "absolute"
     tempWrapper.appendChild(downloadElement)
     state.mapsContainer.appendChild(tempWrapper)
-    // console.log('ssssaeeeed');
-    downloadHtmlAsImage(downloadElement, filename)
+    downloadHtmlAsImage(tempWrapper, filename)
+    
   })
 
   // buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
@@ -532,7 +529,7 @@ function addIndividualDownloadButton(element, config) {
   element.appendChild(buttonElement)
 }
 
-function addGroupDownloadButton(element) {
+function addGroupDownloadButton(element, config) {
   const buttonElement = createDownloadButton(false) 
 
   const baseFilename = "epitracker_map_data"
@@ -545,32 +542,19 @@ function addGroupDownloadButton(element) {
 
   buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
     const filename = baseFilename + ".png"
-
-    const maps = document.getElementById("maps-container")
-    
-    console.log({maps});
-    // const downloadElement = document.createElement("div")
-    // downloadElement.appendChild(maps)
-    // downloadElement.appendChild(element.cloneNode(true))
-
-    // const tempWrapper = document.createElement("div")
-    // tempWrapper.style.opacity = "0"
-    // tempWrapper.style.position = "absolute"
-    // tempWrapper.appendChild(downloadElement)
-    // state.mapsContainer.appendChild(downloadElement)
-
-    downloadHtmlAsImage(maps, filename)
-    
+    const maps = document.getElementById("maps-container").cloneNode(true)
+    const downloadElement = prepareMapElementForDownload(maps, config)
+    const tempWrapper = document.createElement("div")
+    tempWrapper.appendChild(downloadElement)
+    state.mapsContainer.appendChild(tempWrapper)
+    downloadHtmlAsImage(tempWrapper, filename)
   })
 
   buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
     const filename = baseFilename
 
     const maps = document.getElementById("maps-container")
-    // const svgs = maps.getElementsByTagName('svg')
-    console.log({maps});
     downloadHtmlAsSVG(maps, filename)
-    
   })
 
   // TODO: Remove when dashboard PNG feature is implemented
@@ -942,7 +926,7 @@ function prepareMapElementForDownload(element, config) {
   const div = document.createElement("div")
   div.appendChild(titleDiv)
   div.appendChild(legend)
-  div.appendChild(element.querySelector("svg").cloneNode(true))
-
+  const svgElements = element.querySelectorAll("svg");
+  [...svgElements].forEach(svg => div.appendChild(svg.cloneNode(true)))
   return div 
 }

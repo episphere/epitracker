@@ -14,14 +14,17 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
   }
 }
 
-export function downloadHtmlAsImage(html, fileName) {
-  //toggleLoading('map-loading', 'download-graph-btn', true)
-  html.style.maxHeight = 'initial'
+export function downloadHtmlAsImage(html, fileName, canRemove = true) {
+  if (canRemove) {
+    html.style.opacity = "1"
+    html.style.position = "absolute"
+    html.style.zIndex = "-1"
+  }
+
   setTimeout(() => {
     html2canvas(html).then(function(canvas) {
       downloadImage(canvas, fileName, 'png')
-      html.style.maxHeight = '1028px'
-      //toggleLoading('map-loading', 'download-graph-btn', false)
+      canRemove && html.remove()
     });
   }, 10)
 }
@@ -94,7 +97,7 @@ export function downloadGraph(graphId, fileName, fileExtension) {
   if (html) {
     fileExtension === 'svg' 
       ? downloadHtmlAsSVG(html, fileName)
-      : downloadHtmlAsImage(html, fileName)
+      : downloadHtmlAsImage(html, fileName, false)
   }
 }
 
