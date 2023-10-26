@@ -38,6 +38,13 @@ export const infoDeck = () => {
                         icon: "fa-chart-line",
                         explanation: "",
                     });
+                    template += cardContents({
+                        header: "Demographic Visualization",
+                        button: "Interact with Demographic Visualization",
+                        href: "#visualization/Demographic Visualization",
+                        icon: "fa-map",
+                        explanation: "",
+                    });
   template += `</div>
             </div>
         </div>
