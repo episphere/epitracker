@@ -73,9 +73,9 @@ export async function start() {
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
 
-//   state.addListener(() => {
-//     updateQuantileTitle()
-// }, "quantileField")
+  state.addListener(() => {
+    updateQuantileHeaderTitle()
+}, "selectCause", "selectSex", "selectYear")
 
   state.addListener(() => {
     updateQuantilePlot()
@@ -322,6 +322,7 @@ async function initialDataLoad() {
   
   queryData()
   syncDataDependentInputs(state)
+  updateQuantileHeaderTitle()
   // updateQuantileTitle()
   //toggleInputActivation(true)
   state.inputsActive = true 
@@ -375,7 +376,7 @@ const removeDownloadGraphEventListeners = () => {
 
 function downloadQuantileGraphs() {
   removeDownloadGraphEventListeners()
-  const downloadGraphPNGFunction = () => downloadGraph('plot-quantiles', 'quantile', 'png')
+  const downloadGraphPNGFunction = () => downloadGraph('graph-container', 'quantile', 'png')
   const downloadGraphSVGFunction = () => downloadGraph('plot-quantiles', 'quantile', 'svg')
   const downloadGraphButton = document.getElementById(
     "downloadGraph"
@@ -432,4 +433,18 @@ function updateQuantileTitle() {
   const {quantileField} = state.properties
   const key = quantileField.replaceAll(' ', '_').toLowerCase()
   return quantile_fields[key].description
+}
+
+function updateQuantileHeaderTitle() {
+  if (!state?.properties) return;
+
+  const quantileSelectionElements = document.querySelectorAll("[data-quantile-item]");
+
+  quantileSelectionElements?.forEach((element) => {
+    const { quantileItem, optionsKey } = element.dataset;
+    let quantileItemValue = state.properties[quantileItem];
+    console.log({quantileItem, quantileItemValue, optionsKey, state});
+
+    element.innerHTML = quantileItemValue;
+  });
 }

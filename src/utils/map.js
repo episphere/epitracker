@@ -113,7 +113,23 @@ export async function start() {
     "measure",
     "level"
   );
+  state.addListener(() => {
+    const countySelectElement = document.querySelector("#county-wrapper");
+      if (countySelectElement) {
+       
+        console.log({state});
 
+        countySelectElement.style.display =
+          state.level === "county" ? "block" : "none";
+
+        if (state.level === "state") {
+          state.selectCounty = 'all'
+        } else {
+          state.selectCounty = 'all'
+        }
+        
+      }
+  }, "level")
   // state.addListener(
   //   () => {
   //     if (state.comparePrimary == "race") {

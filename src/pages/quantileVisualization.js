@@ -145,6 +145,7 @@ export const renderQuantileVisualizationPage = () => {
           <div id="graph-container" class="mt-3 main-plot-panel" style="display: grid">
             <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
+              <p id="plot-title" class="text-center">This graph shows: Year: <b data-quantile-item="selectYear">year</b>, Cause: <b data-quantile-item="selectCause">cause</b>, Sex: <b data-quantile-item="selectSex">sex</b></p>
               <div id="plot-quantiles"></div>
             </figure>
           </div>
