@@ -108,19 +108,19 @@
     },
     "diabetes_prevalence": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults aged 20 and above with diagnosed diabetes (age-adjusted)."
+      "description": "Percentage of adults aged 20 and above with diagnosed diabetes."
     },
     "frequent_mental_distress": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults reporting 14 or more days of poor mental health per month (age-adjusted)."
+      "description": "Percentage of adults reporting 14 or more days of poor mental health per month."
     },
     "frequent_physical_distress": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults reporting 14 or more days of poor physical health per month (age-adjusted)."
+      "description": "Percentage of adults reporting 14 or more days of poor physical health per month."
     },
     "premature_age_adjusted_mortality": {
       "title": "per 100,000",
-      "description": "Number of deaths among residents under age 75 per 100,000 population (age-adjusted)."
+      "description": "Number of deaths among residents under age 75 per 100,000 population."
     },
     "life_expectancy": {
       "title": "(years)",
@@ -224,7 +224,7 @@
     },
     "excessive_drinking": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults reporting binge or heavy drinking (age-adjusted)."
+      "description": "Percentage of adults reporting binge or heavy drinking."
     },
     "access_to_exercise_opportunities": {
       "title": "Percentage (x100)",
@@ -232,7 +232,7 @@
     },
     "physical_inactivity": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults age 18 and over reporting no leisure-time physical activity (age-adjusted)."
+      "description": "Percentage of adults age 18 and over reporting no leisure-time physical activity."
     },
     "food_environment_index": {
       "title": "Food Environment Index (0-10)",
@@ -240,11 +240,11 @@
     },
     "adult_obesity": {
       "title": "Percentage (x100)",
-      "description": "Percentage of the adult population (age 18 and older) that reports a body mass index (BMI) greater than or equal to 30 kg/m2 (age-adjusted)."
+      "description": "Percentage of the adult population (age 18 and older) that reports a body mass index (BMI) greater than or equal to 30 kg/m2."
     },
     "adult_smoking": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults who are current smokers (age-adjusted)."
+      "description": "Percentage of adults who are current smokers."
     },
     "low_birthweight": {
       "title": "Percentage (x100)",
@@ -252,19 +252,19 @@
     },
     "poor_mental_health_days": {
       "title": "Days",
-      "description": "Average number of mentally unhealthy days reported in past 30 days (age-adjusted)."
+      "description": "Average number of mentally unhealthy days reported in past 30 days."
     },
     "poor_physical_health_days": {
       "title": "Days",
-      "description": "Average number of physically unhealthy days reported in past 30 days (age-adjusted)."
+      "description": "Average number of physically unhealthy days reported in past 30 days."
     },
     "poor_or_fair_health": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults reporting fair or poor health (age-adjusted)."
+      "description": "Percentage of adults reporting fair or poor health."
     },
     "premature_death": {
       "title": "Year",
-      "description": "Years of potential life lost before age 75 per 100,000 population (age-adjusted)."
+      "description": "Years of potential life lost before age 75 per 100,000 population."
     }
   }
 }
