@@ -96,7 +96,7 @@
     },
     "insufficient_sleep": {
       "title": "Percentage (x100)",
-      "description": "Percentage of adults who report fewer than 7 hours of sleep on average (age-adjusted)."
+      "description": "Percentage of adults who report fewer than 7 hours of sleep on average."
     },
     "limited_access_to_healthy_foods": {
       "title": "Percentage (x100)",
