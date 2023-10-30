@@ -44,9 +44,9 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
 
 }
 
-export function syncDataDependentInputs(state) {
+export function syncDataDependentInputs(state, mapICD10 = false) {
   state.selectCauseOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.race == state.selectRace),
-    d => d.cause).sort().map(d => ({text: d, value: d}))
+    d => d.cause).sort().map(d => ({text: mapICD10 ? state.causeMap.get(d) : d, value: d}))
   state.selectSexOptions = unique(state.data.filter(d => d.cause == state.selectCause &&  d.race == state.selectRace),
     d => d.sex) 
   state.selectRaceOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.cause == state.selectCause),
