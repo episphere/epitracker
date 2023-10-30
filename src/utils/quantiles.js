@@ -68,7 +68,7 @@ export async function start() {
 
   state.addListener(() => {
       queryData()
-      syncDataDependentInputs(state)
+      syncDataDependentInputs(state, true)
       update()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
@@ -244,8 +244,6 @@ function updateQuantilePlot() {
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
 
-  console.log({plotData: state.plotData, filteredPlotData});
-
   addPlotInteractivity()
   downloadFiles(state.plotData, "first_data")
   downloadQuantileGraphs()
@@ -321,7 +319,7 @@ async function initialDataLoad() {
   state.selectYearOptions = YEARS
   
   queryData()
-  syncDataDependentInputs(state)
+  syncDataDependentInputs(state, true)
   updateQuantileHeaderTitle()
   // updateQuantileTitle()
   //toggleInputActivation(true)
