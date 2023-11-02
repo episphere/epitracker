@@ -10,8 +10,6 @@ import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
 import { renderDemographicVisualizationPage } from "./src/pages/demographicVisualization.js"
 import { InstructionPage } from "./src/pages/instruction.js"
 import { dictionaryPage } from "./src/pages/dictionarypage.js"
-
-
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
 import {start as startMapPage} from "./src/utils/map.js"
 import {start as startDemographicVisualizationPage} from "./src/utils/demographic.js"
