@@ -29,8 +29,8 @@ export const renderQuantileVisualizationPage = () => {
             </select>
 
             <label for="causeSelectSelect">Cause</label>
-            <select id="causeSelectSelect" class="form-select mb-2" disabled aria-label="Cause select">
-              <option hidden >Awaiting data...</option>
+            <select id="causeSelectSelect" class="form-select mb-2" aria-label="Cause select">
+              <option hidden >All</option>
             </select>
 
             <label for="sexSelectSelect">Sex</label>
@@ -58,8 +58,8 @@ export const renderQuantileVisualizationPage = () => {
 
             <div >
               <label for="quantileFieldSelect">Quantile Field</label>
-              <select id="quantileFieldSelect" class="form-select mb-2" aria-label="Quantile field select" disabled>
-                <option hidden >Awaiting data...</option>
+              <select id="quantileFieldSelect" class="form-select mb-2" aria-label="Quantile field select">
+                <option hidden >All</option>
               </select>
             </div>
           
@@ -145,7 +145,7 @@ export const renderQuantileVisualizationPage = () => {
           <div id="graph-container" class="mt-3 main-plot-panel" style="display: grid">
             <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
-              <p id="plot-title" class="text-center">This graph shows: Year: <b data-quantile-item="selectYear">year</b>, Cause: <b data-quantile-item="selectCause">cause</b>, Sex: <b data-quantile-item="selectSex">sex</b></p>
+              <p id="plot-title" class="text-center">This graph shows: Year: <b data-quantile-item="selectYear">year</b>, Cause: <b data-quantile-item="selectCause">cause</b><span id="sex-title">, Sex: <b data-quantile-item="selectSex">sex</b></span><span id="race-title" style="display: none">, Race: <b data-quantile-item="selectRace">race</b></span></p>
               <div id="plot-quantiles"></div>
             </figure>
           </div>

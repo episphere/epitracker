@@ -7,7 +7,7 @@ import { aboutepitracker, renderOverView } from "./src/pages/about.js";
 import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
-import { renderDemographicVisualizationPage } from "./src/pages/DemographicVisualization.js"
+import { renderDemographicVisualizationPage } from "./src/pages/demographicVisualization.js"
 import { InstructionPage } from "./src/pages/instruction.js"
 import { dictionaryPage } from "./src/pages/dictionarypage.js"
 

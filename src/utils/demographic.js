@@ -40,23 +40,21 @@ const SEARCH_SELECT_INPUT_QUERIES = [
     },
   },
   {
-    key: "#countySelectSelect",
+    key: '#ageGroupsSelect',
     options: {
-      sorter: (items = []) => {
-        const groupBy = (input, key) => input.reduce((acc, currentValue) => {
-            (acc[currentValue[key]] ??= []).push(currentValue);
-            return acc;
-        }, {})
-        const groupByDisabledItems = groupBy(items, 'disabled')
-
-        return [...sort(groupByDisabledItems['false']), ...sort(groupByDisabledItems['true'])]
-      },
+      sorter: sort
     },
   }
+  // {
+  //   key: "#countySelectSelect",
+  //   options: {
+  //     sorter: sort
+  //   },
+  // }
 ];
 
 export async function start() {
-  toggleLoading(true);
+  // toggleLoading(true);
 
 
   state = new State();
@@ -128,31 +126,31 @@ export async function start() {
   state.addListener(() => {
     const { selectState, countyGeo, selectCounty } = state;
     queryData(selectState);
-    if (state.level === "county") {
-      $("#countySelectSelect").val("all").trigger("change");
-    }
+    // if (state.level === "county") {
+    //   $("#countySelectSelect").val("all").trigger("change");
+    // }
 
-    const counties =
-      selectState === "all"
-        ? countyGeo.features
-        : countyGeo.features.filter(
-            (county) => county.state?.id === selectState
-          );
+    // const counties =
+    //   selectState === "all"
+    //     ? countyGeo.features
+    //     : countyGeo.features.filter(
+    //         (county) => county.state?.id === selectState
+    //       );
 
-      const countyOptions = [{
-        text: 'All',
-        value: 'all'
-      }, ...counties.map((feature) => {
-          const hasData = state.countySet.has(feature.id)
-          const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
-          return {
-            text: feature.properties.name + ', ' + stateName,
-            value: feature.id,
-            hasData: !!hasData
-          }
-        })]
-    state.countyGeoMap = countyOptions;
-    state.selectCountyOptions = countyOptions;
+      // const countyOptions = [{
+      //   text: 'All',
+      //   value: 'all'
+      // }, ...counties.map((feature) => {
+      //     const hasData = state.countySet.has(feature.id)
+      //     const stateName = typeof feature.state?.name !== 'undefined' ? feature.state.name : '-'
+      //     return {
+      //       text: feature.properties.name + ', ' + stateName,
+      //       value: feature.id,
+      //       hasData: !!hasData
+      //     }
+      //   })]
+    // state.countyGeoMap = countyOptions;
+    // state.selectCountyOptions = countyOptions;
 
     update();
     state.plotHighlight = selectState !== "all" ? selectState : null;
@@ -203,19 +201,19 @@ export async function start() {
   }
 
   toggleSidebar();
-  addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
+  // addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
 }
 
-function plotTable() {
-  const tableContainer = document.getElementById("table-container")
-  tableContainer.innerHTML = ``
-  new DataTable(tableContainer, {
-    data: dataToTableData(state.mapData),
-    perPage: 20,
-    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]]
-  })
+// function plotTable() {
+//   const tableContainer = document.getElementById("table-container")
+//   tableContainer.innerHTML = ``
+//   new DataTable(tableContainer, {
+//     data: dataToTableData(state.mapData),
+//     perPage: 20,
+//     perPageSelect: [20, 40, 60, 80, 100, ["All", -1]]
+//   })
     
-}
+// }
 
 function update() {
   toggleLoading(false);
@@ -231,7 +229,7 @@ function update() {
     state.deferPlotFunction = plotFunction
   }
 
-  plotTable()
+  // plotTable()
 
   // let valuesPrimary = null;
   // let valuesSecondary = null; 
@@ -529,48 +527,48 @@ function addIndividualDownloadButton(element, config) {
   element.appendChild(buttonElement)
 }
 
-function addGroupDownloadButton(element, config) {
-  const buttonElement = createDownloadButton(false) 
+// function addGroupDownloadButton(element, config) {
+//   const buttonElement = createDownloadButton(false) 
 
-  const baseFilename = "epitracker_map_data"
+//   const baseFilename = "epitracker_map_data"
 
-  buttonElement.querySelector("#download-data-csv").addEventListener("click", () => {
-    const filename = baseFilename + ".csv"
-    const content = d3.csvFormat(prepareDataForDownload(state.mapData))
-    downloadStringAsFile(content, filename, "text/csv")
-  })
+//   buttonElement.querySelector("#download-data-csv").addEventListener("click", () => {
+//     const filename = baseFilename + ".csv"
+//     const content = d3.csvFormat(prepareDataForDownload(state.mapData))
+//     downloadStringAsFile(content, filename, "text/csv")
+//   })
 
-  buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
-    const filename = baseFilename + ".png"
-    const maps = document.getElementById("maps-container").cloneNode(true)
-    const downloadElement = prepareMapElementForDownload(maps, config)
-    const tempWrapper = document.createElement("div")
-    tempWrapper.appendChild(downloadElement)
-    state.mapsContainer.appendChild(tempWrapper)
-    downloadHtmlAsImage(tempWrapper, filename)
-  })
+//   buttonElement.querySelector("#download-plot-png").addEventListener("click", () => {
+//     const filename = baseFilename + ".png"
+//     const maps = document.getElementById("maps-container").cloneNode(true)
+//     const downloadElement = prepareMapElementForDownload(maps, config)
+//     const tempWrapper = document.createElement("div")
+//     tempWrapper.appendChild(downloadElement)
+//     state.mapsContainer.appendChild(tempWrapper)
+//     downloadHtmlAsImage(tempWrapper, filename)
+//   })
 
-  buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
-    const filename = baseFilename
+//   buttonElement.querySelector("#download-plot-svg").addEventListener("click", () => {
+//     const filename = baseFilename
 
-    const maps = document.getElementById("maps-container")
-    downloadHtmlAsSVG(maps, filename)
-  })
+//     const maps = document.getElementById("maps-container")
+//     downloadHtmlAsSVG(maps, filename)
+//   })
 
-  // TODO: Remove when dashboard PNG feature is implemented
-  // buttonElement.querySelector("#download-plot-png").classList.add("disabled")
+//   // TODO: Remove when dashboard PNG feature is implemented
+//   // buttonElement.querySelector("#download-plot-png").classList.add("disabled")
   
-  element.appendChild(buttonElement)
-}
+//   element.appendChild(buttonElement)
+// }
 
 function toggleLoading(loading) {
-  if (loading) {
-    document.getElementById("plots-container").style.visibility = "hidden";
-    document.getElementById("loader-container").style.visibility = "visible";
-  } else {
-    document.getElementById("plots-container").style.visibility = "visible";
-    document.getElementById("loader-container").style.visibility = "hidden";
-  }
+  // if (loading) {
+  //   document.getElementById("plots-container").style.visibility = "hidden";
+  //   document.getElementById("loader-container").style.visibility = "visible";
+  // } else {
+  //   document.getElementById("plots-container").style.visibility = "visible";
+  //   document.getElementById("loader-container").style.visibility = "hidden";
+  // }
 }
 
 async function initialDataLoad() {
@@ -697,17 +695,17 @@ function hookInputs() {
       "#sexSelectSelect",
       "#raceSelectSelect",
       "#measureSelect",
-      "#levelSelect",
+      // "#levelSelect",
       "#schemeSelect",
       "#stateSelectSelect",
-      "#countySelectSelect",
+      // "#countySelectSelect",
     ],
     state,
     "inputsActive"
   );
 
   hookSelect("#measureSelect", state, "measureOptions", "measure");
-  hookSelect("#levelSelect", state, "levelOptions", "level");
+  // hookSelect("#levelSelect", state, "levelOptions", "level");
   hookSelect("#schemeSelect", state, "schemeOptions", "scheme");
   hookSelect(
     "#stateSelectSelect",
@@ -716,51 +714,58 @@ function hookInputs() {
     "selectState",
     true
   );
-  hookSelect(
-    "#countySelectSelect",
+   hookSelect(
+    "#ageGroupsSelect",
     state,
-    "selectCountyOptions",
-    "selectCounty",
+    "selectAgeGroupOptions",
+    "selectAgeGroup",
     true
   );
+  // hookSelect(
+  //   "#countySelectSelect",
+  //   state,
+  //   "selectCountyOptions",
+  //   "selectCounty",
+  //   true
+  // );
 
-  const mapNavLink = document.getElementById("map-nav-link")
-  const tableNavLink = document.getElementById("table-nav-link")
+  // const mapNavLink = document.getElementById("map-nav-link")
+  // const tableNavLink = document.getElementById("table-nav-link")
 
-  state.defineDynamicProperty("plotMode", "map")
-  state.addListener(() => {
-    const downloadMapPNG = document.getElementById("download-plot-png")
-    if (state.plotMode == "map") {
-      tableNavLink.classList.remove("active")
-      mapNavLink.classList.add("active")
-      document.getElementById("maps-container").style.display = "grid"
-      document.getElementById("table-container").style.display = "none"
-      document.getElementById("color-legend").style.opacity = 1
-      downloadMapPNG.style.display = 'block'
+  // state.defineDynamicProperty("plotMode", "map")
+  // state.addListener(() => {
+  //   const downloadMapPNG = document.getElementById("download-plot-png")
+  //   if (state.plotMode == "map") {
+  //     tableNavLink.classList.remove("active")
+  //     mapNavLink.classList.add("active")
+  //     document.getElementById("maps-container").style.display = "grid"
+  //     document.getElementById("table-container").style.display = "none"
+  //     document.getElementById("color-legend").style.opacity = 1
+  //     downloadMapPNG.style.display = 'block'
 
-      if (state.deferPlotFunction) {
-        state.deferPlotFunction()
-        state.deferPlotFunction = null
-      }
-    } else if (state.plotMode == "table") {
-      mapNavLink.classList.remove("active")
-      tableNavLink.classList.add("active")
-      document.getElementById("maps-container").style.display = "none"
-      document.getElementById("table-container").style.display = "block"
-      document.getElementById("color-legend").style.opacity = 0
-      downloadMapPNG.style.display = 'none'
-    }
-  }, "plotMode")
+  //     if (state.deferPlotFunction) {
+  //       state.deferPlotFunction()
+  //       state.deferPlotFunction = null
+  //     }
+  //   } else if (state.plotMode == "table") {
+  //     mapNavLink.classList.remove("active")
+  //     tableNavLink.classList.add("active")
+  //     document.getElementById("maps-container").style.display = "none"
+  //     document.getElementById("table-container").style.display = "block"
+  //     document.getElementById("color-legend").style.opacity = 0
+  //     downloadMapPNG.style.display = 'none'
+  //   }
+  // }, "plotMode")
 
 
 
-  mapNavLink.addEventListener("click", () => {
-    state.plotMode = "map"
-  })
+  // mapNavLink.addEventListener("click", () => {
+  //   state.plotMode = "map"
+  // })
 
-  tableNavLink.addEventListener("click", () => {
-    state.plotMode = "table"
-  })
+  // tableNavLink.addEventListener("click", () => {
+  //   state.plotMode = "table"
+  // })
 
 }
 

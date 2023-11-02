@@ -5,9 +5,10 @@ import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELE
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
+import { toggleSidebar, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import { sort } from "../shared.js"
 
 
 // ===== Global stuff =====
@@ -18,13 +19,13 @@ const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: '#causeSelectSelect',
     options: {
-      sorter: (items) => sort(items, 'text')
+      sorter: sort
     }
   },
   {
     key: '#quantileFieldSelect',
     options: {
-      sorter: (items) => sort(items, 'text')
+      sorter: sort
     }
   }
 ]
@@ -68,14 +69,23 @@ export async function start() {
 
   state.addListener(() => {
       queryData()
-      syncDataDependentInputs(state, true)
+      syncDataDependentInputs(state)
       update()
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
 
   state.addListener(() => {
     updateQuantileHeaderTitle()
-}, "selectCause", "selectSex", "selectYear")
+}, "selectCause", "selectSex", "selectYear", 'selectRace')
+
+state.addListener(() => {
+  const raceTitleElement = document.getElementById('race-title')
+  const sexTitleElement = document.getElementById('sex-title')
+  raceTitleElement.style.display = state.comparePrimary === 'race' ? 'none' : 'inline-block'
+  sexTitleElement.style.display = state.comparePrimary === 'sex' ? 'none' : 'inline-block'
+
+  console.log({aaa: state.comparePrimary});
+}, "comparePrimary")
 
   state.addListener(() => {
     updateQuantilePlot()
@@ -244,6 +254,8 @@ function updateQuantilePlot() {
   plotContainer.innerHTML = ''
   plotContainer.appendChild(plot)
 
+  console.log({plotData: state.plotData, filteredPlotData});
+
   addPlotInteractivity()
   downloadFiles(state.plotData, "first_data")
   downloadQuantileGraphs()
@@ -314,12 +326,15 @@ async function initialDataLoad() {
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
   const quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileFieldOptions = quantileFieldOptions.map(item => `${capitalizeFirstWord(item.replaceAll('_', ' '))}`)
+  state.quantileFieldOptions = quantileFieldOptions.map(item => ({
+    text: `${capitalizeFirstWord(item.replaceAll('_', ' '))}`,
+    value: `${capitalizeFirstWord(item.replaceAll('_', ' '))}`
+  }))
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
   state.selectYearOptions = YEARS
   
   queryData()
-  syncDataDependentInputs(state, true)
+  syncDataDependentInputs(state)
   updateQuantileHeaderTitle()
   // updateQuantileTitle()
   //toggleInputActivation(true)
@@ -437,7 +452,7 @@ function updateQuantileHeaderTitle() {
   if (!state?.properties) return;
 
   const quantileSelectionElements = document.querySelectorAll("[data-quantile-item]");
-
+  console.log('sssss', {quantileSelectionElements});
   quantileSelectionElements?.forEach((element) => {
     const { quantileItem, optionsKey } = element.dataset;
     let quantileItemValue = state.properties[quantileItem];

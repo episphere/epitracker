@@ -36,8 +36,8 @@ export const renderMapVisualizationPage = () => {
                 </select>
 
                 <label for="causeSelectSelect">Cause</label>
-                <select id="causeSelectSelect" class="form-select mb-2" disabled aria-label="Cause select">
-                  <option hidden >Awaiting data...</option>
+                <select id="causeSelectSelect" class="form-select mb-2" aria-label="Cause select">
+                  <option hidden >All</option>
                 </select>
 
                 <label for="sexSelectSelect">Sex</label>
@@ -73,14 +73,14 @@ export const renderMapVisualizationPage = () => {
                   </select>
 
                   <label for="stateSelectSelect">Search State</label>
-                  <select id="stateSelectSelect" class="form-select mb-2" disabled aria-label="State select">
-                    <option hidden >Awaiting data...</option>
-                  </select>
+                  <select id="stateSelectSelect" class="form-select mb-2" aria-label="State select">
+                    <option hidden >All</option>
+                  </select>                
 
                   <div id="county-wrapper">
                     <label for="countySelectSelect">Search County</label>
-                    <select id="countySelectSelect" class="form-select mb-2" disabled aria-label="County select">
-                      <option hidden >Awaiting data...</option>
+                    <select id="countySelectSelect" class="form-select mb-2" aria-label="County select">
+                      <option hidden >All</option>
                     </select>
                   </div>
                 </div>

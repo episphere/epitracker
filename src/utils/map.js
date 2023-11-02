@@ -44,19 +44,20 @@ const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: "#countySelectSelect",
     options: {
-      sorter: (items = []) => {
-        const groupBy = (input, key) =>
-          input.reduce((acc, currentValue) => {
-            (acc[currentValue[key]] ??= []).push(currentValue);
-            return acc;
-          }, {});
-        const groupByDisabledItems = groupBy(items, "disabled");
+      sorter: sort,
+      // sorter: (items = []) => {
+      //   const groupBy = (input, key) =>
+      //     input.reduce((acc, currentValue) => {
+      //       (acc[currentValue[key]] ??= []).push(currentValue);
+      //       return acc;
+      //     }, {});
+      //   const groupByDisabledItems = groupBy(items, "disabled");
 
-        return [
-          ...sort(groupByDisabledItems["false"]),
-          ...sort(groupByDisabledItems["true"]),
-        ];
-      },
+      //   return [
+      //     ...sort(groupByDisabledItems["false"]),
+      //     ...sort(groupByDisabledItems["true"]),
+      //   ];
+      // },
     },
   },
 ];
@@ -120,17 +121,13 @@ export async function start() {
   state.addListener(() => {
     const countySelectElement = document.querySelector("#county-wrapper");
       if (countySelectElement) {
-       
-        console.log({state});
 
         countySelectElement.style.display =
           state.level === "county" ? "block" : "none";
 
-        if (state.level === "state") {
-          state.selectCounty = 'all'
-        } else {
-          state.selectCounty = 'all'
-        }
+          const countyChoicesInstance = state.choicesInstances['countySelectSelect']
+          countyChoicesInstance.setChoiceByValue('All');
+          state.selectCounty = 'All'
         
       }
   }, "level")
@@ -149,11 +146,13 @@ export async function start() {
     const { selectState, countyGeo, selectCounty } = state;
     queryData(selectState);
     if (state.level === "county") {
-      $("#countySelectSelect").val("all").trigger("change");
+      const countyChoicesInstance = state.choicesInstances['countySelectSelect']
+      countyChoicesInstance.setChoiceByValue('All');
+      state.selectCounty = 'All'
     }
 
     const counties =
-      selectState === "all"
+      selectState === "All"
         ? countyGeo.features
         : countyGeo.features.filter(
             (county) => county.state?.id === selectState
@@ -162,7 +161,7 @@ export async function start() {
     const countyOptions = [
       {
         text: "All",
-        value: "all",
+        value: "All",
       },
       ...counties.map((feature) => {
         const hasData = state.countySet.has(feature.id);
@@ -172,6 +171,7 @@ export async function start() {
           text: feature.properties.name + ", " + stateName,
           value: feature.id,
           hasData: !!hasData,
+          disabled: !hasData
         };
       }),
     ];
@@ -179,10 +179,10 @@ export async function start() {
     state.selectCountyOptions = countyOptions;
 
     update();
-    state.plotHighlight = selectState !== "all" ? selectState : null;
+    state.plotHighlight = selectState !== "All" ? selectState : null;
 
     // Zoom to area
-    if (state.selectState != "all") {
+    if (state.selectState != "All") {
       const targetElement = d3
         .select(state.choroplethPlot)
         .select("#area-" + state.selectState)
@@ -200,13 +200,13 @@ export async function start() {
     queryData(selectState, selectCounty);
     update();
     state.plotHighlight =
-      selectCounty !== "all"
+      selectCounty !== "All"
         ? selectCounty
-        : selectState !== "all"
+        : selectState !== "All"
         ? selectState
         : null;
 
-    if (state.selectCounty != "all") {
+    if (state.selectCounty != "All") {
       const targetElement = d3
         .select(state.choroplethPlot)
         .select("#area-" + state.selectCounty)
@@ -435,7 +435,7 @@ function plotMapGrid(data, rowField, columnField) {
 
   let mainFeatureCollection = state.featureCollection;
   let overlayFeatureCollection = state.stateGeo;
-  if (state.selectCounty != "all") {
+  if (state.selectCounty != "All") {
     mainFeatureCollection = {
       type: "FeatureCollection",
       features: state.featureCollection.features.filter(
@@ -448,7 +448,7 @@ function plotMapGrid(data, rowField, columnField) {
         (d) => d.id == state.selectCounty
       ),
     };
-  } else if (state.selectState != "all") {
+  } else if (state.selectState != "All") {
     mainFeatureCollection = {
       type: "FeatureCollection",
       features: state.featureCollection.features.filter(
@@ -546,6 +546,7 @@ function createDownloadButton(small = true) {
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
       <li><a id="download-data-csv" class="dropdown-item download-item">Download Data (CSV)</a></li>
+      <li><a id="download-data-tsv" class="dropdown-item download-item">Download Data (TSV)</a></li>
       <li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (PNG)</a></li>
       <li><a id="download-plot-svg" class="dropdown-item download-item">Download Plot (SVG)</a></li>
   </ul>
@@ -577,6 +578,14 @@ function addIndividualDownloadButton(element, config) {
       const filename = baseFilename + ".csv";
       const content = d3.csvFormat(prepareDataForDownload(config.data));
       downloadStringAsFile(content, filename, "text/csv");
+    });
+
+  buttonElement
+    .querySelector("#download-data-tsv")
+    .addEventListener("click", () => {
+      const filename = baseFilename + ".tsv";
+      const content = d3.tsvFormat(prepareDataForDownload(config.data));
+      downloadStringAsFile(content, filename, "text/tsv");
     });
 
   buttonElement
@@ -617,6 +626,14 @@ function addGroupDownloadButton(element, config) {
       const filename = baseFilename + ".csv";
       const content = d3.csvFormat(prepareDataForDownload(state.mapData));
       downloadStringAsFile(content, filename, "text/csv");
+    });
+
+  buttonElement
+    .querySelector("#download-data-tsv")
+    .addEventListener("click", () => {
+      const filename = baseFilename + ".tsv";
+      const content = d3.tsvFormat(prepareDataForDownload(state.mapData));
+      downloadStringAsFile(content, filename, "text/tsv");
     });
 
   buttonElement
@@ -680,7 +697,7 @@ async function initialDataLoad() {
   state.countyGeoMap = [
     {
       text: "All",
-      value: "all",
+      value: "All",
     },
     ...countyGeo.features.map((feature) => {
       const hasData = state.countySet.has(feature.id);
@@ -691,13 +708,14 @@ async function initialDataLoad() {
         text: feature.properties.name + ", " + stateName,
         value: feature.id,
         hasData: hasData,
+        disabled: !hasData,
       };
     }),
   ];
   state.stateGeoMap = [
     {
       text: "All",
-      value: "all",
+      value: "All",
     },
     ...stateGeo.features.map((feature) => ({
       text: feature.properties.name,
@@ -878,9 +896,9 @@ function queryData(stateFips, countyFips) {
   //   mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
   // }
 
-  if (state.selectCounty != "all") {
+  if (state.selectCounty != "All") {
     mapData = mapData.filter((d) => d.county_fips == state.selectCounty);
-  } else if (state.selectState != "all") {
+  } else if (state.selectState != "All") {
     if (state.level == "county") {
       mapData = mapData.filter(
         (d) => d.county_fips.slice(0, 2) == state.selectState
@@ -922,9 +940,9 @@ function addChoroplethInteractivity(
   gSelect.on("mouseleave.interact", () => {
     if (!state.isSelectedStateCounty) {
       state.plotHighlight =
-        state.selectCounty !== "all"
+        state.selectCounty !== "All"
           ? state.selectCounty
-          : state.selectState !== "all"
+          : state.selectState !== "All"
           ? state.selectState
           : null;
     }
@@ -1013,6 +1031,7 @@ function prepareMapElementForDownload(element, config) {
   // TODO: Better mapping to human readable names for a cleaner title.
 
   const legend = document.getElementById("color-legend").cloneNode(true);
+  const mapTitle = document.getElementById("map-title").cloneNode(true);
 
   const stratifications = [config.rowValue, config.columnValue].filter(
     (d) => d
@@ -1024,6 +1043,7 @@ function prepareMapElementForDownload(element, config) {
 
   const div = document.createElement("div");
   div.appendChild(titleDiv);
+  div.appendChild(mapTitle);
   div.appendChild(legend);
   const svgElements = element.querySelectorAll("svg");
   [...svgElements].forEach((svg) => div.appendChild(svg.cloneNode(true)));
@@ -1037,7 +1057,7 @@ function updateMapTitle() {
   mapTitleWrapper.id = "map-title-wrapper";
   mapTitleWrapper.style.gridArea = "1 / 1/ 2 / 3";
   mapTitleWrapper.innerHTML = `
-    <p id="map-title">Figure shows: cause: <b data-map-item="selectCause">cause</b>, race: <b data-map-item="selectRace">race</b>, measure: <b data-map-item="measure">measure</b>, level: <b data-map-item="level">level</b>, year: <b data-map-item="selectYear">Year</b>.</p>
+    <p id="map-title" class="text-center">Figure shows: cause: <b data-map-item="selectCause">cause</b>, race: <b data-map-item="selectRace">race</b>, measure: <b data-map-item="measure">measure</b>, level: <b data-map-item="level">level</b>, year: <b data-map-item="selectYear">Year</b>, sex: <b data-map-item="selectSex">Sex</b>.</p>
   `;
 
   const mapSelectionElements = mapTitleWrapper.querySelectorAll("[data-map-item]")
@@ -1048,8 +1068,8 @@ function updateMapTitle() {
     const { mapItem } = element.dataset;
     let mapItemValue = state.properties[mapItem];
     element.innerHTML = mapItemValue;
-    console.log({ mapItem, mapItemValue, element });
   });
 
   state.mapsContainer.appendChild(mapTitleWrapper)
 }
+

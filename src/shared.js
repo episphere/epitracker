@@ -1,21 +1,27 @@
-export const sort = (items = []) => {
-  return items.sort((a, b) => {
-    const nameA = a.text.toUpperCase();
-    const nameB = b.text.toUpperCase();
+export const sort = (a, b) => {
+  const nameA = a.label.toUpperCase();
+  const nameB = b.label.toUpperCase();
 
-    if (nameA === 'ALL' || nameB === 'ALL') {
-      return 1
-    }
-    if (nameA < nameB) {
-      return -1;
-    }
-    if (nameA > nameB) {
-      return 1;
-    }
+  if (a.disabled === true && b.disabled !== true) {
+    return 1;
+  } 
+  if (a.disabled !== true && b.disabled === true) {
+    return -1
+  }
 
-    // names must be equal
-    return 0;
-  });
+  if (nameA === 'ALL' || nameB === 'ALL') {
+    return 1
+  }
+
+  if (nameA < nameB) {
+    return -1;
+  }
+  if (nameA > nameB) {
+    return 1;
+  }
+
+  // names must be equal
+  return 0;
 }
 
 export const getFolderItems = async (id) => {
