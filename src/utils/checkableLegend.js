@@ -4,7 +4,7 @@ import { LightenDarkenColor as recolor } from  'https://cdn.skypack.dev/lighten-
 export function checkableLegend(values, colors, checkedList=null, labelFormat=d=>d) {
   const div = document.createElement("div")
   div.style.display = "flex"
-  div.style.gap = "20px"
+  div.style.gap = "25px"
 
   if (checkedList == null) {
     checkedList = [...values]
@@ -102,13 +102,15 @@ function legendCheck(color, label, checked=true, size=25) {
 
   div.style.display = "inline-flex"
   div.style.alignItems = "center"
-  div.style.gap = "10px"
+  div.style.gap = "8px"
   const labelElement = document.createElement("label")
   labelElement.innerText = label
   labelElement.style.fontFamily = "sans-serif"
-  labelElement.style.fontSize = "0.9em"
+  labelElement.style.fontSize = "0.8em"
   labelElement.style.pointerEvents = "none"
   labelElement.style.userSelect = "none"
+  labelElement.style.maxWidth = "100px"
+  labelElement.style.textAlign = "center"
   
   
   div.appendChild(svg.node())

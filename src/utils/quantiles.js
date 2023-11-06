@@ -14,7 +14,7 @@ import { sort } from "../shared.js"
 // ===== Global stuff =====
 
 // Static
-const YEARS = ["2018", "2019", "2020", "2018-2020"]
+const YEARS = ["2018", "2019", "2020"]
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: '#causeSelectSelect',
@@ -201,7 +201,14 @@ function updateLegend() {
     if (state.displayColorValues.length == 0) {
       state.displayColorValues = colorValues
     }
-    const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues)
+    const labelFormat = (d) => {
+      if (d.startsWith("Non-Hispanic")) {
+        return d.replace("Non-Hispanic ", "") + "\n(Non-Hispanic)"
+      } else {
+        return d
+      }
+    }
+    const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues, labelFormat)
     legendContainer.appendChild(legend)
 
     legend.addEventListener("change", () => {
@@ -298,6 +305,7 @@ async function loadData(year) {
 
   // TODO: These should be merged and call mapStateAndCounty function
   data.forEach(row => measureOptions.forEach(measure => row[measure.name] = parseFloat(row[measure.name])))
+  data.forEach(row => ["deaths", "population"].forEach(field => row[field] = parseInt(row[field])))
   data.forEach(row => {
     for (const measure of measureOptions) {
       const se = row[measure.name] / Math.sqrt(row.deaths)
