@@ -2566,3 +2566,11 @@ button.previous-btn {
   margin: 0 !important;
 
 }
+
+.choices__list--dropdown .choices__item--selectable {
+  padding-right: 10px !important;
+}
+
+.choices__list--single {
+  padding: 4px 0 !important;
+}

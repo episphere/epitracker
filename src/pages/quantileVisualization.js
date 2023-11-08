@@ -106,39 +106,29 @@ export const renderQuantileVisualizationPage = () => {
               </div> 
             </div>
 
-            <div class="ml-auto" id="downloadContainer">
-              <div class="col-md-12 p-0 dropdown">
-                <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-                  data-bs-toggle="dropdown" id="download-dropdown-btn" style="color:#000000 !important">
-                  Download <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
-                </button>
-                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-dropdown-btn">
-                  <div class="position-relative d-flex align-items-center">
-                    <ul class="navbar-dropdown w-100">
-                      <li>
-                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as PNG" id="downloadGraph">Download Plot (PNG)</button>
-                      </li>
-                      <li>
-                        <button class="transparent-btn dropdown-item dropdown-menu-links" title="download graph as SVG" id="download-graph-svg">Download Plot (SVG)</button>
-                      </li>
-                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
-                          id="download-table-csv">Download Data(CSV) </button></li>
-                      <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
-                          id="download-table-tsv">Download Data (TSV)</button></li>
-                      <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
-                        <div class="top-50 start-50 translate-middle position-absolute">
-                          <div class="spinner-border" role="status"></div>
-                        </div>
-                      </div>
-                    </ul>
-                    <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
-                      <div class="top-50 start-50 translate-middle position-absolute">
-                        <div class="spinner-border" role="status"></div>
-                      </div>
-                    </div>
+            <div class="dropdown d-flex justify-content-end">
+              <button title="Download" class="btn btn-outline-secondary dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" id="download-dropdown-btn">
+                Download <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item download-item" title="download graph as PNG" id="downloadGraph">Download Plot (PNG)</a>
+                </li>
+                <li>
+                  <a class="dropdown-item download-item" title="download graph as SVG" id="download-graph-svg">Download Plot (SVG)</a>
+                </li>
+                <li><a class="dropdown-item download-item" title="Download table as csv"
+                    id="download-table-csv">Download Data(CSV) </a></li>
+                <li><a class="dropdown-item download-item" title="Download table as tsv"
+                    id="download-table-tsv">Download Data (TSV)</a></li>
+                <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
+                  <div class="top-50 start-50 translate-middle position-absolute">
+                    <div class="spinner-border" role="status"></div>
                   </div>
                 </div>
-              </div>
+              </ul>
+                  
             </div>
             
           </div>

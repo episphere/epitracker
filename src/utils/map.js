@@ -62,6 +62,66 @@ const SEARCH_SELECT_INPUT_QUERIES = [
   },
 ];
 
+const updateCounties = () => {
+  const { selectState, countyGeo, selectCounty } = state;
+  const counties =
+    selectState === "All"
+      ? countyGeo.features
+      : countyGeo.features.filter(
+          (county) => county.state?.id === selectState
+        );
+  const countyOptions = [
+    {
+      text: "All",
+      value: "All",
+    },
+    ...counties.map((feature) => {
+      const hasData = state.countySet.has(feature.id);
+      // console.log({hasData, featureID: feature.id, countySet: state.countySet});
+
+      const stateName =
+        typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
+      return {
+        text: feature.properties.name + ", " + stateName,
+        value: feature.id,
+        hasData: !!hasData,
+        disabled: !hasData
+      };
+    }),
+  ];
+
+  console.log({countyOptions, countySet: state.countySet});
+  state.countyGeoMap = countyOptions;
+  state.selectCountyOptions = countyOptions;
+}
+
+const updateStates = () => {
+  const { stateGeo, countyGeo } = state;
+  console.log({state, stateGeo});
+
+  const stateOptions = [
+    {
+      text: "All",
+      value: "All",
+    },
+    ...stateGeo.features.map(feature => {
+      const counties = countyGeo.features.filter(
+        (county) => county.state?.id === feature.id
+      );
+      const hasData = counties.some(feature => state.countySet.has(feature.id))
+      console.log('updateState', {hasData, counties, stateName: feature.properties.name});
+      return {
+        text: feature.properties.name,
+        value: feature.id,
+        hasData: hasData,
+        disabled: !hasData
+      };
+    })
+  ]
+
+  state.selectStateOptions = stateOptions;
+}
+
 export async function start() {
   toggleLoading(true);
 
@@ -112,7 +172,7 @@ export async function start() {
     },
     "comparePrimary",
     "compareSecondary",
-    "selectCause",
+    // "selectCause",
     "selectSex",
     "selectRace",
     "measure",
@@ -143,43 +203,55 @@ export async function start() {
   // );
 
   state.addListener(() => {
-    const { selectState, countyGeo, selectCounty } = state;
-    queryData(selectState);
+    queryData();
+    syncDataDependentInputs(state);
+    update();
+
+  }, 'selectCause')
+
+  state.addListener(() => {
+    const { selectState} = state;
+    queryData();
+
     if (state.level === "county") {
       const countyChoicesInstance = state.choicesInstances['countySelectSelect']
       countyChoicesInstance.setChoiceByValue('All');
       state.selectCounty = 'All'
     }
+    
 
-    const counties =
-      selectState === "All"
-        ? countyGeo.features
-        : countyGeo.features.filter(
-            (county) => county.state?.id === selectState
-          );
+    // const counties =
+    //   selectState === "All"
+    //     ? countyGeo.features
+    //     : countyGeo.features.filter(
+    //         (county) => county.state?.id === selectState
+    //       );
 
-    const countyOptions = [
-      {
-        text: "All",
-        value: "All",
-      },
-      ...counties.map((feature) => {
-        const hasData = state.countySet.has(feature.id);
-        const stateName =
-          typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
-        return {
-          text: feature.properties.name + ", " + stateName,
-          value: feature.id,
-          hasData: !!hasData,
-          disabled: !hasData
-        };
-      }),
-    ];
-    state.countyGeoMap = countyOptions;
-    state.selectCountyOptions = countyOptions;
+    // const countyOptions = [
+    //   {
+    //     text: "All",
+    //     value: "All",
+    //   },
+    //   ...counties.map((feature) => {
+    //     const hasData = state.countySet.has(feature.id);
+    //     console.log({feature, countySet: state.countySet, hasData});
+    //     const stateName =
+    //       typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
+    //     return {
+    //       text: feature.properties.name + ", " + stateName,
+    //       value: feature.id,
+    //       hasData: !!hasData,
+    //       disabled: !hasData
+    //     };
+    //   }),
+    // ];
+    // state.countyGeoMap = countyOptions;
+    // state.selectCountyOptions = countyOptions;
 
-    update();
+    
+    
     state.plotHighlight = selectState !== "All" ? selectState : null;
+
 
     // Zoom to area
     if (state.selectState != "All") {
@@ -193,11 +265,13 @@ export async function start() {
       }
     }
     insertParamsToUrl("state", state.selectState);
+    update();
+    
   }, "selectState");
 
   state.addListener(() => {
     const { selectCounty, selectState } = state;
-    queryData(selectState, selectCounty);
+    queryData();
     update();
     state.plotHighlight =
       selectCounty !== "All"
@@ -512,6 +586,7 @@ function plotMapGrid(data, rowField, columnField) {
 
   const legendDiv = document.createElement("div");
   legendDiv.classList.add("legend-wrapper");
+  console.log({sharedColorLegend, tt: typeof sharedColorLegend});
   legendDiv.appendChild(sharedColorLegend);
   // sharedColorLegend.style.border = "1px solid grey"
   // sharedColorLegend.style.borderRadius = "3px"
@@ -693,22 +768,24 @@ async function initialDataLoad() {
 
   await loadData("2020");
 
-  state.countySet = new Set(state.data.map((item) => item.county_fips));
+  // state.countySet = new Set(state.data.map((item) => item.county_fips));
+  // console.log({test: state.countySet});
   state.countyGeoMap = [
     {
       text: "All",
       value: "All",
     },
     ...countyGeo.features.map((feature) => {
-      const hasData = state.countySet.has(feature.id);
+      // const hasData = true
+      // const hasData = state.countySet.has(feature.id);
       const stateName =
         typeof feature.state?.name !== "undefined" ? feature.state.name : "-";
 
       return {
         text: feature.properties.name + ", " + stateName,
         value: feature.id,
-        hasData: hasData,
-        disabled: !hasData,
+        // hasData: hasData,
+        // disabled: !hasData,
       };
     }),
   ];
@@ -862,7 +939,7 @@ function hookInputs() {
   });
 }
 
-function queryData(stateFips, countyFips) {
+function queryData() {
   //  Get data for map
 
   let mapData = [...state.data];
@@ -909,6 +986,12 @@ function queryData(stateFips, countyFips) {
   }
 
   state.mapData = mapData;
+  state.countySet = new Set(mapData.map((item) => item.county_fips));
+  console.log({countySet: state.countySet, mapData, data: state.data});
+
+  updateCounties()
+  updateStates()
+  // TODO: update countySet
   state.mapDataGeoMap = d3.group(state.mapData, (d) => d[geoField]);
 }
 

@@ -10,6 +10,7 @@ function initSearchSelectInputs(selectInputQueries = [], state) {
       ...options,
       searchEnabled: true, // Enable search functionality
       searchResultLimit: 4,
+      itemSelectText: ''
       // renderChoiceLimit: 6
     })
     state.choicesInstances[key.replace('#', '')] = choicesInstance
