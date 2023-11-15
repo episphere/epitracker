@@ -128,6 +128,7 @@ export async function start() {
   state = new State();
   state.defineDynamicProperty("data", []);
   state.defineDynamicProperty("mapZoom", 1);
+  state.defineDynamicProperty("isOpenSidebar", true);
 
   hookInputs();
   await initialDataLoad();
@@ -299,7 +300,10 @@ export async function start() {
     state.comparePrimary = params.comparePrimary;
   }
 
-  toggleSidebar();
+  toggleSidebar((value) => {
+    state.isOpenSidebar = value
+    update()
+  })
   addGroupDownloadButton(
     document.getElementById("group-download-container"),
     { data: state.mapData },
@@ -328,7 +332,8 @@ function update() {
     plotMapGrid(
       state.mapData,
       state.comparePrimary != "none" ? state.comparePrimary : null,
-      state.compareSeconday != "none" ? state.compareSecondary : null
+      state.compareSeconday != "none" ? state.compareSecondary : null,
+      state.isOpenSidebar
     );
   if (state.plotMode == "map") {
     plotFunction();
@@ -394,7 +399,7 @@ function generateCombinations(arr1, arr2, varName1, varName2) {
   return combinations;
 }
 
-function plotMapGrid(data, rowField, columnField) {
+function plotMapGrid(data, rowField, columnField, isOpenSidebar) {
   // let currentData;
   // if (state.selectCounty != "All") {
   //   currentData = data.filter(d => d.county_fips == state.selectCounty)
@@ -471,7 +476,10 @@ function plotMapGrid(data, rowField, columnField) {
   }
 
   const bbox = mapsContainer.getBoundingClientRect();
-  const mapWidth = (0.9 * bbox.width) / nColumns;
+  const sidebar = document.getElementById('sidebar')
+  const sidebarBox = sidebar.getBoundingClientRect();
+  const sideBarWidth = isOpenSidebar ? 0 : sidebarBox.width
+  const mapWidth = ((0.9 * bbox.width) / nColumns ) + sideBarWidth
 
   const mean = d3.mean(data, (d) => d[state.measure]);
   const domain = d3.extent(data, (d) => d[state.measure]);
@@ -666,8 +674,11 @@ function addIndividualDownloadButton(element, config) {
   buttonElement
     .querySelector("#download-plot-png")
     .addEventListener("click", () => {
+      const clonedElement = element.cloneNode(true);
+      const tooltipElement =  clonedElement.querySelector('.custom-tooltip')
+      tooltipElement && tooltipElement.remove()
       const filename = baseFilename + ".png";
-      const downloadElement = prepareMapElementForDownload(element, config);
+      const downloadElement = prepareMapElementForDownload(clonedElement, config);
       const tempWrapper = document.createElement("div");
       tempWrapper.appendChild(downloadElement);
       state.mapsContainer.appendChild(tempWrapper);
@@ -716,6 +727,8 @@ function addGroupDownloadButton(element, config) {
     .addEventListener("click", () => {
       const filename = baseFilename + ".png";
       const maps = document.getElementById("maps-container").cloneNode(true);
+      const tooltipElement = maps.querySelector('.custom-tooltip')
+      tooltipElement && tooltipElement.remove()
       const downloadElement = prepareMapElementForDownload(maps, config);
       const tempWrapper = document.createElement("div");
       tempWrapper.appendChild(downloadElement);
