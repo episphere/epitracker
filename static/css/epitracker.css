@@ -12,6 +12,12 @@
   list-style: none;
 }
 
+#map-title {
+  font-weight: bold;
+  font-size: .9em;
+  text-align: center;
+}
+
 .fa-copy,
 .getAllFileversions,
 .fa-folder-minus {
@@ -2387,7 +2393,7 @@ button.previous-btn {
 }
 
 #map-title {
-  max-width: 800px;
+  /* max-width: 800px; */
 }
 
 #histogram-title {
@@ -2446,7 +2452,7 @@ button.previous-btn {
 .legend-wrapper {
   background: white;
   border-radius: 4px;
-  box-shadow: 3px 3px 8px 1px lightgrey;
+  box-shadow: 2px 2px 6px 1px lightgrey;
   padding-block: 5px;
 }
 
@@ -2497,14 +2503,18 @@ button.previous-btn {
   border-radius: 8px 0 0 8px;
 }
 
+#plots-container {
+  /* transition: opacity .3s ease; */
+}
+
 /* #maps-container {
 
 } */
 
 .legend-wrapper {
   background: white;
-  border-radius: 4px;
-  box-shadow: 3px 3px 8px 1px lightgrey;
+  border-radius: -4px;
+  /* box-shadow: 3px 3px 8px 1px lightgrey; */
   padding-block: 5px;
 }
 
@@ -2543,4 +2553,49 @@ button.previous-btn {
   position: sticky;
   bottom: -20px;
   background-color: #f5f5f5;
+}
+
+.map-grid-cell svg path:hover {
+  stroke: green;
+  stroke-width: 2;
+  stroke-opacity: .5;
+}
+
+.choices {
+  margin-bottom: 10px;
+}
+
+.choices__inner {
+  padding: 2px 36px 2px 12px !important;
+  border-radius: 0.375rem !important;
+  background: var(--bs-form-control-bg) !important;
+  min-height: initial !important;
+  border-color: var(--bs-border-color) !important;
+  color: black;
+  white-space: nowrap;
+}
+
+.choices::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 12px;
+  border: none !important;
+  width: 20px !important;
+  height: 20px !important;
+  top: calc(50% - 10px) !important;
+  margin: 0 !important;
+
+}
+
+.choices__item--selectable {
+  overflow: hidden;
+}
+
+.choices__list--dropdown .choices__item--selectable {
+  padding-right: 10px !important;
+}
+
+.choices__list--single {
+  padding: 4px 0 !important;
 }

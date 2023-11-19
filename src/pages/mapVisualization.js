@@ -18,35 +18,35 @@ export const renderMapVisualizationPage = () => {
               <div class="card-body">
                 <h5 class="">Compare</h5>
       
-                <label for="comparePrimarySelect">Row</label>
-                <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
+                <label for="select-compare-row">Row</label>
+                <select id="select-compare-row" class="form-select mb-2" disabled aria-label="Compare Primary">
                   <option hidden >Awaiting data...</option>
                 </select>
       
-                <label for="compareSecondarySelect">Column</label>
-                <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
+                <label for="select-compare-column">Column</label>
+                <select id="select-compare-column" class="form-select mb-2" disabled aria-label="Compare Secondary">
                   <option hidden >Awaiting data...</option>
                 </select>
 
                 <h5 class="pt-3">Select</h5>
 
-                <label for="yearSelectSelect">Year</label>
-                <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
+                <label for="select-select-year">Year</label>
+                <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
                   <option hidden >Awaiting data...</option>
                 </select>
 
-                <label for="causeSelectSelect">Cause</label>
-                <select id="causeSelectSelect" class="form-select mb-2" disabled aria-label="Cause select">
+                <label for="select-select-cause">Cause</label>
+                <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
                   <option hidden >Awaiting data...</option>
                 </select>
 
-                <label for="sexSelectSelect">Sex</label>
-                <select id="sexSelectSelect" class="form-select mb-2" disabled aria-label="Sex select">
+                <label for="select-select-sex">Sex</label>
+                <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
                   <option hidden >Awaiting data...</option>
                 </select>
 
-                <label for="raceSelectSelect">Race</label>
-                <select id="raceSelectSelect" class="form-select mb-2" disabled aria-label="Race select">
+                <label for="select-select-race">Race</label>
+                <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
                   <option hidden >Awaiting data...</option>
                 </select>
                 
@@ -60,26 +60,26 @@ export const renderMapVisualizationPage = () => {
               </div>
               <div class="card-body">
                 <div id="">
-                  <label for="measureSelect">Measure</label>
-                  <select id="measureSelect" class="form-select mb-2" aria-label="Measure select" disabled>
+                  <label for="select-measure">Measure</label>
+                  <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
                     <option hidden >Awaiting data...</option>
                   </select>
 
-                  <label for="levelSelect">Level</label>
-                  <select id="levelSelect" class="form-select mb-2" aria-label="Level select" disabled>
+                  <label for="select-level">Spatial Level</label>
+                  <select id="select-level" class="form-select mb-2" aria-label="Level select" disabled>
                     <option hidden >Awaiting data...</option>
                     <option >County</option>
                     <option >State</option>
                   </select>
 
-                  <label for="stateSelectSelect">Search State</label>
-                  <select id="stateSelectSelect" class="form-select mb-2" disabled aria-label="State select">
+                  <label for="select-state">State</label>
+                  <select id="select-state" class="form-select mb-2" disabled aria-label="State select">
                     <option hidden >Awaiting data...</option>
                   </select>
 
                   <div id="county-wrapper">
-                    <label for="countySelectSelect">Search County</label>
-                    <select id="countySelectSelect" class="form-select mb-2" disabled aria-label="County select">
+                    <label for="select-county">County</label>
+                    <select id="select-county" class="form-select mb-2" disabled aria-label="County select">
                       <option hidden >Awaiting data...</option>
                     </select>
                   </div>
@@ -123,7 +123,10 @@ export const renderMapVisualizationPage = () => {
                 </div>
                 
               </div>
-              <div id="maps-container" class="mt-3 main-plot-panel" style="display: grid"></div>
+              <div id="maps-container" class="mt-3 main-plot-panel">
+                <div id="map-title"></div>
+                <div id="map-grid" style="display: grid"></div>
+              </div>
               <div id="table-container" class="mt-3 main-plot-panel" style="display: none"></div>
             </div>
           </div>

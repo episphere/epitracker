@@ -14,16 +14,26 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
   }
 }
 
-export function downloadHtmlAsImage(html, fileName) {
-  //toggleLoading('map-loading', 'download-graph-btn', true)
-  html.style.maxHeight = 'initial'
-  setTimeout(() => {
-    html2canvas(html).then(function(canvas) {
-      downloadImage(canvas, fileName)
-      html.style.maxHeight = '1028px'
-      //toggleLoading('map-loading', 'download-graph-btn', false)
-    });
-  }, 10)
+export function downloadElementAsImage(element, fileName, removeAfter=true) {
+  const temporaryDiv = document.createElement("div")
+  temporaryDiv.style.position = "fixed"
+  temporaryDiv.style.left = "-10000px"
+  temporaryDiv.style.right = "-10000px"
+  temporaryDiv.style.width = "fit-content"
+  temporaryDiv.appendChild(element)
+  document.body.appendChild(temporaryDiv)
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      html2canvas(element).then(function(canvas) {
+        downloadImage(canvas, fileName)
+        if (removeAfter) {
+          temporaryDiv.remove()
+        }
+        resolve()
+      });
+    }, 10)
+  })
 }
 
   
@@ -31,7 +41,7 @@ function downloadImage(image, fileName) {
   var dataUrl = image.toDataURL();
   var link = document.createElement("a");
   link.href = dataUrl;
-  link.download = `${fileName}.jpg`;
+  link.download = `${fileName}.png`;
   link.click();
   
 }
@@ -39,7 +49,7 @@ function downloadImage(image, fileName) {
 export function downloadGraph(graphId, fileName) {
   const html = document.getElementById(graphId)
   if (html) {
-    downloadHtmlAsImage(html, fileName)
+    downloadElementAsImage(html, fileName)
   }
 }
 

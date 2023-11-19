@@ -12,7 +12,9 @@ import { dictionaryPage } from "./src/pages/dictionarypage.js"
 
 
 import {start as startQuantilePage} from "./src/utils/quantiles.js"
-import {start as startMapPage} from "./src/utils/map.js"
+//import {start as startMapPage} from "./src/utils/map.js"
+import {init as startMapPage} from "./src/utils/mapPage.js"
+
 
 export const epitracker = async () => {
   if(window.navigator && navigator.serviceWorker) {

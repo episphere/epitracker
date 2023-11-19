@@ -5,7 +5,7 @@ import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELE
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, sort, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
+import { initSidebar, sort, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
@@ -78,7 +78,7 @@ export async function start() {
 
   state.comparePrimary = "race"
 
-  toggleSidebar()
+  initSidebar()
 
 }
 

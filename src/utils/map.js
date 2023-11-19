@@ -11,16 +11,18 @@ import { getQueryParams, sort } from "../shared.js";
 import { State } from "./DynamicState2.js";
 import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
 import { insertParamsToUrl } from "../shared.js";
-import { addPopperTooltip, addTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
+import { addPopperTooltip, addTooltip, initSidebar, downloadStringAsFile } from "./helper.js";
 import { createChoroplethPlot } from "./mapPlots.js";
 import { colorRampLegendMeanDiverge, dataToTableData } from "./helper.js";
 import { downloadHtmlAsImage } from "./download.js";
 import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
+import { EpiTrackerData } from "./EpiTrackerData.js";
 
 
 
 let state;
 let params = getQueryParams(window.location.search);
+let dataManager;
 
 
 // Static
@@ -58,10 +60,11 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 export async function start() {
   toggleLoading(true);
 
-
   state = new State();
   state.defineDynamicProperty("data", []);
   state.defineDynamicProperty("mapZoom", 1);
+
+  dataManager = new EpiTrackerData()
 
   hookInputs();
   await initialDataLoad();
@@ -75,8 +78,8 @@ export async function start() {
   }, "selectYear");
 
   state.addListener(() => {
-    queryData();
-    update();
+    console.log("> update data")
+    queryData().then(() => update())
   }, "data");
 
   state.addListener(() => {
@@ -85,25 +88,11 @@ export async function start() {
 
   state.addListener(
     () => {
-      // state.selectState = "all";
-      // state.selectCounty = "all";
-      // if (getQueryParams(window.location.search).state) {
-      //   state.selectState = getQueryParams(window.location.search).state;
-      // }
-      // $("#stateSelectSelect").val("all").trigger("change");
-      // if (state.level === "county") {
-      //   $("#countySelectSelect").val("all").trigger("change");
-      // }
-
-      // const countySelectElement = document.querySelector("#county-wrapper");
-      // if (countySelectElement) {
-      //   countySelectElement.style.display =
-      //     state.level === "county" ? "block" : "none";
-      // }
-
-      queryData();
-      syncDataDependentInputs(state);
-      update();
+      console.log("> update control options")
+      queryData().then(() => {
+        syncDataDependentInputs(state);
+        update();
+      })
     },
     "comparePrimary",
     "compareSecondary",
@@ -125,9 +114,10 @@ export async function start() {
   //   "compareSecondary",
   // );
 
-  state.addListener(() => {
+  state.addListener(async function () {
+    console.log("> update selectState")
     const { selectState, countyGeo, selectCounty } = state;
-    queryData(selectState);
+    await queryData(selectState);
     if (state.level === "county") {
       $("#countySelectSelect").val("all").trigger("change");
     }
@@ -172,6 +162,7 @@ export async function start() {
   }, "selectState");
 
   state.addListener(() => {
+    console.log(" > update global")
     const { selectCounty, selectState } = state;
     queryData(selectState, selectCounty);
     update();
@@ -202,7 +193,7 @@ export async function start() {
     state.comparePrimary = params.comparePrimary;
   }
 
-  toggleSidebar();
+  initSidebar();
   addGroupDownloadButton(document.getElementById("group-download-container"), {data: state.mapData}, false)
 }
 
@@ -477,19 +468,14 @@ function createDownloadButton(small=true){
   <ul class="dropdown-menu dropdown-menu-end">
       <li><a id="download-data-csv" class="dropdown-item download-item">Download Data (CSV)</a></li>
       <li><a id="download-plot-png" class="dropdown-item download-item">Download Plot (PNG)</a></li>
-      <!--<li><a id="download-plot-svg" class="dropdown-item download-item">Download Plot (SVG)</a></li>-->
   </ul>
 </div>`
 
-const tempDiv = document.createElement("div")
-tempDiv.innerHTML = template
-const buttonElement = tempDiv.firstChild
+  const tempDiv = document.createElement("div")
+  tempDiv.innerHTML = template
+  const buttonElement = tempDiv.firstChild
 
-return buttonElement 
-
-  //element.style.paddingTop = "20px"
-
-
+  return buttonElement 
 }
 
 function addIndividualDownloadButton(element, config) {
@@ -567,6 +553,7 @@ function toggleLoading(loading) {
 }
 
 async function initialDataLoad() {
+
   if (params.race) {
     state.selectRace = params.race;
   }
@@ -645,36 +632,9 @@ async function initialDataLoad() {
 }
 
 async function loadData(year) {
-  const urlQueryYear = getQueryParams(window.location.search).year;
-  if (urlQueryYear) {
-    state.selectYear = getQueryParams(window.location.search).year;
-  }
   toggleLoading(true);
-  const { measureOptions } = state.conceptMappings;
-
-  let data = await d3.csv(`data/mortality_data/age_adjusted_data_${year}.csv`);
-  data = data.map((row) => {
-    measureOptions.forEach(
-      (field) => (row[field.name] = parseFloat(row[field.name]))
-    );
-    const { stateName, countyName } = mapStateAndCounty(
-      row["state_fips"],
-      row["county_fips"],
-      state
-    );
-
-    return { ...row, state: stateName, county: countyName };
-  });
-
-  state.data = [...data] || [];
-  if (state.data) {
-    state.dataMap = d3.group(
-      state.data,
-      (d) => d.state_fips,
-      (d) => d.county_fips
-    );
-  }
-  return data;
+  state.data = (await dataManager.getCountyMortalityData({year}))
+  toggleLoading(false);
 }
 
 function hookInputs() {
@@ -754,54 +714,80 @@ function hookInputs() {
 
 }
 
-function queryData(stateFips, countyFips) {
+async function queryData() {
   //  Get data for map
 
-  let mapData = [...state.data]
+  const query = { }
 
-  const stratifySet = new Set(
-    [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
-  );
-  SELECTABLE_FIELDS.forEach((field) => {
-    if (stratifySet.has(field)) {
-      mapData = mapData.filter(
-        (row) => row[field] != "All"
-      );
-    } else {
-      mapData = mapData.filter(
-        (row) => row[field] == state[statePropertyName("select", field)]
-      );
-    }
-  });
-
-  const geoField = state.level + "_fips"
-  if (state.level == "county") {
-    mapData = mapData.filter((d) => d.county_fips != "All");
-    //mapData = mapData.filter((d) => d.state_fips == "All");
+  if ( state.level == "state" ) {
+    query.state_fips = "*"
+    query.county_fips = "All"
   } else {
-    mapData = mapData.filter((d) => d.county_fips == "All");
-    mapData = mapData.filter((d) => d.state_fips != "All");
+    query.county_fips = "*"
   }
-  mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
-  // if (stateFips && stateFips !== "All") {
-  //   mapData = mapData.filter((row) => row[`state_fips`] === stateFips);
+
+  const stratifySet = new Set([state.comparePrimary, state.compareSecondary].filter((d) => d != "none"))
+  // for (const stratifyField of stratifySet) {
+  //   query[stratifyField] = "*"
   // }
-  // if (countyFips && countyFips !== "All") {
-  //   mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
-  // }
- 
-  if (state.selectCounty != "all"){
-    mapData = mapData.filter(d => d.county_fips == state.selectCounty)
-  } else if (state.selectState != "all") {
-    if (state.level == "county") {
-      mapData = mapData.filter(d => d.county_fips.slice(0,2) == state.selectState)
+
+  for (const field of SELECTABLE_FIELDS) {
+    if (stratifySet.has(field)) {
+      query[field] = "*"
     } else {
-      mapData = mapData.filter(d => d.state_fips == state.selectState)
+      query[field] = state[statePropertyName("select", field)]
     }
   }
+
+  const mapData = await dataManager.getCountyMortalityData(query)
+  console.log("Query", query)
+  console.log("Map Data", mapData)
+
+  // let mapData = [...state.data]
+
+  // const stratifySet = new Set(
+  //   [state.comparePrimary, state.compareSecondary].filter((d) => d != "none")
+  // );
+  // SELECTABLE_FIELDS.forEach((field) => {
+  //   if (stratifySet.has(field)) {
+  //     mapData = mapData.filter(
+  //       (row) => row[field] != "All"
+  //     );
+  //   } else {
+  //     mapData = mapData.filter(
+  //       (row) => row[field] == state[statePropertyName("select", field)]
+  //     );
+  //   }
+  // });
+
+  // const geoField = state.level + "_fips"
+  // if (state.level == "county") {
+  //   mapData = mapData.filter((d) => d.county_fips != "All");
+  //   //mapData = mapData.filter((d) => d.state_fips == "All");
+  // } else {
+  //   mapData = mapData.filter((d) => d.county_fips == "All");
+  //   mapData = mapData.filter((d) => d.state_fips != "All");
+  // }
+  // mapData = mapData.filter((row) => Number.isFinite(row[state.measure]));
+  // // if (stateFips && stateFips !== "All") {
+  // //   mapData = mapData.filter((row) => row[`state_fips`] === stateFips);
+  // // }
+  // // if (countyFips && countyFips !== "All") {
+  // //   mapData = mapData.filter((row) => row[`county_fips`] === countyFips);
+  // // }
+ 
+  // if (state.selectCounty != "all"){
+  //   mapData = mapData.filter(d => d.county_fips == state.selectCounty)
+  // } else if (state.selectState != "all") {
+  //   if (state.level == "county") {
+  //     mapData = mapData.filter(d => d.county_fips.slice(0,2) == state.selectState)
+  //   } else {
+  //     mapData = mapData.filter(d => d.state_fips == state.selectState)
+  //   }
+  // }
   
   state.mapData = mapData;
-  state.mapDataGeoMap = d3.group(state.mapData, d => d[geoField])
+  state.mapDataGeoMap = d3.group(state.mapData, d => d[state.level + "_fips"])
 }
   
 

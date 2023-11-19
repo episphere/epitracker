@@ -53,8 +53,8 @@ function getShowHideOutline() {
 function getColorScheme() {
   return `
   <div>
-  <label for="schemeSelect">Color Scheme</label>
-  <select id="schemeSelect" class="form-select mb-2" aria-label="Scheme select" disabled>
+  <label for="select-scheme">Color Scheme</label>
+  <select id="select-scheme" class="form-select mb-2" aria-label="Scheme select" disabled>
     <option hidden >Awaiting data...</option>
   </select>
   </div>
