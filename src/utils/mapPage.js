@@ -16,19 +16,17 @@ import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/
 /**
  * Defining some of the necessary configuration options and default values.
  */
-
 const COMPARABLE_FIELDS = ["race", "sex"]
 const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
-const DATA_YEAR_DEFAULT = "2020" // TODO: Change to "2018-2020"
 const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"]
 const SPATIAL_LEVELS = ["county", "state"]
-const SELECT_SEX_DEFAULT = "All"
-const SELECT_RACE_DEFAULT = "All"
 
 // The default state, shown if no URL params. 
 const INITIAL_STATE = {
   compareRow: "sex",
   compareColumn: "none",
+  sex: "All",
+  race: "All",
   year: "2020",
   measure: "age_adjusted_rate",
   cause: "All",
@@ -60,7 +58,7 @@ function initializeState() {
   state.defineProperty("compareRowOptions", null)
   state.defineProperty("compareColumn", initialState.compareColumn)
   state.defineProperty("compareColumnOptions", null)
-  state.defineProperty("year", DATA_YEAR_DEFAULT)
+  state.defineProperty("year", initialState.year)
   state.defineProperty("yearOptions", DATA_YEARS)
   state.defineProperty("cause", initialState.cause)
   state.defineProperty("causeOptions", null)
@@ -87,9 +85,9 @@ function initializeState() {
 
   // The values for the selections are dependent on the compares (e.g. if we are comparing by race, then the race select
   // must be equal to "all"). 
-  state.defineProperty("race", SELECT_RACE_DEFAULT, ["compareRow", "compareColumn"])
+  state.defineProperty("race", initialState.race, ["compareRow", "compareColumn"])
   state.defineProperty("raceOptions", []) 
-  state.defineProperty("sex", SELECT_SEX_DEFAULT, ["compareRow", "compareColumn"])
+  state.defineProperty("sex", initialState.sex, ["compareRow", "compareColumn"])
   state.defineProperty("sexOptions", []) 
   for (const compareProperty of ["compareRow", "compareColumn"]) {
     state.subscribe(compareProperty, () => {
@@ -105,7 +103,9 @@ function initializeState() {
   state.defineJointProperty("plotConfig", ["mortalityData", "query", "measure", "scheme"])
 
   for (const param of Object.keys(initialState)) {
-    state.subscribe(param, updateURLParam)
+    if (state.hasProperty(param)) {
+      state.subscribe(param, updateURLParam)
+    }
   }
 
   for (const inputSelectConfig of [
@@ -113,18 +113,18 @@ function initializeState() {
     {id: "#select-compare-column", propertyName: "compareColumn"},
     {id: "#select-select-race", propertyName: "race"},
     {id: "#select-select-sex", propertyName: "sex"},
-    {id: "#select-select-cause", propertyName: "cause"},
+    {id: "#select-select-cause", propertyName: "cause", searchable: true},
     {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},
     {id: "#select-measure", propertyName: "measure"},
     {id: "#select-level", propertyName: "spatialLevel"},
-    {id: "#select-state", propertyName: "areaState"},
-    {id: "#select-county", propertyName: "areaCounty"},
-    {id: "#select-scheme", propertyName: "scheme"},
+    {id: "#select-state", propertyName: "areaState", searchable: true},
+    {id: "#select-county", propertyName: "areaCounty", searchable: true},
+    {id: "#select-scheme", propertyName: "scheme", searchable: true},
   ]) {
     const sorter = createOptionSorter(["All", "None"], inputSelectConfig.propertyName == "year" ? ["2018-2020"] : [])
 
     choices[inputSelectConfig.id] = hookSelectChoices(inputSelectConfig.id, state, 
-      inputSelectConfig.propertyName, inputSelectConfig.propertyName + "Options", d => d, false, sorter)
+      inputSelectConfig.propertyName, inputSelectConfig.propertyName + "Options", d => d, inputSelectConfig.searchable, sorter)
   }
 }
 
@@ -150,9 +150,11 @@ export function init() {
   elements.mapGrid = document.getElementById("map-grid")
   elements.tableContainer = document.getElementById("table-container")
   elements.colorLegend = document.getElementById("color-legend")
-  elements.mapTitle = document.getElementById("map-title")
-  elements.tableNavLink.addEventListener("click", () => changeView("table"))
-  elements.mapNavLink.addEventListener("click", () => changeView("map"))
+  elements.mapTitle = document.getElementById("graph-title")
+  elements.tableNavLink.addEventListener("click", () => {
+    setTimeout(() => changeView("table"), 0)
+  })
+  elements.mapNavLink.addEventListener("click", () => changeView("plot"))
   elements.groupDownloadButton =  document.querySelector('#group-download-container button');
 
   state.subscribe("query", queryUpdated)
@@ -232,15 +234,22 @@ async function queryUpdated(query) {
   toggleLoading(true)
 
   if (query.compareRow == "race" || query.compareColumn == "race") {
-    elements.selectRace.setAttribute("disabled", "")
+    choices["#select-select-race"].disable()
   } else {
-    elements.selectRace.removeAttribute("disabled")
+    choices["#select-select-race"].enable()
   }
   if (query.compareRow == "sex" || query.compareColumn == "sex") {
-    elements.selectSex.setAttribute("disabled", "")
+    choices["#select-select-sex"].disable()
   } else {
-    elements.selectSex.removeAttribute("disabled")
+    choices["#select-select-sex"].enable()
   }
+
+  if (query.spatialLevel == "state") {
+    choices["#select-county"].disable()
+  } else {
+    choices["#select-county"].enable()
+  }
+
 
   const dataQuery = {
     year: query.year, 
@@ -329,27 +338,31 @@ function changeView(view) {
   toggleLoading(true)
     // TODO: Improve user experience by redrawing only on change. Use deferred drawing model from previous code.
 
-  if (view == "map") {
-    elements.tableNavLink.classList.remove("active")
-    elements.mapNavLink.classList.add("active")
-    elements.mapsContainer.style.display = "block"
-    elements.tableContainer.style.display = "none"
-    elements.colorLegend.style.opacity = 1
+  setTimeout(() => {
+    if (view == "plot") {
+      elements.tableNavLink.classList.remove("active")
+      elements.mapNavLink.classList.add("active")
+      elements.mapsContainer.style.display = "block"
+      elements.tableContainer.style.display = "none"
+      elements.colorLegend.style.opacity = 1
 
-    state.trigger("plotConfig") // Trigger a redraw so sizing is correct.
-  } else if (view == "table") {
-    elements.mapNavLink.classList.remove("active")
-    elements.tableNavLink.classList.add("active")
-    elements.mapsContainer.style.display = "none"
-    elements.tableContainer.style.display = "block"
-    elements.colorLegend.style.opacity = 0
+      state.trigger("plotConfig") // Trigger a redraw so sizing is correct.
+    } else if (view == "table") {
+      elements.mapNavLink.classList.remove("active")
+      elements.tableNavLink.classList.add("active")
+      elements.mapsContainer.style.display = "none"
+      elements.tableContainer.style.display = "block"
+      elements.colorLegend.style.opacity = 0
 
-    if (state.mortalityData.length > 0) {
-      plotTable()
+      if (state.mortalityData.length > 0) {
+        plotTable()
+      }
     }
-  }
 
-  toggleLoading(false)
+    toggleLoading(false)
+  }, 10)
+
+  
 }
 
 
@@ -360,7 +373,7 @@ function changeView(view) {
 
 function addGroupDownloadButton() {
   // TODO: More detailed filename based on inputs
-  const baseFilename = "epitracker_data"
+  const baseFilename = "epitracker_spatial"
 
   // TODO: Resume, try callbacks for
   const groupDownloadContainer = document.getElementById("group-download-container")
@@ -430,7 +443,7 @@ function downloadMapGrid() {
 
   const temporaryDiv = document.createElement("div")
   temporaryDiv.className = "d-flex flex-column gap-2 p-3"
-  temporaryDiv.appendChild(document.getElementById("map-title").cloneNode(true))
+  temporaryDiv.appendChild(document.getElementById("graph-title").cloneNode(true))
   temporaryDiv.appendChild(legend)
   temporaryDiv.appendChild(temporaryGrid)
   return downloadElementAsImage(temporaryDiv, "epitracker-map")
@@ -443,6 +456,7 @@ function updateMapTitle() {
   if (compareString != "") {
     compareString = " by " + compareString
   }
+  const compareSet = new Set([state.compareRow, state.compareColumn])
   const selects = [
     {name: "Year", value: state.year},
     {name: "Location", value: (() => {
@@ -454,10 +468,13 @@ function updateMapTitle() {
       }
     })()},
     {name: "Cause of death", value: formatCauseName(state.cause)}, 
-    {name: "Sex", value: state.sex},
-    {name: "Race", value: state.race}
+    {name: "Sex", value: state.sex, exclude: compareSet.has("sex")},
+    {name: "Race", value: state.race, exclude: compareSet.has("race")}
   ]
-  const selectsString = selects.filter(d => !d.exclude).map(d => `${d.name}: ${d.value}`).join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp")
+  const selectsString = selects
+    .filter(d => !d.exclude)
+    .map(d => `${d.name}: ${d.value}`)
+    .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp")
 
 
   const title = `${level} ${staticData.nameMappings.measures[state.measure].toLowerCase()} ${compareString}. </br> ${selectsString}`

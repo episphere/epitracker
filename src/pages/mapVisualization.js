@@ -124,7 +124,7 @@ export const renderMapVisualizationPage = () => {
                 
               </div>
               <div id="maps-container" class="mt-3 main-plot-panel">
-                <div id="map-title"></div>
+                <div id="graph-title"></div>
                 <div id="map-grid" style="display: grid"></div>
               </div>
               <div id="table-container" class="mt-3 main-plot-panel" style="display: none"></div>

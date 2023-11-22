@@ -19,8 +19,8 @@ const SETTINGS_CONTENTS = {
 function getGraphType() {
   return `
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="showLinesCheck">
-      <label class="form-check-label" for="showLinesCheck">
+      <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
+      <label class="form-check-label" for="check-show-lines">
         Show Lines
       </label>
     </div>
@@ -64,8 +64,8 @@ function getColorScheme() {
 function getStartZero() {
   return `
     <div class="form-check">
-      <input checked class="form-check-input" type="checkbox" value="" id="startZeroCheck">
-      <label class="form-check-label" for="startZeroCheck">
+      <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
+      <label class="form-check-label" for="check-start-zero">
         Start Y at 0
       </label>
     </div>

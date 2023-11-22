@@ -1,11 +1,13 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { checkableLegend } from "./checkableLegend.js";
+import { addPopperTooltip, addProximityHover } from "./helper.js";
 
-export function createQuantilePlot(data, options={}) {
+export function plotQuantileScatter(container, data, options={}) {
   options = {
     valueField: null,
     intervalFields: null,
     color: () => "slateblue",
+    tooltipFields: [],
     facet: null,
     drawLines: true,
     xTickFormat: d => d,
@@ -14,6 +16,10 @@ export function createQuantilePlot(data, options={}) {
     colorDomain: null,
     yStartZero: true,
     ...options 
+  }
+
+  if (options.color == null) {
+    options.color = () => "slateblue"
   }
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
@@ -60,7 +66,7 @@ export function createQuantilePlot(data, options={}) {
     width: 820,
     height: 640,
     style: {fontSize: "14px"},
-    color: colorOpt,
+    //color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
     marginLeft: 80,
@@ -77,5 +83,36 @@ export function createQuantilePlot(data, options={}) {
 
 
   const plot = Plot.plot(plotOptions)
+
+  container.innerHTML = `` 
+  container.appendChild(plot) 
+
+  addInteractivity(container, plot, data, options.valueField, options.tooltipFields)
+
+
   return {plot}
+}
+
+function addInteractivity(container, plot, plotData, measure, tooltipFields) {
+  
+  const tooltip = addPopperTooltip(container)
+
+  const plotSelect = d3.select(plot)
+  const dotSelect = plotSelect.selectAll("circle")
+  addProximityHover(dotSelect, plotSelect, (i,element,prevElement) => {
+    if (i == null) {
+      tooltip.hide()
+    } else {
+      const index = d3.select(element).data()[0]
+      const row = plotData[index]
+
+      d3.select(element).attr("r", 6)
+     
+      let text = ``
+      tooltipFields.forEach(field => text += `<b>${row[field]}</b> </br>`)
+      text += `${row[measure]}`
+      tooltip.show(element, text)
+    }
+    d3.select(prevElement).attr("r", 4)
+  }, 20)
 }

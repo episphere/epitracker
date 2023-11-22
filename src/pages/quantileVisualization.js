@@ -1,45 +1,45 @@
 import { renderSettingsVisualization, SETTINGS } from "../components/visualization/settingsVisualization.js"
 
 export const renderQuantileVisualizationPage = () => {
-  let template = `
+  let template = /*html*/`
   <div class="container-fluid p-5">
     <div class="row">
       <div class="col-md-2" id="sidebar">
         <div class="card rounded-1">
           <div class="card-header">
-            Demographic Options
+            Main Options
           </div>
           <div class="card-body">
           <h5 class="">Compare</h5>
-            <label for="comparePrimarySelect">Color by</label>
-            <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
+            <label for="select-compare-color">Color by</label>
+            <select id="select-compare-color" class="form-select mb-2" disabled aria-label="Compare Color">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="compareSecondarySelect">Sub-plot by</label>
-            <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
+            <label for="select-compare-facet">Sub-plot by</label>
+            <select id="select-compare-facet" class="form-select mb-2" disabled aria-label="Compare Sub-plot">
               <option hidden >Awaiting data...</option>
             </select>
 
             <h5 class="pt-3">Select</h5>
 
-            <label for="yearSelectSelect">Year</label>
-              <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
+            <label for="select-select-year">Year</label>
+              <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
                 <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="causeSelectSelect">Cause</label>
-            <select id="causeSelectSelect" class="form-select mb-2" disabled aria-label="Cause select">
+            <label for="select-select-cause">Cause</label>
+            <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="sexSelectSelect">Sex</label>
-            <select id="sexSelectSelect" class="form-select mb-2" disabled aria-label="Sex select">
+            <label for="select-select-sex">Sex</label>
+            <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
               <option hidden >Awaiting data...</option>
             </select>
 
-            <label for="raceSelectSelect">Race</label>
-            <select id="raceSelectSelect" class="form-select mb-2" disabled aria-label="Race select">
+            <label for="select-select-race">Race</label>
+            <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
               <option hidden >Awaiting data...</option>
             </select>
           </div>
@@ -51,24 +51,20 @@ export const renderQuantileVisualizationPage = () => {
           </div>
           <div class="card-body">
 
-            <label for="measureSelect">Measure</label>
-            <select id="measureSelect" class="form-select mb-2" aria-label="Measure select" disabled>
+            <label for="select-measure">Measure</label>
+            <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
               <option hidden >Awaiting data...</option>
             </select>
 
-            <div >
-              <label for="quantileFieldSelect">Quantile Field</label>
-              <select id="quantileFieldSelect" class="form-select mb-2" aria-label="Quantile field select" disabled>
-                <option hidden >Awaiting data...</option>
-              </select>
-            </div>
+            <label for="select-quantile-field">Quantile Field</label>
+            <select id="select-quantile-field" class="form-select mb-2" aria-label="Quantile field select" disabled>
+              <option hidden >Awaiting data...</option>
+            </select>
           
-            <div>
-              <label for="quantileNumSelect">Quantiles</label>
-              <select id="quantileNumSelect" class="form-select mb-2" aria-label="Quantile num select" disabled>
-                <option hidden >Awaiting data...</option>
-              </select>
-            </div>
+            <label for="select-quantile-number">Quantiles</label>
+            <select id="select-quantile-number" class="form-select mb-2" aria-label="Quantile number select" disabled>
+              <option hidden >Awaiting data...</option>
+            </select>
           
           </div>
         </div>
@@ -77,7 +73,7 @@ export const renderQuantileVisualizationPage = () => {
   template += renderSettingsVisualization([SETTINGS.GRAPH_TYPE, SETTINGS.START_ZERO])
 
 
-  template += `
+  template += /*html*/`
     </div>
     <div class="col-md-10 px-3 position-relative" id="main-content">
       <button id="sidebar-toggle" class="btn btn-light position-absolute start-0">
@@ -106,8 +102,8 @@ export const renderQuantileVisualizationPage = () => {
               </div> 
             </div>
 
-            <div class="ml-auto" id="downloadContainer">
-              <div class="col-md-12 p-0 dropdown">
+            <div class="ml-auto" id="download-container">
+              <!--<div class="col-md-12 p-0 dropdown">
                 <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
                   data-bs-toggle="dropdown" id="download-dropdown-btn" style="color:#000000 !important">
                   Download <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
@@ -135,11 +131,12 @@ export const renderQuantileVisualizationPage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>-->
             </div>
             
           </div>
-          <div id="graph-container" class="mt-3 main-plot-panel" style="display: grid">
+          <div id="graph-container" class="mt-3 main-plot-panel">
+            <div id="graph-title"></div>
             <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
               <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
               <div id="plot-quantiles"></div>

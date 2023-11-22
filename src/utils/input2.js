@@ -37,8 +37,28 @@
 //   return [options$, value$]
 // }
 
+export function hookCheckbox(selector, state, valueProperty) {
+  const check = document.querySelector(selector)
+  if (check == null) {
+    throw new Error(`No element found for ${selector}`)
+  }
+
+  function setEnabled(enabled) {
+    if (enabled) {
+      check.setAttribute("checked", "")
+    } else {
+      check.removeAttribute("checked")
+    }
+  }
+
+  state.subscribe(valueProperty, () => setEnabled(state[valueProperty]))
+  check.addEventListener("click", () => state[valueProperty] = check.checked)
+
+  setEnabled(state[valueProperty])
+}
+
 export function hookSelectChoices(selector, state, valueProperty, optionsProperty, format=d => d, searchEnabled=false,
-  sorter=(a,b)=>0) {
+  sorter=(a,b)=>a-b) {
   const select = document.querySelector(selector)
   if (select == null) {
     throw new Error(`No element found for ${selector}`)
@@ -61,7 +81,7 @@ export function hookSelectChoices(selector, state, valueProperty, optionsPropert
   })
 
   state.subscribe(valueProperty, () => {   
-    choices.setChoiceByValue([state[optionsProperty]])
+    choices.setChoiceByValue([state[valueProperty]])
   })
 
   select.addEventListener("change", () => {
@@ -130,7 +150,6 @@ export function hookSelect(selector, state, valueProperty, optionsProperty, form
 }
 
 export function setDisabled(element, disabled) {
-  console.log(element,disabled)
   if (disabled) {
     element.setAttribute("disabled", "")
   } else {

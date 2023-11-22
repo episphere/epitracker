@@ -12,10 +12,16 @@
   list-style: none;
 }
 
-#map-title {
+#graph-title {
   font-weight: bold;
   font-size: .9em;
   text-align: center;
+}
+
+#graph-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .fa-copy,
@@ -43,6 +49,10 @@
 
 .individual-report-collapse {
   color: #ffa500;
+}
+
+.is-disabled .choices__inner  {
+  color: grey;
 }
 
 body {
@@ -2392,10 +2402,6 @@ button.previous-btn {
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-#map-title {
-  /* max-width: 800px; */
-}
-
 #histogram-title {
   max-width: 400px;
 }
@@ -2441,7 +2447,7 @@ button.previous-btn {
   overflow: auto;
   max-height: 1028px;
   border: 1px solid rgb(200, 200, 200);
-  padding: 20px;
+  padding: 30px 40px;
   border-radius: 8px 0 0 8px;
 }
 
@@ -2492,15 +2498,6 @@ button.previous-btn {
   justify-content: center;
   align-items: center;
   padding-top: 10px;
-}
-
-.main-plot-panel {
-  width: 100%;
-  overflow: auto;
-  max-height: 1028px;
-  border: 1px solid rgb(200, 200, 200);
-  padding: 20px;
-  border-radius: 8px 0 0 8px;
 }
 
 #plots-container {

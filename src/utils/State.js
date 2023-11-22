@@ -151,6 +151,10 @@ export class State {
     this._setProperty(property, this.properties[property])
   }
 
+  hasProperty(property) {
+    return this.properties.hasOwnProperty(property)
+  }
+
   _setProperty(property, value) {
     this.properties[property] = value 
 

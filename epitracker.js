@@ -11,7 +11,7 @@ import { InstructionPage } from "./src/pages/instruction.js"
 import { dictionaryPage } from "./src/pages/dictionarypage.js"
 
 
-import {start as startQuantilePage} from "./src/utils/quantiles.js"
+import {init as startQuantilePage} from "./src/utils/quantilePage.js"
 //import {start as startMapPage} from "./src/utils/map.js"
 import {init as startMapPage} from "./src/utils/mapPage.js"
 
