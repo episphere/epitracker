@@ -38,7 +38,7 @@ const INITIAL_STATE = {
 
 
 let state, dataManager
-let staticData, elements, choices
+let staticData, elements, choices, names
 
 
 /**
@@ -169,6 +169,7 @@ export function init() {
     staticData.stateGeoJSON = stateGeoJSON
     staticData.countyGeoJSON = countyGeoJSON
     staticData.nameMappings = nameMappings
+    names = nameMappings
     initialDataLoad(mortalityData, stateGeoJSON, countyGeoJSON, nameMappings)
   })
 
@@ -452,7 +453,11 @@ function downloadMapGrid() {
 
 function updateMapTitle() {
   const level = state.spatialLevel == "county" ? "US county-level" : "US state-level"
-  let compareString = [state.compareRow, state.compareColumn].filter(d => d != "none").join(" and ")
+  let compareString = [state.compareRow, state.compareColumn]
+    .filter(d => d != "none")
+    .map(d => names.fields[d].toLowerCase())
+    .join(" and ")
+
   if (compareString != "") {
     compareString = " by " + compareString
   }
@@ -468,8 +473,8 @@ function updateMapTitle() {
       }
     })()},
     {name: "Cause of death", value: formatCauseName(state.cause)}, 
-    {name: "Sex", value: state.sex, exclude: compareSet.has("sex")},
-    {name: "Race", value: state.race, exclude: compareSet.has("race")}
+    {name: names.fields.sex, value: state.sex, exclude: compareSet.has("sex")},
+    {name: names.fields.race, value: state.race, exclude: compareSet.has("race")}
   ]
   const selectsString = selects
     .filter(d => !d.exclude)

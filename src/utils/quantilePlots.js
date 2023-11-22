@@ -15,6 +15,8 @@ export function plotQuantileScatter(container, data, options={}) {
     yLabel: null,
     colorDomain: null,
     yStartZero: true,
+    facetTickFormat: d => d,
+    colorTickFormat: d => d,
     ...options 
   }
 
@@ -52,7 +54,7 @@ export function plotQuantileScatter(container, data, options={}) {
     }))
   }
   
-  const colorOpt = {}
+  const colorOpt = {colorTickFormat: options.colorTickFormat}
   if (options.colorDomain) {
     colorOpt.domain = options.colorDomain
   }
@@ -62,25 +64,35 @@ export function plotQuantileScatter(container, data, options={}) {
     d3.max(data, d => d[options.intervalFields[1]])
   ]
 
+  let sizePerFacet = container.getBoundingClientRect().width
+  let nFacets = 1
+  if (options.facet) {
+    const facetDomain = new Set(data.map(d => d[options.facet]))
+    nFacets = facetDomain.size
+    sizePerFacet = sizePerFacet / nFacets
+  }
+  sizePerFacet = Math.min(900, sizePerFacet)
+
   const plotOptions = {
-    width: 820,
-    height: 640,
+    width: sizePerFacet * nFacets,
+    height: 720,
     style: {fontSize: "14px"},
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
+    fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
-    marginTop: 50,
+    marginTop: 80,
     marginBottom: 110,
-    width: 900,
-    height: 720,
     marks: marks
   }
 
   if (options.facet) {
     plotOptions.facet = {data, x: options.facet}
+    if (options.facetLabel) {
+      plotOptions.facet.label = options.facetLabel
+    }
   }
-
 
   const plot = Plot.plot(plotOptions)
 

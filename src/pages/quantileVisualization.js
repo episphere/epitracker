@@ -93,7 +93,7 @@ export const renderQuantileVisualizationPage = () => {
               <div id="display-mode-control">
                 <ul class="nav nav-pills">
                   <li class="nav-item">
-                    <a id="graph-nav-link" class="nav-link active"><i class="bi bi-map"></i></a>
+                    <a id="graph-nav-link" class="nav-link active"><i class="bi bi-graph-up"></i></a>
                   </li>
                   <li class="nav-item">
                     <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
@@ -137,8 +137,8 @@ export const renderQuantileVisualizationPage = () => {
           </div>
           <div id="graph-container" class="mt-3 main-plot-panel">
             <div id="graph-title"></div>
-            <figure class="d-flex flex-column" style="gap: 20px; width: fit-content;">
-              <div id="plot-legend" class="d-flex" style= "justify-content:flex-end;"></div>
+            <figure class="d-flex flex-column" style="gap: 20px; width: 100%;">
+              <div id="plot-legend" class="d-flex" style= "justify-content:flex-start;"></div>
               <div id="plot-quantiles"></div>
             </figure>
           </div>

@@ -1,7 +1,7 @@
 {
   "fields": {
     "none": "None",
-    "race": "Race",
+    "race": "Race/Ethnicity",
     "sex": "Sex",
     "county": "County",
     "state": "State"
@@ -778,5 +778,14 @@
       "description": "Percentage of population that is American Indian or Alaska Native.",
       "unit": "Proportion"
     }
+  },
+  "races": {
+    "Hispanic": {"formatted": "Hispanic"},
+    "Non-Hispanic American Indian or Alaska Native": {"formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)"},
+    "Non-Hispanic Black or African American": {"formatted": "Black or \nAfrican American \n (Non-Hispanic)"},
+    "Non-Hispanic More than one race": {"formatted": "More than one race \n (Non-Hispanic)"},
+    "Non-Hispanic Native Hawaiian or Other Pacific Islander": {"formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)"},
+    "Non-Hispanic White": {"formatted": "White \n (Non-Hispanic)"},
+    "Non-Hispanic Asian": {"formatted": "Asian \n (Non-Hispanic)"}
   }
 }

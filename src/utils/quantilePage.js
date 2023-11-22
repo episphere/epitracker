@@ -38,7 +38,7 @@ const INITIAL_STATE = {
 }
 
 let state, dataManager
-let elements, choices, staticData 
+let elements, choices, staticData, names
 
 export function init() {
   toggleLoading(true)
@@ -168,7 +168,8 @@ function initializeState() {
 // =================================
 
 function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
-  staticData.nameMappings = nameMappings
+  names = nameMappings
+  names = nameMappings
   staticData.quantileDetails = quantileDetails
 
   // Initialise the input state from the data
@@ -234,7 +235,7 @@ function plotConfigUpdated(plotConfig) {
 
   const year = plotConfig.query.year.split("-").at(-1)
 
-  const measureDetails = staticData.nameMappings.quantile_fields[plotConfig.query.quantileField]
+  const measureDetails = names.quantile_fields[plotConfig.query.quantileField]
   const quantileDetails = staticData.quantileDetails[year]["8"][plotConfig.query.quantileField]
   
   const xTicks = quantileDetailsToTicks(quantileDetails)
@@ -253,6 +254,10 @@ function plotConfigUpdated(plotConfig) {
     colorDomainValues = [...new Set(plotConfig.mortalityData.map(colorFunction))] 
     colorDomainValues.sort()
   }
+
+  const formatRace = d => names.races[d]?.formatted
+  const facetTickFormat = plotConfig.query.compareFacet == "race" ? formatRace : d => d
+  const colorTickFormat = plotConfig.query.compareColor == "race" ? formatRace : d => d
   
   plotQuantileScatter(elements.plotContainer, data, {
     valueField: plotConfig.measure,
@@ -262,10 +267,13 @@ function plotConfigUpdated(plotConfig) {
     drawLines: state.showLines, 
     yStartZero: state.startZero,
     xLabel: `${measureDetails.measure} (${measureDetails.unit})`,
-    yLabel: staticData.nameMappings.measures[plotConfig.measure],
+    yLabel: names.measures[plotConfig.measure],
+    facetLabel: names.fields[state.compareFacet],
     xTickFormat: xTickFormat,
     tooltipFields: [plotConfig.query.compareFacet, plotConfig.query.compareColor].filter(d => d != "none"),
-    colorDomain: colorDomainValues
+    colorDomain: colorDomainValues,
+    facetTickFormat,
+    colorTickFormat
   })
 
   updateGraphTitle()
@@ -287,7 +295,9 @@ function updateLegend(data, query) {
     let selectedValues = colorDomainValues.filter(d => checkedValueSet.has(d))
     if (selectedValues.length == 0) selectedValues = colorDomainValues
 
-    const legend = checkableLegend(colorDomainValues, d3.schemeTableau10, selectedValues)
+    const formatRace = d => names.races[d]?.formatted
+    const colorTickFormat = query.compareColor == "race" ? formatRace : d => d
+    const legend = checkableLegend(colorDomainValues, d3.schemeTableau10, selectedValues, colorTickFormat)
     legendContainer.appendChild(legend)
 
     legend.addEventListener("change", () => {
@@ -436,7 +446,10 @@ function toggleLoading(loading, soft=false) {
 }
 
 function updateGraphTitle() {
-  let compareString = [state.compareColor, state.compareFacet].filter(d => d != "none").join(" and ")
+  let compareString = [state.compareColor, state.compareFacet]
+    .filter(d => d != "none")
+    .map(d => names.fields[d].toLowerCase())
+    .join(" and ")
   if (compareString != "") {
     compareString = "</br> Stratified by " + compareString
   }
@@ -444,8 +457,8 @@ function updateGraphTitle() {
   const selects = [
     {name: "Year", value: state.year},
     {name: "Cause of death", value: formatCauseName(state.cause)}, 
-    {name: "Sex", value: state.sex, exclude: compareSet.has("sex")},
-    {name: "Race", value: state.race, exclude: compareSet.has("race")}
+    {name: names.fields.sex, value: state.sex, exclude: compareSet.has("sex")},
+    {name: names.fields.race, value: state.race, exclude: compareSet.has("race")}
   ]
   const selectsString = selects
     .filter(d => !d.exclude)
@@ -453,9 +466,9 @@ function updateGraphTitle() {
     .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp")
 
 
-  //const title = `${staticData.nameMappings.measures[state.measure]} ${compareString}. </br> ${selectsString}`
-  const quantileMeasure = staticData.nameMappings["quantile_fields"][state.quantileField].measure
-  let measureName = staticData.nameMappings.measures[state.measure].toLowerCase()
+  //const title = `${names.measures[state.measure]} ${compareString}. </br> ${selectsString}`
+  const quantileMeasure = names["quantile_fields"][state.quantileField].measure
+  let measureName = names.measures[state.measure].toLowerCase()
   measureName = measureName[0].toUpperCase() + measureName.slice(1)
   const title = `${measureName} by octile of US county characteristic: ${quantileMeasure.toLowerCase()}${compareString}  </br> ${selectsString}`
   elements.graphTitle.innerHTML = title
