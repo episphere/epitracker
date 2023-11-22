@@ -66,7 +66,7 @@ export function plotQuantileScatter(container, data, options={}) {
     width: 820,
     height: 640,
     style: {fontSize: "14px"},
-    //color: colorOpt,
+    color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
     marginLeft: 80,
