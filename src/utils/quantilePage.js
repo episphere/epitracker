@@ -143,16 +143,16 @@ function initializeState() {
     {id: "#select-compare-facet", propertyName: "compareFacet"},
     {id: "#select-select-race", propertyName: "race"},
     {id: "#select-select-sex", propertyName: "sex"},
-    {id: "#select-select-cause", propertyName: "cause"},
+    {id: "#select-select-cause", propertyName: "cause", searchable: true},
     {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},
     {id: "#select-measure", propertyName: "measure"},
-    {id: "#select-quantile-field", propertyName: "quantileField", searchEnabled: true},
+    {id: "#select-quantile-field", propertyName: "quantileField", searchable: true},
     {id: "#select-quantile-number", propertyName: "quantileNumber"},
   ]) {
     const sorter = createOptionSorter(["All", "None"], inputSelectConfig.propertyName == "year" ? ["2018-2020"] : [])
 
     choices[inputSelectConfig.id] = hookSelectChoices(inputSelectConfig.id, state, 
-      inputSelectConfig.propertyName, inputSelectConfig.propertyName + "Options", d => d, inputSelectConfig.searchEnabled, sorter)
+      inputSelectConfig.propertyName, inputSelectConfig.propertyName + "Options", d => d, inputSelectConfig.searchable, sorter)
   }
 
   hookCheckbox("#check-show-lines", state, "showLines")
