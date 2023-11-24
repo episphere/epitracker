@@ -14,8 +14,6 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   options = { 
     drawBorders: true,
-    scheme: "RdYlBu",
-    color: {},
     ...restOptions
   }
 
@@ -25,12 +23,17 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
   const spatialDataMap = d3.index(spatialData, d => d[options.indexField])
 
-  const reverse = true
-  const mean = d3.mean(spatialData, (d) => d[options.measureField])
-  const extent = d3.extent(spatialData, (d) => d[options.measureField])
-  const maxSide = Math.max(mean-extent[0], extent[1]-mean)
-  const colorScale = d3.scaleSequential(d3["interpolate"+options.scheme])
-    .domain(reverse ? [mean+maxSide, mean-maxSide] : [mean-maxSide, mean+maxSide])
+  let color = options.color 
+  if (!color) {
+    color.pivot = d3.mean(spatialData, (d) => d[options.measureField])
+    color.domain = d3.extent(spatialData, (d) => d[options.measureField])
+    color.reverse = true
+    color.scheme = "RdYlBu"
+  }
+
+  const maxSide = Math.max(color.pivot-color.domain[0], color.domain[1]-color.pivot)
+  const colorScale = d3.scaleSequential(d3["interpolate"+color.scheme])
+    .domain(color.reverse ? [color.pivot+maxSide, color.pivot-maxSide] : [color.pivot-maxSide, color.pivot+maxSide])
   // const color = {
   //   scheme: options.scheme,
   //   pivot: meanValue,
@@ -74,19 +77,19 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
   if (options.height) plotOptions.height = options.height
 
 
-  const colorLegend = colorRampLegendMeanDiverge(
-    spatialData.map((d) => d[options.measureField]), 
-    options.scheme, options.colorLegendLabel, null, true)
-  if (colorLegend) {
-    colorLegend.style.position = "relative"
-    colorLegend.style.zIndex = 100
-  }
+  // const colorLegend = colorRampLegendMeanDiverge(
+  //   spatialData.map((d) => d[options.measureField]), 
+  //   options.scheme, options.colorLegendLabel, null, true)
+  // if (colorLegend) {
+  //   colorLegend.style.position = "relative"
+  //   colorLegend.style.zIndex = 100
+  // }
 
   const figure = document.createElement("figure")
   const plot = Plot.plot(plotOptions)
   const plotWrapper = document.createElement("svg")
   plotWrapper.appendChild(plot)
-  colorLegend && figure.appendChild(colorLegend)
+  //colorLegend && figure.appendChild(colorLegend)
   figure.appendChild(plotWrapper)
   figure.style.overflow = 'hidden'
   plot.style.maxWidth = 'initial'
@@ -105,7 +108,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
           .attr("id", (d,i) => "area-"+options.overlayFeatureCollection.features[d].id)
   }
 
-  return {figure,plot,plotWrapper,colorLegend}
+  return {figure,plot,plotWrapper}
 }
 
 export function plotMortalityMapGrid(container, legendContainer, mortalityData, mainFeatureCollection, options={}) {
@@ -232,7 +235,7 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
         scheme: options.scheme,
         overlayFeatureCollection: options.overlayFeatureCollection,
         width: mapWidth,
-        color: {pivot:mean, domain}
+        color: {pivot:mean, domain, scheme: options.scheme, reverse: true}
       }
     );
 
