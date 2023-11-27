@@ -384,7 +384,7 @@ function addGroupDownloadButton() {
     }},
     {label: "Download data (TSV)", listener: () => downloadMortalityData(state.mortalityData, baseFilename, "tsv")},
     {label: "Download data (JSON)", listener: () => downloadMortalityData(state.mortalityData, baseFilename,  "json")},
-    {label: "Download map (PNG)", listener:  downloadMapGrid},
+    {label: "Download maps (PNG)", listener:  downloadMapGrid},
   ])
   groupDownloadContainer.appendChild(downloadButton)
 }

@@ -563,7 +563,7 @@ function addIndividualDownloadButton(element, config) {
     {label: "Download data (CSV)", listener: () => downloadMortalityData(config.data, baseFilename, "csv")},
     {label: "Download data (TSV)", listener: () => downloadMortalityData(config.data, baseFilename, "tsv")},
     {label: "Download data (JSON)", listener: () => downloadMortalityData(config.data, baseFilename, "json")},
-    {label: "Download maps (PNG)", listener: () => downloadMap(element)},
+    {label: "Download map (PNG)", listener: () => downloadMap(element)},
   ])
   buttonElement.style.position = "absolute"
   buttonElement.style.top = "5px"
