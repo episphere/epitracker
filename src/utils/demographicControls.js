@@ -1,17 +1,24 @@
 import { hookSelect } from "./input.js"
 
-
 export const COMPARABLE_FIELDS = ["none", "sex", "race"]
 export const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 
-function initSearchSelectInputs(selectInputQueries = []) {
+function initSearchSelectInputs(selectInputQueries = [], state) {
+  state.choicesInstances = {}
   selectInputQueries.forEach(({key, options}) => {
-    $(key).select2(options);
+    const choicesInstance = new Choices(key, {
+      ...options,
+      searchEnabled: true, // Enable search functionality
+      searchResultLimit: 4,
+      itemSelectText: ''
+      // renderChoiceLimit: 6
+    })
+    state.choicesInstances[key.replace('#', '')] = choicesInstance
   })
 }
 
 export function hookDemographicInputs(state, searchSelectInputQueries) {
-  initSearchSelectInputs(searchSelectInputQueries)
+  initSearchSelectInputs(searchSelectInputQueries, state)
   state.defineDynamicProperty("comparePrimaryOptions", COMPARABLE_FIELDS)
 
   state.defineDynamicProperty("comparePrimary", null)
@@ -21,12 +28,14 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
   state.defineDynamicProperty("selectRace", "All")
   state.defineDynamicProperty("selectSex", "All")  
 
+  console.log('SAHAR: ', );
+
   hookSelect("#comparePrimarySelect", state, "comparePrimaryOptions", "comparePrimary")
   hookSelect("#compareSecondarySelect", state, "compareSecondaryOptions", "compareSecondary")
-  hookSelect("#yearSelectSelect", state, "selectYearOptions", "selectYear", true)
-  hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause", true)
+  hookSelect("#yearSelectSelect", state, "selectYearOptions", "selectYear")
   hookSelect("#sexSelectSelect", state, "selectSexOptions", "selectSex")
   hookSelect("#raceSelectSelect", state, "selectRaceOptions", "selectRace")
+  hookSelect("#causeSelectSelect", state, "selectCauseOptions", "selectCause", true)
 
   state.addListener(() => {
     state.compareSecondaryOptions = unique(["none", ...COMPARABLE_FIELDS.filter(d => d != state.comparePrimary)])
