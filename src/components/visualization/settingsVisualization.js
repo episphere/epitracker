@@ -19,8 +19,8 @@ const SETTINGS_CONTENTS = {
 function getGraphType() {
   return `
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="showLinesCheck">
-      <label class="form-check-label" for="showLinesCheck">
+      <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
+      <label class="form-check-label" for="check-show-lines">
         Show Lines
       </label>
     </div>
@@ -53,8 +53,8 @@ function getShowHideOutline() {
 function getColorScheme() {
   return `
   <div>
-  <label for="schemeSelect">Color Scheme</label>
-  <select id="schemeSelect" class="form-select mb-2" aria-label="Scheme select" disabled>
+  <label for="select-scheme">Color Scheme</label>
+  <select id="select-scheme" class="form-select mb-2" aria-label="Scheme select" disabled>
     <option hidden >Awaiting data...</option>
   </select>
   </div>
@@ -64,8 +64,8 @@ function getColorScheme() {
 function getStartZero() {
   return `
     <div class="form-check">
-      <input checked class="form-check-input" type="checkbox" value="" id="startZeroCheck">
-      <label class="form-check-label" for="startZeroCheck">
+      <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
+      <label class="form-check-label" for="check-start-zero">
         Start Y at 0
       </label>
     </div>

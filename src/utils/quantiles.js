@@ -5,27 +5,26 @@ import { hookDemographicInputs, syncDataDependentInputs, COMPARABLE_FIELDS, SELE
 import {paginationHandler, dataPagination} from '../components/pagination.js'
 import {renderTable} from '../components/table.js'
 import {downloadGraph, downloadFiles} from './download.js'
-import { toggleSidebar, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
+import { initSidebar, sort, addPopperTooltip, addProximityHover, capitalizeFirstWord } from "./helper.js"
 import { checkableLegend } from "./checkableLegend.js"
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import { sort } from "../shared.js"
 
 
 // ===== Global stuff =====
 
 // Static
-const YEARS = ["2018", "2019", "2020"]
+const YEARS = ["2018", "2019", "2020", "2018-2020"]
 const SEARCH_SELECT_INPUT_QUERIES = [
   {
     key: '#causeSelectSelect',
     options: {
-      sorter: sort
+      sorter: (items) => sort(items, 'text')
     }
   },
   {
     key: '#quantileFieldSelect',
     options: {
-      sorter: sort
+      sorter: (items) => sort(items, 'text')
     }
   }
 ]
@@ -50,11 +49,6 @@ export async function start() {
     graphCallback: null,
   }
 
-  state.downloadGraphSVGRef = {
-    graphButton: null, 
-    graphCallback: null,
-  }
-
   update()
 
   state.addListener(() => {
@@ -74,18 +68,9 @@ export async function start() {
   }, "comparePrimary", "compareSecondary", "selectCause", "selectSex", "selectRace", 
         "measure", "quantileField", "quantileNum")
 
-  state.addListener(() => {
-    updateQuantileHeaderTitle()
-}, "selectCause", "selectSex", "selectYear", 'selectRace')
-
-state.addListener(() => {
-  const raceTitleElement = document.getElementById('race-title')
-  const sexTitleElement = document.getElementById('sex-title')
-  raceTitleElement.style.display = state.comparePrimary === 'race' ? 'none' : 'inline-block'
-  sexTitleElement.style.display = state.comparePrimary === 'sex' ? 'none' : 'inline-block'
-
-  console.log({aaa: state.comparePrimary});
-}, "comparePrimary")
+//   state.addListener(() => {
+//     updateQuantileTitle()
+// }, "quantileField")
 
   state.addListener(() => {
     updateQuantilePlot()
@@ -93,7 +78,7 @@ state.addListener(() => {
 
   state.comparePrimary = "race"
 
-  toggleSidebar()
+  initSidebar()
 
 }
 
@@ -121,15 +106,11 @@ function hookInputs() {
  
    state.defineDynamicProperty("plotMode", "graph")
    state.addListener(() => {
-    const downloadGraphPNGButton = document.getElementById("downloadGraph")
-    const downloadGraphSVGButton = document.getElementById("download-graph-svg")
      if (state.plotMode == "graph") {
        tableNavLink.classList.remove("active")
        graphNavLink.classList.add("active")
        document.getElementById("graph-container").style.display = "grid"
        document.getElementById("table-container").style.display = "none"
-       downloadGraphPNGButton.style.display = "block"
-       downloadGraphSVGButton.style.display = "block"
  
        if (state.deferPlotFunction) {
          state.deferPlotFunction()
@@ -140,8 +121,6 @@ function hookInputs() {
        tableNavLink.classList.add("active")
        document.getElementById("graph-container").style.display = "none"
        document.getElementById("table-container").style.display = "block"
-       downloadGraphPNGButton.style.display = "none"
-       downloadGraphSVGButton.style.display = "none"
      }
    }, "plotMode")
  
@@ -201,14 +180,7 @@ function updateLegend() {
     if (state.displayColorValues.length == 0) {
       state.displayColorValues = colorValues
     }
-    const labelFormat = (d) => {
-      if (d.startsWith("Non-Hispanic")) {
-        return d.replace("Non-Hispanic ", "") + "\n(Non-Hispanic)"
-      } else {
-        return d
-      }
-    }
-    const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues, labelFormat)
+    const legend = checkableLegend(colorValues, d3.schemeTableau10, state.displayColorValues)
     legendContainer.appendChild(legend)
 
     legend.addEventListener("change", () => {
@@ -305,7 +277,6 @@ async function loadData(year) {
 
   // TODO: These should be merged and call mapStateAndCounty function
   data.forEach(row => measureOptions.forEach(measure => row[measure.name] = parseFloat(row[measure.name])))
-  data.forEach(row => ["deaths", "population"].forEach(field => row[field] = parseInt(row[field])))
   data.forEach(row => {
     for (const measure of measureOptions) {
       const se = row[measure.name] / Math.sqrt(row.deaths)
@@ -334,16 +305,12 @@ async function initialDataLoad() {
   //  Update the input state 
   state.measureOptions = state.conceptMappings.measureOptions
   const quantileFieldOptions = unique(quantileDetails, d => d.field)
-  state.quantileFieldOptions = quantileFieldOptions.map(item => ({
-    text: `${capitalizeFirstWord(item.replaceAll('_', ' '))}`,
-    value: `${capitalizeFirstWord(item.replaceAll('_', ' '))}`
-  }))
+  state.quantileFieldOptions = quantileFieldOptions.map(item => `${capitalizeFirstWord(item.replaceAll('_', ' '))}`)
   state.quantileNumOptions = unique(quantileDetails, d => String(d.n))
   state.selectYearOptions = YEARS
   
   queryData()
   syncDataDependentInputs(state)
-  updateQuantileHeaderTitle()
   // updateQuantileTitle()
   //toggleInputActivation(true)
   state.inputsActive = true 
@@ -389,32 +356,18 @@ const removeDownloadGraphEventListeners = () => {
   if (state.downloadGraphRef.graphButton) {
     state.downloadGraphRef.graphButton.removeEventListener('click', state.downloadGraphRef.graphCallback)
   }
-
-  if (state.downloadGraphSVGRef.graphButton) {
-    state.downloadGraphSVGRef.graphButton.removeEventListener('click', state.downloadGraphSVGRef.graphCallback)
-  }
 }
 
 function downloadQuantileGraphs() {
   removeDownloadGraphEventListeners()
-  const downloadGraphPNGFunction = () => downloadGraph('graph-container', 'quantile', 'png')
-  const downloadGraphSVGFunction = () => downloadGraph('plot-quantiles', 'quantile', 'svg')
+  const downloadGraphFunction = () => downloadGraph('plot-quantiles', 'quantile')
   const downloadGraphButton = document.getElementById(
     "downloadGraph"
   );
-  const downloadGraphSVGButton = document.getElementById(
-    "download-graph-svg"
-  );
   if (downloadGraphButton) {
-    downloadGraphButton.addEventListener("click", downloadGraphPNGFunction);
+    downloadGraphButton.addEventListener("click", downloadGraphFunction);
     state.downloadGraphRef.graphButton = downloadGraphButton
-    state.downloadGraphRef.graphCallback = downloadGraphPNGFunction
-  }
-
-  if (downloadGraphSVGButton) {
-    downloadGraphSVGButton.addEventListener("click", downloadGraphSVGFunction);
-    state.downloadGraphSVGRef.graphButton = downloadGraphSVGButton
-    state.downloadGraphSVGRef.graphCallback = downloadGraphSVGFunction
+    state.downloadGraphRef.graphCallback = downloadGraphFunction
   }
 }
 
@@ -454,18 +407,4 @@ function updateQuantileTitle() {
   const {quantileField} = state.properties
   const key = quantileField.replaceAll(' ', '_').toLowerCase()
   return quantile_fields[key].description
-}
-
-function updateQuantileHeaderTitle() {
-  if (!state?.properties) return;
-
-  const quantileSelectionElements = document.querySelectorAll("[data-quantile-item]");
-  console.log('sssss', {quantileSelectionElements});
-  quantileSelectionElements?.forEach((element) => {
-    const { quantileItem, optionsKey } = element.dataset;
-    let quantileItemValue = state.properties[quantileItem];
-    console.log({quantileItem, quantileItemValue, optionsKey, state});
-
-    element.innerHTML = quantileItemValue;
-  });
 }

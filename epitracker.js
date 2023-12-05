@@ -7,12 +7,14 @@ import { aboutepitracker, renderOverView } from "./src/pages/about.js";
 import { footerTemplate } from "./src/components/footer.js";
 import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
 import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
-import { renderDemographicVisualizationPage } from "./src/pages/demographicVisualization.js"
 import { InstructionPage } from "./src/pages/instruction.js"
 import { dictionaryPage } from "./src/pages/dictionarypage.js"
-import {start as startQuantilePage} from "./src/utils/quantiles.js"
-import {start as startMapPage} from "./src/utils/map.js"
-import {start as startDemographicVisualizationPage} from "./src/utils/demographic.js"
+
+
+import {init as startQuantilePage} from "./src/utils/quantilePage.js"
+//import {start as startMapPage} from "./src/utils/map.js"
+import {init as startMapPage} from "./src/utils/mapPage.js"
+
 
 export const epitracker = async () => {
   if(window.navigator && navigator.serviceWorker) {
@@ -73,21 +75,11 @@ const manageRouter = async () => {
     startMapPage()
     //loadMapData().then(mapDataLoaded)
   } 
-  else if (hash === "#visualization/Demographic Visualization") {
-    const element = document.getElementById("Demographic Visualization");
-    if (!element) return;
-    if (element.classList.contains("navbar-active")) return;
-    document.title = "Demographic-Visualization";
-    assignNavbarActive(element);
-    epitrackerDiv.innerHTML = renderDemographicVisualizationPage()
-    startDemographicVisualizationPage()
-    //loadMapData().then(mapDataLoaded)
-  } 
 else if (hash === "#instruction") {
   const element = document.getElementById("instructionPage");
   if (!element) return;
   if (element.classList.contains("navbar-active")) return;
-  document.title = "instruction";
+  document.title = "map-visualization";
   assignNavbarActive(element);
   epitrackerDiv.innerHTML = InstructionPage ();
 }
@@ -95,7 +87,7 @@ else if (hash === "#dictionarypage") {
   const element = document.getElementById("dictionaryPage");
   if (!element) return;
   if (element.classList.contains("navbar-active")) return;
-  document.title = "dictionary-page";
+  document.title = "map-visualization";
   assignNavbarActive(element);
   epitrackerDiv.innerHTML = dictionaryPage();
   

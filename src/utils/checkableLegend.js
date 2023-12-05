@@ -68,6 +68,7 @@ function legendCheck(color, label, checked=true, size=25) {
     .style("pointer-events", "none")
 
   const div = document.createElement("div")
+  div.className = "legend-check"
   if (checked) {
     div.setAttribute("checked", "")
   } else {
