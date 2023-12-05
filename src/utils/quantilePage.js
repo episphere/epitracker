@@ -232,7 +232,7 @@ async function queryUpdated(query) {
 }
 
 function plotConfigUpdated(plotConfig) {
-
+  console.log('plotConfigUpdated', {plotConfig: plotConfig, state});
   const year = plotConfig.query.year.split("-").at(-1)
 
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField]
@@ -258,23 +258,29 @@ function plotConfigUpdated(plotConfig) {
   const formatRace = d => names.races[d]?.formatted
   const facetTickFormat = plotConfig.query.compareFacet == "race" ? formatRace : d => d
   const colorTickFormat = plotConfig.query.compareColor == "race" ? formatRace : d => d
-  
-  plotQuantileScatter(elements.plotContainer, data, {
-    valueField: plotConfig.measure,
-    facet: plotConfig.query.compareFacet != "none" ? plotConfig.query.compareFacet : null,
-    intervalFields: [plotConfig.measure+"_low", plotConfig.measure+"_high"],
-    color: colorFunction,
-    drawLines: state.showLines, 
-    yStartZero: state.startZero,
-    xLabel: `${measureDetails.measure} (${measureDetails.unit})`,
-    yLabel: names.measures[plotConfig.measure],
-    facetLabel: names.fields[state.compareFacet],
-    xTickFormat: xTickFormat,
-    tooltipFields: [plotConfig.query.compareFacet, plotConfig.query.compareColor].filter(d => d != "none"),
-    colorDomain: colorDomainValues,
-    facetTickFormat,
-    colorTickFormat
-  })
+
+  const isActiveTable = elements.tableNavLink.classList.contains('active')
+
+  if (isActiveTable) {
+    plotTable()
+  } else {
+    plotQuantileScatter(elements.plotContainer, data, {
+      valueField: plotConfig.measure,
+      facet: plotConfig.query.compareFacet != "none" ? plotConfig.query.compareFacet : null,
+      intervalFields: [plotConfig.measure+"_low", plotConfig.measure+"_high"],
+      color: colorFunction,
+      drawLines: state.showLines, 
+      yStartZero: state.startZero,
+      xLabel: `${measureDetails.measure} (${measureDetails.unit})`,
+      yLabel: names.measures[plotConfig.measure],
+      facetLabel: names.fields[state.compareFacet],
+      xTickFormat: xTickFormat,
+      tooltipFields: [plotConfig.query.compareFacet, plotConfig.query.compareColor].filter(d => d != "none"),
+      colorDomain: colorDomainValues,
+      facetTickFormat,
+      colorTickFormat
+    })
+  }
 
   updateGraphTitle()
   toggleLoading(false)
@@ -427,6 +433,7 @@ function setInputsEnabled(enabled) {
 
 function plotTable() {
   elements.tableContainer.innerHTML = ``
+  console.log('plotTable', {mortalityData: state.mortalityData});
   
   new DataTable(elements.tableContainer, {
     data: dataToTableData(state.mortalityData),

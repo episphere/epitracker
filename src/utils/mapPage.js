@@ -312,16 +312,22 @@ function plotConfigUpdated(plotConfig) {
     elements.colorLegend.innerHTML = ""
     elements.groupDownloadButton.setAttribute("disabled", "")
   } else {
-    plotMortalityMapGrid(elements.mapGrid, legendContainer, plotConfig.mortalityData, primaryGeoJSON, {
-      overlayFeatureCollection: overlayGeoJSON,
-      rowField: plotConfig.query.compareRow,
-      columnField: plotConfig.query.compareColumn,
-      level: plotConfig.query.spatialLevel,
-      measureField: plotConfig.measure,
-      measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
-      scheme: plotConfig.scheme,
-      featureNameFormat,
-    })
+    const isActiveTable = elements.tableNavLink.classList.contains('active')
+    if (isActiveTable) {
+      plotTable()
+    } else {
+      plotMortalityMapGrid(elements.mapGrid, legendContainer, plotConfig.mortalityData, primaryGeoJSON, {
+        overlayFeatureCollection: overlayGeoJSON,
+        rowField: plotConfig.query.compareRow,
+        columnField: plotConfig.query.compareColumn,
+        level: plotConfig.query.spatialLevel,
+        measureField: plotConfig.measure,
+        measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
+        scheme: plotConfig.scheme,
+        featureNameFormat,
+      })
+    }
+    
     elements.groupDownloadButton.removeAttribute("disabled")
   }
 
