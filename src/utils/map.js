@@ -59,7 +59,6 @@ const SEARCH_SELECT_INPUT_QUERIES = [
 
 export async function start() {
   toggleLoading(true);
-
   state = new State();
   state.defineDynamicProperty("data", []);
   state.defineDynamicProperty("mapZoom", 1);
@@ -221,7 +220,6 @@ function update() {
   } else {
     state.deferPlotFunction = plotFunction
   }
-
   plotTable()
 
   // let valuesPrimary = null;
