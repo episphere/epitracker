@@ -115,7 +115,7 @@ export class EpiTrackerData {
 
     let data
     if (!(data = this.dataMemoryMap.get(`mortality-data-${year}`))) {
-      const url = `data/mortality/age_adjusted_data_${year}.csv.zip`
+      const url = `../data/mortality/age_adjusted_data_${year}.csv.zip`
       data = await (await fetch(url)).blob()
 
       if (this.args.keepInMemory == "zipped") {
