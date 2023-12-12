@@ -5,7 +5,7 @@
   <meta name="Description" content="View main goals and collaborating institutions." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Instruction</title>
+  <title>Dictionary</title>
   <meta name="theme-color" content="#cd2f5a" />
   <link type="image/x-icon" rel="shortcut icon" href="../static/images/favicon.ico" />
   <link crossorigin="anonymous" type="text/css" rel="stylesheet"
@@ -40,70 +40,72 @@
 <body>
   <header></header>
 
-<main>
-  <div class="general-bg padding-bottom-1rem">
-    <div class="container body-min-height">
-       <div class="main-summary-row">
-         <div class="align-left">
-           <h1 
-             class="page-header">Epitracker's Dictionary 
-           </h1>
-         </div>
+  <main>
+    <div class="general-bg padding-bottom-1rem">
+      <div class="container body-min-height">
+        <div class="main-summary-row">
+          <div class="align-left">
+            <h1 class="page-header">Epitracker's Dictionary
+            </h1>
+          </div>
+        </div>
+        <div class="data-submission div-border font-size-18" style="padding-left: 1rem; padding-right: 1rem;">
+          The dictionray contains
+        </div>
+        <div class="col-md-10 px-3 position-relative" id="main-content">
+          <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i
+              class="fas fa-lg fa-caret-left"></i></button>
+          <div class="d-flex flex-row-reverse justify-content-between">
+            <div class="ml-auto" id="downloadContainer">
+              <div class="col-md-12 p-0 dropdown">
+                <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
+                  data-bs-toggle="dropdown" id="download-graph-btn" style="color:#000000 !important">
+                  Download Graph <span class="download-icon ms-2"><i class="fas fa-download"
+                      style="color:#000000 !important"></i></span>
+                </button>
+                <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
+                  <div class="position-relative d-flex align-items-center">
+                    <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100"
+                      style="display: none;">
+                      <div class="top-50 start-50 translate-middle position-absolute">
+                        <div class="spinner-border" role="status"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
+            <div class="position-relative d-flex align-items-center">
+              <ul class="navbar-dropdown w-100">
+                <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
+                    id="download-table-csv">CSV</button></li>
+                <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
+                    id="download-table-tsv">TSV</button></li>
+              </ul>
+              <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100"
+                style="display: none;">
+                <div class="top-50 start-50 translate-middle position-absolute">
+                  <div class="spinner-border" role="status"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
     </div>
-       <div class="data-submission div-border font-size-18" style="padding-left: 1rem; padding-right: 1rem;">
-         The dictionray contains 
-       </div>
-   <div class="col-md-10 px-3 position-relative" id="main-content">
-   <button id="sidebar-toggle" class="btn btn-light position-absolute start-0"><i
-       class="fas fa-lg fa-caret-left"></i></button>
-   <div class="d-flex flex-row-reverse justify-content-between">
-     <div class="ml-auto" id="downloadContainer">
-       <div class="col-md-12 p-0 dropdown">
-         <button title="Download" class="transparent-btn form-control dropdown-toggle dropdown-btn" type="button"
-           data-bs-toggle="dropdown" id="download-graph-btn" style="color:#000000 !important">
-           Download Graph <span class="download-icon ms-2"><i class="fas fa-download" style="color:#000000 !important"></i></span>
-         </button>
-         <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
-           <div class="position-relative d-flex align-items-center">
-             <div id="map-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
-               <div class="top-50 start-50 translate-middle position-absolute">
-                 <div class="spinner-border" role="status"></div>
-               </div>
-             </div>
-           </div>
-         </div>  
-       </div>
-     </div>
-   </div>
-   <div class="dropdown-menu overflow-hidden p-0" aria-labelledby="download-graph-btn">
-             <div class="position-relative d-flex align-items-center">
-               <ul class="navbar-dropdown w-100">
-                 <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as csv"
-                     id="download-table-csv">CSV</button></li>
-                 <li><button class="transparent-btn dropdown-item dropdown-menu-links" title="Download table as tsv"
-                     id="download-table-tsv">TSV</button></li>
-               </ul>
-               <div id="table-loading" class="loading-icon position-absolute top-0 start-0 w-100 h-100" style="display: none;">
-                 <div class="top-50 start-50 translate-middle position-absolute">
-                   <div class="spinner-border" role="status"></div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       </div>
-       <div class="ml-auto allow-overflow mr-2" style="margin:1rem 0" id="pages-container"></div>
-     </div>
-     <div class="table-responsive">
-       <table class="table" id="table"></table>
-       <div>
-       </div>
-     </div>
-   </div>
- </div>
-     </div>
-   </div>
-</main>
+    <div class="table-responsive">
+      <table class="table" id="table"></table>
+      <div>
+      </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+  </main>
   <footer></footer>
 
   <script type="module">
@@ -112,8 +114,12 @@
     loadHeaderTemplate()
     loadFooterTemplate()
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+    integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
+    integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
+    crossorigin="anonymous"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>

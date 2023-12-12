@@ -9,13 +9,12 @@ import {
 } from "./demographicControls.js";
 import { getQueryParams, sort } from "../shared.js";
 import { State } from "./DynamicState2.js";
-import { hookInputActivation, hookSelect, hookCheckbox } from "./input.js";
+import { hookInputActivation, hookSelect } from "./input.js";
 import { insertParamsToUrl } from "../shared.js";
-import { addPopperTooltip, addTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
+import { addPopperTooltip, toggleSidebar, downloadStringAsFile } from "./helper.js";
 import { createChoroplethPlot } from "./mapPlots.js";
-import { colorRampLegendMeanDiverge, dataToTableData } from "./helper.js";
-import { downloadHtmlAsImage, downloadHtmlAsSVG } from "./download.js";
-import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
+import { colorRampLegendMeanDiverge } from "./helper.js";
+import { downloadHtmlAsImage } from "./download.js";
 
 
 

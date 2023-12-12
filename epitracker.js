@@ -5,9 +5,6 @@ import {
 } from "./src/shared.js";
 import { aboutepitracker, renderOverView } from "./src/pages/about.js";
 import { footerTemplate } from "./src/components/footer.js";
-import { renderQuantileVisualizationPage } from "./src/pages/quantileVisualization.js"
-import { renderMapVisualizationPage } from "./src/pages/mapVisualization.js"
-import { InstructionPage } from "./src/pages/instruction.js"
 import { dictionaryPage } from "./src/pages/dictionarypage.js"
 
 
@@ -79,7 +76,7 @@ else if (hash === "#instruction") {
   const element = document.getElementById("instructionPage");
   if (!element) return;
   if (element.classList.contains("navbar-active")) return;
-  document.title = "map-visualization";
+  document.title = "instruction-visualization";
   assignNavbarActive(element);
   epitrackerDiv.innerHTML = InstructionPage ();
 }
@@ -87,12 +84,21 @@ else if (hash === "#dictionarypage") {
   const element = document.getElementById("dictionaryPage");
   if (!element) return;
   if (element.classList.contains("navbar-active")) return;
-  document.title = "map-visualization";
+  document.title = "dictionary-visualization";
   assignNavbarActive(element);
   epitrackerDiv.innerHTML = dictionaryPage();
   
 
 }
+else if (hash === "#visualization/demographic") {
+  const element = document.getElementById("demographic-visualization");
+  if (!element) return;
+  if (element.classList.contains("navbar-active")) return;
+  document.title = "demographic-visualization";
+  assignNavbarActive(element);
+  epitrackerDiv.innerHTML = renderQuantileVisualizationPage()
+  startQuantilePage()
+} 
  else window.location.hash = "#home";
 };
 

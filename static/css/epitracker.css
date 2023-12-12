@@ -474,7 +474,6 @@ body {
   flex-wrap: wrap;
   height: inherit;
   display: flex;
-  min-height: 30%;
   width: inherit;
 }
 
