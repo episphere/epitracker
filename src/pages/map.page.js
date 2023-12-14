@@ -239,16 +239,16 @@ function updateURLParam(value, param) {
 async function queryUpdated(query) {
   toggleLoading(true)
 
-  if (query.compareRow == "race" || query.compareColumn == "race") {
-    choices["#select-select-race"].disable()
-  } else {
-    choices["#select-select-race"].enable()
-  }
-  if (query.compareRow == "sex" || query.compareColumn == "sex") {
-    choices["#select-select-sex"].disable()
-  } else {
-    choices["#select-select-sex"].enable()
-  }
+  // if (query.compareRow == "race" || query.compareColumn == "race") {
+  //   choices["#select-select-race"].disable()
+  // } else {
+  //   choices["#select-select-race"].enable()
+  // }
+  // if (query.compareRow == "sex" || query.compareColumn == "sex") {
+  //   choices["#select-select-sex"].disable()
+  // } else {
+  //   choices["#select-select-sex"].enable()
+  // }
 
   if (query.spatialLevel == "state") {
     choices["#select-county"].disable()
