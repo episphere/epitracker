@@ -55,10 +55,6 @@
   color: grey;
 }
 
-body {
-  font-family: "Noto Sans" !important;
-}
-
 #page {
   position: absolute;
   top: 0;
@@ -1938,7 +1934,8 @@ form {
 
 /* Set up fonts, colors and all that jazz. */
 body {
-  background: var(--color-lightest);
+  font-family: "Noto Sans" !important;
+  background: white;
   color: var(--color-gray-medium);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
