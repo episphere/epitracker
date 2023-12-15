@@ -54,7 +54,11 @@ export function plotQuantileScatter(container, data, options={}) {
     }))
   }
   
-  const colorOpt = {colorTickFormat: options.colorTickFormat}
+  const colorOpt = {
+    colorTickFormat: options.colorTickFormat,
+    type: "categorical",
+    scheme: "Tableau10"
+  }
   if (options.colorDomain) {
     colorOpt.domain = options.colorDomain
   }
