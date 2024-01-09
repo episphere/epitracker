@@ -4,131 +4,128 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="Description" content="View main goals and collaborating institutions." />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Demographic</title>
-    <meta name="theme-color" content="#cd2f5a" />
+    <title>Demographics</title>
     <link type="image/x-icon" rel="shortcut icon" href="../static/images/favicon.ico" />
-    <link crossorigin="anonymous" type="text/css" rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@9.0.1/public/assets/styles/choices.min.css" />
     <link href="../static/css/epitracker.css" rel="stylesheet" defer />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
       integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-    <link rel="preconnect" href="https://fonts.gstatic.com/" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet" defer />
-  
-    <link href="../static/css/animations.css" rel="stylesheet" defer />
-    <link href="../static/css/helvetica.css" rel="stylesheet" defer />
-    <link href="../static/css/montserrat.css" rel="stylesheet" defer />
-    <link href="../static/css/notosans.css" rel="stylesheet" defer />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
-      integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
-      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- polyfill.io only loads a Promise polyfill if your browser needs one -->
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Promise"></script>
-  
-    <!-- Latest version of Preview SDK for your locale -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-      integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
-      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" />
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+      <link crossorigin="anonymous" type="text/css" rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
 </head>
 
-<body>
+<body class="vh-100">
   <header></header>
 
-  <main>
-    <div class="container-fluid p-5">
-        <div class="row">
-          <div class="col-md-2"  id="sidebar">
-            <div  class="sticky-top" style="top:50px">
-              <div class="card rounded-1">
-                <div class="card-header">
-                  Demographic Options
-                </div>
-                <div class="card-body">
-                  <h5 class="">Compare</h5>
-        
-                  <label for="comparePrimarySelect">Row</label>
-                  <select id="comparePrimarySelect" class="form-select mb-2" disabled aria-label="Compare Primary">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-        
-                  <label for="compareSecondarySelect">Column</label>
-                  <select id="compareSecondarySelect" class="form-select mb-2" disabled aria-label="Compare Secondary">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-      
-                  <h5 class="pt-3">Select</h5>
-      
-                  <label for="yearSelectSelect">Year</label>
-                  <select id="yearSelectSelect" class="form-select mb-2" disabled aria-label="Year select">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-      
-                  <label for="causeSelectSelect">Cause</label>
-                  <select id="causeSelectSelect" class="form-select mb-2" aria-label="Cause select">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-      
-                  <label for="sexSelectSelect">Sex</label>
-                  <select id="sexSelectSelect" class="form-select mb-2" disabled aria-label="Sex select">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-      
-                  <label for="raceSelectSelect">Race</label>
-                  <select id="raceSelectSelect" class="form-select mb-2" disabled aria-label="Race select">
-                    <option hidden >Awaiting data...</option>
-                  </select>
-                </div>
-              </div>
-      
-              <div class="card rounded-1 mt-3">
-                <div class="card-header">
-                  Other Options
-                </div>
-                <div class="card-body">
-                  <div id="">
-                    <label for="measureSelect">Measure</label>
-                    <select id="measureSelect" class="form-select mb-2" aria-label="Measure select" disabled>
-                      <option hidden >Awaiting data...</option>
-                    </select>
-                    <label for="ageGroupsSelect">Age Groups</label>
-                    <select id="ageGroupsSelect" class="form-select mb-2" aria-label="Level select">
-                      <option hidden >Awaiting data...</option>
-                    </select>
-      
-                    <label for="stateSelectSelect">Search State</label>
-                    <select id="stateSelectSelect" class="form-select mb-2" aria-label="State select">
-                      <option hidden >Awaiting data...</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="card rounded-1 mt-3">
-                <div class="card-header">
-                  Settings
-                </div>
-                <div class="card-body">
-                  <div>
-                    <div>
-                      <label for="select-scheme">Color Scheme</label>
-                      <select id="select-scheme" class="form-select mb-2" aria-label="Scheme select" disabled>
-                        <option hidden>Awaiting data...</option>
-                      </select>
-                    </div>
-                  </div>
+<main>
+  <div class="p-5">
+    <div class="d-flex">
+      <!-- Side bar -->
+      <div class="d-flex">
+        <div id="sidebar">
+          <div class="card rounded-1">
+            <div class="card-header">
+              Main Options
+            </div>
+            <div class="card-body">
+            <h5 class="">Compare</h5>
+              <label for="select-compare-color">Bar by</label>
+              <select id="select-compare-color" class="form-select mb-2" disabled aria-label="Compare Color">
+                <option hidden >Awaiting data...</option>
+              </select>
+  
+              <label for="select-compare-facet">Sub-plot by</label>
+              <select id="select-compare-facet" class="form-select mb-2" disabled aria-label="Compare Sub-plot">
+                <option hidden >Awaiting data...</option>
+              </select>
+  
+              <h5 class="pt-3">Select</h5>
+  
+              <label for="select-select-year">Year</label>
+                <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
+                  <option hidden >Awaiting data...</option>
+              </select>
+  
+              <label for="select-select-cause">Cause</label>
+              <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
+                <option hidden >Awaiting data...</option>
+              </select>
+  
+              <label for="select-select-sex">Sex</label>
+              <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
+                <option hidden >Awaiting data...</option>
+              </select>
+  
+              <label for="select-select-race">Race</label>
+              <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
+                <option hidden >Awaiting data...</option>
+              </select>
+            </div>
+          </div>
+  
+          <div class="card rounded-1 mt-3">
+            <div class="card-header">
+              Other Options
+            </div>
+            <div class="card-body">
+  
+              <label for="select-measure">Measure</label>
+              <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
+                <option hidden >Awaiting data...</option>
+              </select>
+            </div>
+          </div>
+          <div class="card rounded-1 mt-3">
+            <div class="card-header">
+              Settings
+            </div>
+            <div class="card-body">
+              <div>
+                <div class="form-check">
+                  <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
+                  <label class="form-check-label" for="check-start-zero">
+                    Start Y at 0
+                  </label>
                 </div>
               </div>
             </div>
           </div>
-  </main>
+        </div>
+        <div class="ms-1">
+          <button id="sidebar-toggle" class="btn btn-light">
+            <i class="fas fa-lg fa-caret-left"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Main content -->
+      <div class="col pl-0 pr-5 position-relative" id="main-content">
+        <div id="control-bar" class="d-flex justify-content-end ps-2 pb-2">
+          <div class="d-inline-flex align-self-end">
+            <div id="display-mode-control">
+              <ul class="nav nav-pills">
+                <li class="nav-item">
+                  <a id="graph-nav-link" class="nav-link active">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
+                </li>
+              <ul>
+            </div> 
+          </div>
+        </div>
 
+        <div id="plots-container" class="d-flex h-100 border">
+
+        </div>
+      </div>
+    </div>
+</main>
   <footer></footer>
 
   <script type="module">
@@ -137,16 +134,18 @@
     loadHeaderTemplate()
     loadFooterTemplate()
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+  integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
+  integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
+  crossorigin="anonymous"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
-  <!-- <script type="module" src="../src/pages/mapVisualization.js?version=1.0.0.32"></script> -->
-  <script type="module" src="./epitracker.js?version=1.2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
+<!-- <script type="module" src="../src/pages/quantilePage.js?version=2.0"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
 </body>
-
 </html>
 
 
