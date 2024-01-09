@@ -61,9 +61,9 @@ export function createOptionSorter(forceStart=[], forceEnd=[]) {
   const forceEndSet = new Set(forceEnd)
 
   return (a,b) => {
-    if (forceStartSet.has(a.label)) {
+    if (forceStartSet.has(a.label) || forceEndSet.has(b.label)) {
       return -1
-    } else if (forceEndSet.has(a.label)) {
+    } else if (forceEndSet.has(a.label)  || forceStartSet.has(b.label)) {
       return 1
     } else {
       return a.label.localeCompare(b.label)
@@ -378,6 +378,21 @@ export function initSidebar() {
   })
 }
 
+export function initSidebar2() {
+  // TODO: Remove 'ex' prefixes.
+  const button = document.getElementById("ex-sidebar-toggle") 
+  const sidebar = document.getElementById("ex-sidebar")
+
+  button.addEventListener('click', () => {
+    if (sidebar.classList.contains("sidebar-hidden")) {
+      sidebar.classList.remove("sidebar-hidden")
+    } else {
+      sidebar.classList.add("sidebar-hidden")
+    }
+    
+  })
+}
+
 export function sort(items, key) {
   return items.sort((a, b) => {
     const nameA = a[key].toUpperCase();
@@ -403,7 +418,6 @@ export function downloadStringAsFile(content, filename, contentType) {
   a.target = "_blank"
   a.click();
   window.URL.revokeObjectURL(url);
-  console.log("beep")
 }
 
 export function getDictionaryWord(state, word, sub = null) {
@@ -456,7 +470,7 @@ export function createDropdownDownloadButton(compact=true, downloadOptions=[]) {
   const downloadIconContent = document.createElement("i")
   downloadIcon.appendChild(downloadIconContent)
   downloadIconContent.className = "fas fa-download"
-  downloadIconContent.style.setProperty("color", "black", "important")
+  downloadIconContent.style.setProperty("color", "var(--bs-btn-color)", "important")
 
   const downloadSpinner = document.createElement("span")
   downloadSpinner.className = "spinner-border spinner-border-sm"
@@ -513,4 +527,28 @@ export function downloadMortalityData(mortalityData, filename, format) {
     str = JSON.stringify(data, null, 2)
   }
   downloadStringAsFile(str, filename + "." + format, "text/"+format)
+}
+
+export function deepMerge(obj1, obj2) {
+  const result = {...obj1}; 
+
+  for (const key in obj2) {
+    if (obj2.hasOwnProperty(key)) {
+      if (typeof obj2[key] === 'object' && obj1[key] && typeof obj1[key] === 'object') {
+        result[key] = deepMerge(obj1[key], obj2[key]);
+      } else {
+        result[key] = obj2[key];
+      }
+    }
+  }
+
+  return result;
+}
+
+export function formatName(names, field, value, mode="half_short") {
+  const valueNames = names[field]
+  if (!valueNames) return value 
+  let name = valueNames[value]
+  if (typeof name == "object") name = name[mode]
+  return name ? name : value 
 }

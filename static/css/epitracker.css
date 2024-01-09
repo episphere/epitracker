@@ -1097,8 +1097,16 @@
   background-color: #f0f1f7 !important;
 }
 
+#sidebar-toggle {
+  height: 32px;
+}
+
+#sidebar {
+  width: 300px;
+}
+
 .nav-menu-links {
-  text-decoration: none !important;
+  /* text-decoration: none !important; */
   padding: 0.7rem 1rem !important;
   font-weight: bold !important;
 }
@@ -1934,9 +1942,9 @@ form {
 
 /* Set up fonts, colors and all that jazz. */
 body {
-  font-family: "Noto Sans" !important;
+  /* font-family: "Noto Sans" !important; */
   background: white;
-  color: var(--color-gray-medium);
+  /* color: var(--color-gray-medium); */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 18px;
@@ -1944,13 +1952,13 @@ body {
 }
 
 /* Headings use a different font because they’re hipsters. */
-h1,
+/* h1,
 h2,
 h3 {
   color: var(--color-darkest);
   font-size: 110%;
   line-height: 1.1;
-}
+} */
 
 h3 {
   font-size: 100%;
@@ -2594,5 +2602,5 @@ button.previous-btn {
 }
 
 .choices__list--single {
-  padding: 4px 0 !important;
+  padding: 5px 0 !important;
 }

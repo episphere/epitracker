@@ -67,6 +67,7 @@ export function hookSelectChoices(selector, state, valueProperty, optionsPropert
   const choices = new Choices(select, {allowHTML: false, itemSelectText: "", searchEnabled, sorter})
 
   function setOptions() {
+    //console.log(selector, state[optionsProperty])
     if (state[optionsProperty]) {
       const options = state[optionsProperty].map(d => typeof d == "string" ? {label: d, value: d} : d)
       choices.setChoices(options, "value", "label", true)

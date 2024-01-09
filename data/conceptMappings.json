@@ -4,7 +4,8 @@
     "race": "Race/Ethnicity",
     "sex": "Sex",
     "county": "County",
-    "state": "State"
+    "state": "State",
+    "age_group": "Age Group"
   },
   "measures": {
     "crude_rate": "Crude Mortality Rate (per 100,000)",
@@ -779,13 +780,31 @@
       "unit": "Proportion"
     }
   },
-  "races": {
+  "race": {
     "Hispanic": {"formatted": "Hispanic"},
-    "Non-Hispanic American Indian or Alaska Native": {"formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)"},
-    "Non-Hispanic Black or African American": {"formatted": "Black or \nAfrican American \n (Non-Hispanic)"},
-    "Non-Hispanic More than one race": {"formatted": "More than one race \n (Non-Hispanic)"},
-    "Non-Hispanic Native Hawaiian or Other Pacific Islander": {"formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)"},
-    "Non-Hispanic White": {"formatted": "White \n (Non-Hispanic)"},
-    "Non-Hispanic Asian": {"formatted": "Asian \n (Non-Hispanic)"}
+    "Non-Hispanic American Indian or Alaska Native": {
+      "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
+      "half_short": "American Indian or Alaska Native (NH)"
+    },
+    "Non-Hispanic Black or African American": {
+      "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
+      "half_short": "Black or African American (NH)"
+    },
+    "Non-Hispanic More than one race": {
+      "formatted": "More than one race \n (Non-Hispanic)",
+      "half_short": "More than one race (NH)"
+    },
+    "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
+      "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
+      "half_short": "Native Hawaiian or Other Pacific Islander (NH)"
+    },
+    "Non-Hispanic White": {
+      "formatted": "White \n (Non-Hispanic)",
+      "half_short": "White (NH)"
+    },
+    "Non-Hispanic Asian": {
+      "formatted": "Asian \n (Non-Hispanic)",
+      "half_short": "Asian (NH)"
+    }
   }
 }

@@ -1,0 +1,210 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Demographics</title>
+  <link type="image/x-icon" rel="shortcut icon" href="../static/images/favicon.ico" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@9.0.1/public/assets/styles/choices.min.css" />
+ 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="../static/css/epitracker.css" rel="stylesheet" defer  />
+  <link href="../static/css/epitracker-prototype.css" rel="stylesheet"  defer />
+  <link crossorigin="anonymous" type="text/css" rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+</head>
+
+<body>
+  <!-- TODO: Replace with auto header -->
+  <header role="banner">
+   
+    <nav class="navbar navbar-expand-xl navbar-dark" role="navigation" id="epitrackerNav">
+      <div id="logo-container"><img src="../static/images/logo_full_white.png" id="banner-logo" alt="NCI Logo" height="50px"></div>
+      
+      <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" id="navBarBtn"
+          aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggler">
+          <div class="navbar-nav grid" id="navBarOptions">
+            <div class="grid-elements">
+              <a class="nav-link nav-menu-links white-font" rel="noopener" href="/index.html" title="DCEG Home">
+                Home
+              </a>
+            </div>
+            <div class="grid-elements">
+              <a class="nav-link nav-menu-links white-font" href="/about.html">About</a>
+            </div>
+            <div class="grid-elements">
+              <a class="nav-link nav-menu-links white-font" href="/instruction.html">Instruction</a>
+            </div>
+            <div class="grid-elements">
+              <a class="nav-link nav-menu-links white-font" href="/dictionary.html">Dictionary</a>
+            </div>
+            <div class="grid-elements dropdown">
+              <button class="nav-link nav-menu-links dropdown-toggle dropdown-btn white-font" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                Visualization
+              </button>
+              <ul class="dropdown-menu navbar-dropdown">
+                <li>
+                  <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links"
+                    href="/epitracker/visualization/quantile.html" title="Quantile Visualization">Quantile</a>
+                </li>
+                <li>
+                  <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="/epitracker/visualization/map.html"
+                    title="Map Visualization">Map</a>
+                </li>
+                <li>
+                  <a class="dropdown-item nav-link nav-menu-links dropdown-menu-links" href="/epitracker/visualization/demographic.html"
+                    title= "Demographic Visualization">Demographic</a>
+                </li>
+              </ul>
+            </div>
+            <div class="grid-elements">
+              <a class="nav-link nav-menu-links white-font" rel="noopener" target="_blank"
+                href="https://github.com/episphere/epitracker/issues" title="Epitracker github issues">
+                Report issue
+              </a>
+            </div>
+          </div>
+        </div>
+    </nav>
+  </header>
+
+  <div id="ex-dashboard">
+    <div id="ex-sidebar" >
+      <div id="ex-sidebar-toggle">
+        <i class="bi bi-caret-left-fill"></i>
+      </div>
+
+      <div id="ex-sidebar-content" >
+        <h2><i class="bi bi-gear-fill me-2"></i>Configure</h2>
+
+        <div id="ex-sidebar-form"> 
+          <h4 class="mt-2">Compare</h4>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute">Bar by</label>
+            <select class="form-select" disabled id="select-compare-bar">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-compare-facet">Sub-plot by</label>
+            <select id="select-compare-facet" class="form-select disabled" disabled aria-label="Compare Sub-plot">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <h4>Filter</h4>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-year">Year</label>
+            <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-state">US State</label>
+            <select id="select-select-state" class="form-select mb-2" disabled aria-label="US State select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-cause">Cause</label>
+            <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+          
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-sex">Sex</label>
+            <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-race">Race</label>
+            <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-select-age">Age</label>
+            <select id="select-select-age" class="form-select mb-2" disabled aria-label="Age select">
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+          
+          <h4>Other</h4>
+
+          <div class="floating-select">
+            <label class="floating-label position-absolute" for="select-measure">Measure</label>
+            <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
+              <option hidden >Awaiting data...</option>
+            </select>
+          </div>
+
+          <div class="form-check mt-3" style="display: none">
+            <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
+            <label class="form-check-label" for="check-start-zero">
+              Start Y at 0
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ex-content">
+      <div id="ex-topbar">
+        <div id="ex-topbar-content">
+         
+          <div id="display-mode-control">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <a id="graph-nav-link" class="nav-link active"><i class="bi bi-graph-up"></i></a>
+              </li>
+              <li class="nav-item">
+                <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
+              </li>
+            <ul>
+          </div> 
+        </div>
+        <div id="download-container"></div>
+      </div>
+      <div id="ex-plots">
+        <div id="graph-title">Testing the title</div>
+        <div id="bar-container"></div>
+      </div>
+      
+    </div>
+  </div>
+
+
+  <footer></footer>
+
+  <script type="module">
+    import { loadHeaderTemplate, loadFooterTemplate } from "../src/layouts/layout.js";
+    import { initSidebar2 } from "../src/utils/helper.js"
+
+    loadFooterTemplate()
+    initSidebar2()
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+      crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
+      integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
+      crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
+  <script type="module" src="../src/pages/prototypePage.js"></script>
+</body>

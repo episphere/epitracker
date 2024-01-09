@@ -1,0 +1,202 @@
+/* Experiments for placeholder page, TODO: merge with main epitracker.css if approved */
+
+header {
+  position: relative;
+  z-index: 10;
+}
+
+footer {
+  position: relative;
+  z-index: 10;
+}
+
+.nav-menu-links {
+  font-weight: normal !important;
+}
+
+#logo-container {
+  width: 280px;
+  display: flex; 
+  justify-content: center;
+  /* background-color: white; */
+}
+
+#banner-logo {
+  /* background: white; */
+  /* margin: 10px; 
+  margin-left: 30px; */
+  /* padding: 5px; */
+  margin: 13px 0px;
+}
+
+#ex-dashboard {
+  height: calc(100vh - 100px);
+  display: flex; 
+}
+
+#ex-sidebar {
+  border-right: solid 1px var(--bs-border-color);
+  background: #f9fbff;
+  position: relative;
+  box-shadow: 4px 0px 10px 0px rgba(217, 217, 217, 0.8);
+  display: flex;
+  transition: margin 0.4s ease;
+
+}
+
+#ex-sidebar-content {
+  width: 300px;
+  padding: 25px 0px 25px 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+#ex-sidebar-form {
+  overflow-y: auto;
+  padding-right: 15px;
+  position: relative;
+  flex-grow: 1;
+}
+
+#ex-sidebar-toggle {
+  width: 28px; 
+  height: 28px; 
+  border-radius: 50%;
+  color: rgb(129, 140, 149);
+  background-color: rgb(228, 230, 233); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 20px;
+  right: -14px;
+  transition: right 0.4s ease;
+  z-index: 5;
+}
+
+.sidebar-hidden #ex-sidebar-toggle {
+  right: -40px;
+  transform: rotate(180deg);
+}
+
+#ex-sidebar-toggle:hover {
+  background-color: rgb(167, 174, 184); 
+  cursor: pointer;
+}
+
+#ex-sidebar.sidebar-hidden {
+  margin-left: -300px;
+  margin-right: 10px;
+}
+
+#ex-sidebar h2 {
+  font-size: 1.5em;
+  color: var(--color-gray-dark);
+}
+
+#ex-sidebar h4 {
+  font-size: 1.2em;
+  color: var(--color-gray-dark);
+  margin-bottom: 20px;
+}
+
+
+#ex-topbar {
+  display: flex;
+  justify-content: space-between;
+  background: yellow;
+  padding-left: 15px;
+  height: 40px;
+}
+
+#ex-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+}
+
+#ex-topbar {
+  border-bottom: solid 1px var(--bs-border-color);
+  background: #f9fbff;
+  height: 60px;
+  margin-left: -30px;
+  padding-right: 30px;
+}
+
+#ex-topbar-content {
+  display: inline-flex;
+  justify-content: end;
+  align-items: end;
+  padding-left: 60px;
+}
+
+#display-mode-control {
+  bottom: -1px;
+  position: relative;
+}
+
+#ex-plots {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 30px;
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+}
+
+#graph-title {
+  margin-bottom: 20px;
+}
+
+#bar-container {
+  height: calc(100% - 20px)
+  /* margin-top: 10px;
+  margin-bottom: 10px; */
+}
+
+#download-container {
+  display: flex;
+  align-items: center;
+}
+
+.floating-label {
+  transform: translateY(-.8em) translateX(.6em);
+  font-size: .9em;
+  /* background: white; */
+  border-radius: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: grey;
+  position: relative;
+  z-index: 1;
+  text-shadow: 1px 1px white, -1px -1px white;
+
+  /* box-shadow: 4px 0px 10px 0px rgba(217, 217, 217, 0.8); */
+  /* text-shadow: 4px 0px 10px 0px rgba(217, 217, 217, 0.8); */
+}
+
+.floating-select {
+  margin-bottom: 20px;
+  /* overflow-y: clip; */
+}
+
+.choices {
+  margin-bottom: 5px;
+}
+
+.choices__list--dropdown {
+  z-index: 5;
+}
+
+.choices__list--dropdown {
+  display: none;
+}
+
+.choices__list--dropdown.is-active {
+  display: block;
+}
+
+.choices__list--single {
+  margin: 2px 0px;
+}
