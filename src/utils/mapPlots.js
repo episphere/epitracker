@@ -242,6 +242,7 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
 
     mapDiv.appendChild(plot);
     addIndividualDownloadButton(mapDiv, config)
+    addIndividualShowingMapButton(mapDiv, {...config, rowField: options.rowField, columnValue: options.columnField})
     mapsContainer.appendChild(mapDiv)
 
     addChoroplethInteractivity(plot, mapDiv, config.data, mortalityData, options.level, options.measureField, 
@@ -550,6 +551,51 @@ function generateCombinations(arr1, arr2, varName1, varName2) {
   }
 
   return combinations;
+}
+
+// ========================
+// Handle Showing Map button
+// ========================
+
+function addIndividualShowingMapButton(element, config) {
+  if (config.rowField === 'race' && config.columnValue !== 'race') {
+    const buttonElement = document.createElement('button')
+    buttonElement.innerText = `hide`
+    buttonElement.style.position = "absolute"
+    buttonElement.style.top = "5px"
+    buttonElement.style.right = "60px"
+    buttonElement.style.fontSize = "8px"
+    buttonElement.className = 'btn btn-primary'
+    buttonElement.dataset.state = 'show'
+    buttonElement.addEventListener('click', showHideMapOnClick)
+    element.appendChild(buttonElement)
+  }
+}
+
+function showHideMapOnClick({target}) {
+  const {state} = target.dataset
+  const svgElement = target.parentElement.querySelector('svg')
+  const dropdownElement = target.parentElement.querySelector('.dropdown')
+
+  if (state === 'show') {
+    svgElement.style.display = 'none'
+    if (dropdownElement) {
+      dropdownElement.classList.remove('d-flex')
+      dropdownElement.classList.add('d-none')
+      target.style.right = "5px"
+    }
+    target.dataset.state = 'hide'
+    target.innerText = 'show'
+  } else {
+    svgElement.style.display = 'block'
+    if (dropdownElement) {
+      dropdownElement.classList.remove('d-none')
+      dropdownElement.classList.add('d-flex')
+      target.style.right = "60px"
+    }
+    target.dataset.state = 'show'
+    target.innerText = 'hide'
+  }
 }
 
 // ========================

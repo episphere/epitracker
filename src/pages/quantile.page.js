@@ -226,7 +226,7 @@ async function queryUpdated(query) {
   })
 
   state.mortalityData = data 
-  
+
   updateLegend(data, query)
 }
 
@@ -299,7 +299,7 @@ function updateLegend(data, query) {
     const checkedValueSet = new Set(state.legendCheckValues)
     let selectedValues = colorDomainValues.filter(d => checkedValueSet.has(d))
     if (selectedValues.length == 0) selectedValues = colorDomainValues
-
+    
     const formatRace = d => names.races[d]?.formatted
     const colorTickFormat = query.compareColor == "race" ? formatRace : d => d
     const legend = checkableLegend(colorDomainValues, d3.schemeTableau10, selectedValues, colorTickFormat)

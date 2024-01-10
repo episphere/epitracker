@@ -3,6 +3,7 @@
  * @author Lee Mason <masonlk@nih.gov>
  */
 import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
+import { checkableLegend } from "../utils/checkableLegend.js";
 
 import {start} from '../../main.js'
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
@@ -104,8 +105,9 @@ function initializeState() {
 
   state.defineJointProperty("query", 
     ["compareRow", "compareColumn", "cause", "race", "sex", "year", "spatialLevel", "areaState", "areaCounty"])
+  state.defineProperty("legendCheckValues", null, "query")
   state.defineProperty("mortalityData", null, ["query"])
-  state.defineJointProperty("plotConfig", ["mortalityData", "query", "measure", "scheme"])
+  state.defineJointProperty("plotConfig", ["mortalityData", "query", "measure", "scheme", "legendCheckValues"])
 
   for (const param of Object.keys(initialState)) {
     if (state.hasProperty(param)) {
@@ -239,16 +241,16 @@ function updateURLParam(value, param) {
 async function queryUpdated(query) {
   toggleLoading(true)
 
-  // if (query.compareRow == "race" || query.compareColumn == "race") {
-  //   choices["#select-select-race"].disable()
-  // } else {
-  //   choices["#select-select-race"].enable()
-  // }
-  // if (query.compareRow == "sex" || query.compareColumn == "sex") {
-  //   choices["#select-select-sex"].disable()
-  // } else {
-  //   choices["#select-select-sex"].enable()
-  // }
+  if (query.compareRow == "race" || query.compareColumn == "race") {
+    choices["#select-select-race"].disable()
+  } else {
+    choices["#select-select-race"].enable()
+  }
+  if (query.compareRow == "sex" || query.compareColumn == "sex") {
+    choices["#select-select-sex"].disable()
+  } else {
+    choices["#select-select-sex"].enable()
+  }
 
   if (query.spatialLevel == "state") {
     choices["#select-county"].disable()
@@ -276,12 +278,15 @@ async function queryUpdated(query) {
   if (query.compareRow != "none") dataQuery[query.compareRow] = "*"
   if (query.compareColumn != "none") dataQuery[query.compareColumn] = "*"
 
-  let mortalityData = await dataManager.getCountyMortalityData(dataQuery, {includeTotals: false})
-  state.mortalityData = mortalityData//.filter(d => )
+  const data = await dataManager.getCountyMortalityData(dataQuery, {includeTotals: false})
+  state.mortalityData = data//.filter(d => )
+  console.log({data});
+  updateLegend(data, query)
 }
 
 function plotConfigUpdated(plotConfig) {
   toggleLoading(true)
+  console.log('plotConfigUpdated', {plotConfig, state});
 
   let primaryGeoJSON = plotConfig.query.spatialLevel == "county" ? staticData.countyGeoJSON : staticData.stateGeoJSON
   let overlayGeoJSON = plotConfig.query.spatialLevel == "county" ? staticData.stateGeoJSON : null
@@ -311,7 +316,13 @@ function plotConfigUpdated(plotConfig) {
     return name 
   }
 
-  if (plotConfig.mortalityData.length == 0) {
+  let data = plotConfig.mortalityData
+  if (plotConfig.query.compareRow != "none") {
+    const legendCheckSet = new Set(plotConfig.legendCheckValues)
+    data = plotConfig.mortalityData.filter(d => legendCheckSet.has(d[plotConfig.query.compareRow]))
+  }
+
+  if (data.length == 0) {
     elements.mapGrid.innerHTML = "<i> There is no data for this selection. </i>"
     elements.tableContainer.innerHTML = "<i> There is no data for this selection. </i>"
     elements.colorLegend.innerHTML = ""
@@ -321,7 +332,7 @@ function plotConfigUpdated(plotConfig) {
     if (isActiveTable) {
       plotTable()
     } else {
-      plotMortalityMapGrid(elements.mapGrid, legendContainer, plotConfig.mortalityData, primaryGeoJSON, {
+      plotMortalityMapGrid(elements.mapGrid, legendContainer, data, primaryGeoJSON, {
         overlayFeatureCollection: overlayGeoJSON,
         rowField: plotConfig.query.compareRow,
         columnField: plotConfig.query.compareColumn,
@@ -340,7 +351,29 @@ function plotConfigUpdated(plotConfig) {
   updateMapTitle()
   toggleLoading(false)
 }
+function updateLegend(mortalityData, query) {
+  const legendContainer = document.getElementById("map-plot-legend")
+  legendContainer.innerHTML = ``
 
+  if (query.compareRow != "none") {
+    const colorDomainValues = [...new Set(mortalityData.map(d => d[query.compareRow]))].sort()
+    const checkedValueSet = new Set(state.legendCheckValues)
+    let selectedValues = colorDomainValues.filter(d => checkedValueSet.has(d))
+
+    if (selectedValues.length == 0) selectedValues = colorDomainValues
+
+    const formatRace = d => names.races[d]?.formatted
+    const colorTickFormat = query.compareRow == "race" ? formatRace : d => d
+    const legend = checkableLegend(colorDomainValues, d3.schemeTableau10, selectedValues, colorTickFormat)
+    legendContainer.appendChild(legend)
+
+    legend.addEventListener("change", () => {
+      state.legendCheckValues = legend.getValues()
+    })
+
+    state.legendCheckValues = legend.getValues()
+  }
+}
 // =================================
 // Other inputs
 // =================================
@@ -396,7 +429,7 @@ function addGroupDownloadButton() {
     {label: "Download data (TSV)", listener: () => downloadMortalityData(state.mortalityData, baseFilename, "tsv")},
     {label: "Download data (JSON)", listener: () => downloadMortalityData(state.mortalityData, baseFilename,  "json")},
     {label: "Download maps (PNG)", listener:  downloadMapGrid},
-  ])
+      ])
   groupDownloadContainer.appendChild(downloadButton)
 }
 
