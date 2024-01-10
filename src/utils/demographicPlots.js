@@ -49,7 +49,14 @@ function plotBar(data, options={}) {
   const facetLabelBox = facetLabelWidth * Math.sin(Math.PI/4)
 
   const estFacetWidth = Math.max(options.minFacetWidth, nBars * options.minBarWidth)
-  const estPlotWidth = Math.max(nFacets * estFacetWidth, options.maxWidth)
+  let estPlotWidth = Math.max(nFacets * estFacetWidth, options.maxWidth)
+
+  // TODO: Better logic for max bar width
+  let estBarWidth = estPlotWidth / (nBars * nFacets)
+  estBarWidth = Math.min(options.maxBarWidth, estBarWidth)
+  estPlotWidth =  estBarWidth * (nBars * nFacets)
+
+  const plotWidth = estPlotWidth + 50 + labelBox
 
 
   const barOptions = {
@@ -71,7 +78,7 @@ function plotBar(data, options={}) {
     },
     fx: {tickRotate: 45},
     height: 640,
-    width: estPlotWidth,
+    width: plotWidth,
     marginBottom: labelBox,
     marginRight: labelBox,
     marginLeft: 50,
@@ -93,6 +100,12 @@ function plotBar(data, options={}) {
   //plotOptions.x.tickFormat =
 
   const plot = Plot.plot(plotOptions)
-  //plot.style.maxWidth = `${estPlotWidth}px`
+  plot.removeAttribute("viewBox")
+  plot.style.width = `${plotWidth}px`
+  plot.style.maxWidth = `${plotWidth}px`
+  // plot.style.overflowX = `scroll`
+  // plot.style.maxWidth = `100%`
+  // plot.style.boxSizing = "border-box"
+  // plot.style.flex = `0 0 ${estPlotWidth}px`
   return plot
 }
