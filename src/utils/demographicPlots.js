@@ -6,7 +6,7 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
   const containerWidth = container.getBoundingClientRect().width
   const height = container.getBoundingClientRect().height
   options = deepMerge(options, {
-    maxWidth: containerWidth,
+    targetWidth: containerWidth,
     plotOptions: {height,  ...options.plotOptions},
   })
   const plot = plotBar(mortalityData, options)
@@ -19,11 +19,9 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
 function plotBar(data, options={}) {
 
   options = {
-    maxWidth: 640,
-    minWidth: 480,
-    minFacetWidth: 150,
+    targetWidth: 640,
     minBarWidth: 25,
-    maxBarWidth: 80,
+    maxBarWidth: 100,
     yStartZero: true, // TODO: Finish implenting.
     ...options
   }
@@ -43,20 +41,19 @@ function plotBar(data, options={}) {
   const labelWidth = d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH
   const facetLabelWidth = options.compareFacet ? 
     d3.max([...new Set(data.map(d => d[options.compareFacet]))].map(d => facetFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
-
   // Label box size
   const labelBox = labelWidth * Math.sin(Math.PI/4)
   const facetLabelBox = facetLabelWidth * Math.sin(Math.PI/4)
 
-  const estFacetWidth = Math.max(options.minFacetWidth, nBars * options.minBarWidth)
-  let estPlotWidth = Math.max(nFacets * estFacetWidth, options.maxWidth)
-
-  // TODO: Better logic for max bar width
-  let estBarWidth = estPlotWidth / (nBars * nFacets)
-  estBarWidth = Math.min(options.maxBarWidth, estBarWidth)
-  estPlotWidth =  estBarWidth * (nBars * nFacets)
-
-  const plotWidth = estPlotWidth + 50 + labelBox
+  // Estimate the bar width at the target plot width.
+  const marginWidth = labelBox + 50
+  const infoWidth = options.targetWidth - marginWidth
+  const estFacetWidth = infoWidth / nFacets
+  const estBarWidth = estFacetWidth / nBars
+  // Correct the bar width
+  const barWidth = Math.max(Math.min(estBarWidth, options.maxBarWidth), options.minBarWidth)
+  // Calculate the final plot width
+  const plotWidth = barWidth * nBars * nFacets + marginWidth
 
 
   const barOptions = {
@@ -107,5 +104,8 @@ function plotBar(data, options={}) {
   // plot.style.maxWidth = `100%`
   // plot.style.boxSizing = "border-box"
   // plot.style.flex = `0 0 ${estPlotWidth}px`
+
+
+  
   return plot
 }
