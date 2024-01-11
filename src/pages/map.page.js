@@ -119,6 +119,7 @@ function initializeState() {
     {id: "#select-compare-row", propertyName: "compareRow"},
     {id: "#select-compare-column", propertyName: "compareColumn"},
     {id: "#select-select-race", propertyName: "race"},
+    {id: "#multi-select-compare-row", propertyName: "race"},
     {id: "#select-select-sex", propertyName: "sex"},
     {id: "#select-select-cause", propertyName: "cause", searchable: true},
     {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},

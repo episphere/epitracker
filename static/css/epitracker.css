@@ -2599,3 +2599,21 @@ button.previous-btn {
 .choices__list--single {
   padding: 4px 0 !important;
 }
+
+.multi-select-compare-row {
+  margin-right: 10px;
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.multi-select-compare-row .choices {
+  width: 170px !important;
+}
+
+/* #map-plot-legend {
+  position: sticky;
+  top: -30;
+  z-index: 111111;
+  background: #fff;
+} */
