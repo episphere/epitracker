@@ -76,8 +76,9 @@ footer {
 }
 
 .sidebar-hidden #ex-sidebar-toggle {
-  right: -40px;
+  right: -20px;
   transform: rotate(180deg);
+  z-index: 5;
 }
 
 #ex-sidebar-toggle:hover {
@@ -86,8 +87,8 @@ footer {
 }
 
 #ex-sidebar.sidebar-hidden {
-  margin-left: -300px;
-  margin-right: 10px;
+  margin-left: -285px;
+  margin-right: 0px;
 }
 
 #ex-sidebar h2 {
