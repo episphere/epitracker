@@ -26,6 +26,10 @@ const COMPARABLE_FIELDS = ["race", "sex"]
 const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
 const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"]
 const SPATIAL_LEVELS = ["county", "state"]
+const CAUSE_SEX_MAP = {
+  'Breast': 'female', // female, male
+  // 'Colon and Rectum': 'female'
+}
 
 // The default state, shown if no URL params. 
 const INITIAL_STATE = {
@@ -280,9 +284,15 @@ async function queryUpdated(query) {
   if (query.compareColumn != "none") dataQuery[query.compareColumn] = "*"
 
   const data = await dataManager.getCountyMortalityData(dataQuery, {includeTotals: false})
-  state.mortalityData = data//.filter(d => )
-  console.log({data});
-  updateLegend(data, query)
+  if (query.cause !== 'All') {
+    const filteredKey = CAUSE_SEX_MAP[query.cause]
+    state.mortalityData = filteredKey ? data.filter(d => d.sex.toLowerCase() === filteredKey) : data
+  } else {
+    state.mortalityData = data
+  }
+  
+  console.log({data, mortalityData: state.mortalityData});
+  updateLegend(state.mortalityData, query)
 }
 
 function plotConfigUpdated(plotConfig) {
