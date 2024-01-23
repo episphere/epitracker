@@ -8,7 +8,8 @@
   },
   "measures": {
     "crude_rate": "Crude Mortality Rate (per 100,000)",
-    "age_adjusted_rate": "Age-Adjusted Mortality Rate (per 100,000)"
+    "age_adjusted_rate": "Age-Adjusted Mortality Rate (per 100,000)",
+    "population":"Population"
   },
   "colorSchemes": {
     "Blues": "Blues (sequential, single-hue)",

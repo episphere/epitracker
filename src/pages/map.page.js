@@ -24,7 +24,7 @@ window.onload = async () => {
  */
 const COMPARABLE_FIELDS = ["race", "sex"]
 const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
-const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"]
+const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate","population" ]
 const SPATIAL_LEVELS = ["county", "state"]
 const CAUSE_SEX_MAP = {
   'Breast': 'female', // female, male
