@@ -68,7 +68,8 @@ export function hookSelectChoices(selector, state, valueProperty, optionsPropert
 
   function setOptions() {
     if (state[optionsProperty]) {
-      const options = state[optionsProperty].map(d => typeof d == "string" ? {label: d, value: d} : d)
+      let options = state[optionsProperty].map(d => typeof d == "string" ? {label: d, value: d} : d)
+      options = options.map(format)
       choices.setChoices(options, "value", "label", true)
       if (state[valueProperty]) {
         choices.setChoiceByValue([state[valueProperty]])

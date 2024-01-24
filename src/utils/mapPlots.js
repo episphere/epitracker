@@ -113,7 +113,7 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
 export function plotMortalityMapGrid(container, legendContainer, mortalityData, mainFeatureCollection, options={}) {
   const mapsContainer = container
-  console.log('plotMortalityMapGrid', {mortalityData});
+  console.log('plotMortalityMapGrid', {mortalityData, options});
 
   options = {
     overlayFeatureCollection: null,
@@ -271,6 +271,8 @@ function addChoroplethInteractivity(plot, plotContainer, mapData, mapGridData, l
     valueFormat: null,
     ...args 
   }
+
+  console.log({args});
 
   const state = { plotHighlight: null }
   const indexField = level + "_fips";
