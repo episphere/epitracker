@@ -2486,6 +2486,7 @@ button.previous-btn {
 
 #plot-quantiles {
   width: 100%;
+  height: 100%;
 }
 
 /* #maps-container {
@@ -2782,7 +2783,7 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  height: calc(100% - 120px); /* TODO: This is hack-y, fix */
+  height: calc(100% - 180px); /* TODO: This is hack-y, fix */
 }
 
 #plot-container svg {

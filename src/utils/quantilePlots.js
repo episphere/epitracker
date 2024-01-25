@@ -28,6 +28,10 @@ export function plotQuantileScatter(container, data, options={}) {
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
+  //const containerWidth = container.getBoundingClientRect().width
+  const height = container.getBoundingClientRect().height
+  console.log("Height", container.getAttribute("id"), height)
+
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
@@ -81,7 +85,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   const plotOptions = {
     width: sizePerFacet * nFacets,
-    height: 720,
+    height,
     style: {fontSize: "14px"},
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
