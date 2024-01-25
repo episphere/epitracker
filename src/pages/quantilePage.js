@@ -187,6 +187,19 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   state.quantileNumberOptions = QUANTILE_NUMBERS
 
   state.trigger("query")
+
+  let resizeTimeout
+  const resizeObserver = new ResizeObserver(() => {
+    if (resizeTimeout) {
+      clearTimeout(resizeTimeout);
+    }
+    
+    resizeTimeout = setTimeout(() => {
+      state.trigger("plotConfig")
+    }, 25)
+  })
+  resizeObserver.observe(elements.plotContainer)
+
   setInputsEnabled()
 
 }

@@ -19,6 +19,7 @@ export function plotQuantileScatter(container, data, options={}) {
     yStartZero: true,
     facetTickFormat: d => d,
     colorTickFormat: d => d,
+    minHeight: 500,
     ...options 
   }
 
@@ -29,8 +30,7 @@ export function plotQuantileScatter(container, data, options={}) {
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
   //const containerWidth = container.getBoundingClientRect().width
-  const height = container.getBoundingClientRect().height
-  console.log("Height", container.getAttribute("id"), height)
+  const height = Math.max(options.minHeight, container.getBoundingClientRect().height)
 
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {

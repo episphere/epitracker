@@ -2761,7 +2761,7 @@ button.previous-btn {
 #plots {
   flex-grow: 1;
   overflow: auto;
-  padding: 30px 30px 5px 50px;
+  padding: 30px 30px 30px 50px;
   justify-content: center;
   align-items: center;
   flex-direction: column;

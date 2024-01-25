@@ -22,6 +22,7 @@ function plotBar(data, options={}) {
     targetWidth: 640,
     minBarWidth: 25,
     maxBarWidth: 100,
+    minBarHeight: 360,
     yStartZero: true, // TODO: Finish implenting.
     ...options
   }
@@ -94,7 +95,7 @@ function plotBar(data, options={}) {
 
   plotOptions = deepMerge(plotOptions, options.plotOptions)
 
-  //plotOptions.x.tickFormat =
+  plotOptions.height = Math.max(plotOptions.height, options.minBarHeight + labelBox + facetLabelBox)
 
   const plot = Plot.plot(plotOptions)
   plot.removeAttribute("viewBox")
