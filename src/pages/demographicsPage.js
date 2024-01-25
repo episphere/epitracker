@@ -10,7 +10,6 @@ import choices from 'https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm';
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
 import { plotDemographicPlots } from "../utils/demographicPlots.js";
-import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 
 
 window.onload = async () => {
@@ -26,7 +25,7 @@ const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"]
 
 // The default state, shown if no URL params. 
 const INITIAL_STATE = {
-  compareBar: "sex",
+  compareBar: "race",
   compareFacet: "none",
   sex: "All",
   race: "All",
@@ -45,11 +44,14 @@ export function init() {
   state = new State
   dataManager = new EpiTrackerData()
   elements = {
-    barContainer: document.getElementById("bar-container"),
-    sidebar: document.getElementById("ex-sidebar"),
-    title: document.getElementById("graph-title")
+    barContainer: document.getElementById("plot-container"),
+    sidebar: document.getElementById("sidebar"),
+    title: document.getElementById("plot-title")
   }
 
+
+  elements.barContainer.style.height = elements.barContainer.style.maxHeight
+  console.log("Set height", elements.barContainer.style.maxHeight)
   initializeState()
 }
 

@@ -1,6 +1,8 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { checkableLegend } from "./checkableLegend.js";
 import { addPopperTooltip, addProximityHover } from "./helper.js";
+import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
+
 
 export function plotQuantileScatter(container, data, options={}) {
   options = {

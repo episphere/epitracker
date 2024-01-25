@@ -12,6 +12,8 @@ import { plotMortalityMapGrid } from "../utils/mapPlots.js";
 import {  dataToTableData, initSidebar, downloadMortalityData, 
   createDropdownDownloadButton, formatCauseName, createOptionSorter } from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
+import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
+
 
 window.onload = async () => {
   await start();
@@ -122,9 +124,9 @@ function initializeState() {
     {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},
     {id: "#select-measure", propertyName: "measure"},
     {id: "#select-level", propertyName: "spatialLevel"},
-    {id: "#select-state", propertyName: "areaState", searchable: true},
-    {id: "#select-county", propertyName: "areaCounty", searchable: true},
-    {id: "#select-scheme", propertyName: "scheme", searchable: true},
+    {id: "#select-select-state", propertyName: "areaState", searchable: true},
+    {id: "#select-select-county", propertyName: "areaCounty", searchable: true},
+    // {id: "#select-scheme", propertyName: "scheme", searchable: true},
   ]) {
     const sorter = createOptionSorter(["All", "None"], inputSelectConfig.propertyName == "year" ? ["2018-2020"] : [])
 
@@ -151,16 +153,16 @@ export function init() {
   elements.selectRace = document.getElementById("select-select-race")
   elements.mapNavLink = document.getElementById("map-nav-link")
   elements.tableNavLink = document.getElementById("table-nav-link")
-  elements.mapsContainer = document.getElementById("maps-container")
+  elements.mapsContainer = document.getElementById("plot-container")
   elements.mapGrid = document.getElementById("map-grid")
   elements.tableContainer = document.getElementById("table-container")
   elements.colorLegend = document.getElementById("color-legend")
-  elements.mapTitle = document.getElementById("graph-title")
+  elements.mapTitle = document.getElementById("plot-title")
   elements.tableNavLink.addEventListener("click", () => {
     setTimeout(() => changeView("table"), 0)
   })
   elements.mapNavLink.addEventListener("click", () => changeView("plot"))
-  elements.groupDownloadButton =  document.querySelector('#group-download-container button');
+  elements.groupDownloadButton =  document.querySelector('#download-container button');
 
   state.subscribe("query", queryUpdated)
   state.subscribe("plotConfig", plotConfigUpdated)
@@ -177,8 +179,6 @@ export function init() {
     names = nameMappings
     initialDataLoad(mortalityData, stateGeoJSON, countyGeoJSON, nameMappings)
   })
-
-  initSidebar()
 }
 
 // =================================
@@ -251,9 +251,9 @@ async function queryUpdated(query) {
   }
 
   if (query.spatialLevel == "state") {
-    choices["#select-county"].disable()
+    choices["#select-select-county"].disable()
   } else {
-    choices["#select-county"].enable()
+    choices["#select-select-county"].enable()
   }
 
 
@@ -351,12 +351,13 @@ function changeView(view) {
     // TODO: Improve user experience by redrawing only on change. Use deferred drawing model from previous code.
 
   setTimeout(() => {
+    console.log(elements.colorLegend)
     if (view == "plot") {
       elements.tableNavLink.classList.remove("active")
       elements.mapNavLink.classList.add("active")
       elements.mapsContainer.style.display = "block"
       elements.tableContainer.style.display = "none"
-      elements.colorLegend.style.opacity = 1
+      elements.colorLegend.style.display = "block"
 
       state.trigger("plotConfig") // Trigger a redraw so sizing is correct.
     } else if (view == "table") {
@@ -364,7 +365,8 @@ function changeView(view) {
       elements.tableNavLink.classList.add("active")
       elements.mapsContainer.style.display = "none"
       elements.tableContainer.style.display = "block"
-      elements.colorLegend.style.opacity = 0
+      elements.colorLegend.style.display = "none"
+      console.log(elements.colorLegend)
 
       if (state.mortalityData.length > 0) {
         plotTable()
@@ -388,7 +390,7 @@ function addGroupDownloadButton() {
   const baseFilename = "epitracker_spatial"
 
   // TODO: Resume, try callbacks for
-  const groupDownloadContainer = document.getElementById("group-download-container")
+  const groupDownloadContainer = document.getElementById("download-container")
   const downloadButton = createDropdownDownloadButton(false, [
     {label: "Download data (CSV)", listener: (callback) => {
       downloadMortalityData(state.mortalityData, baseFilename, "csv")
@@ -516,9 +518,9 @@ function setInputsEnabled(enabled) {
     "select-select-year", 
     "select-measure",
     "select-level",
-    "select-state",
-    "select-county",
-    "select-scheme",
+    "select-select-state",
+    "select-select-county",
+    // "select-scheme",
   ]) {
     const element = document.getElementById(input)
     if (enabled) {
@@ -534,11 +536,29 @@ function setInputsEnabled(enabled) {
 }
 
 function toggleLoading(loading, soft=false) {
+  // TODO: Reimplement
+
   if (loading) {
-    document.getElementById("plots-container").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("plot-container").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("plot-title").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("color-legend").style.opacity = soft ? "0.5" : "0";
     document.getElementById("loader-container").style.visibility = "visible";
+    document.getElementById("table-container").style.visibility = "hidden"
+
   } else {
-    document.getElementById("plots-container").style.opacity = "1";
+    document.getElementById("plot-container").style.opacity = "1";
+    document.getElementById("plot-title").style.opacity = "1";
+    document.getElementById("color-legend").style.opacity = "1";
     document.getElementById("loader-container").style.visibility = "hidden";
+    document.getElementById("table-container").style.visibility = "visible"
+
   }
+
+  // if (loading) {
+  //   document.getElementById("plots-container").style.opacity = soft ? "0.5" : "0";
+  //   document.getElementById("loader-container").style.visibility = "visible";
+  // } else {
+  //   document.getElementById("plots-container").style.opacity = "1";
+  //   document.getElementById("loader-container").style.visibility = "hidden";
+  // }
 }

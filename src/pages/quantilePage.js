@@ -7,6 +7,8 @@ import { downloadElementAsImage } from "../utils/download.js";
 import { createDropdownDownloadButton, createOptionSorter, dataToTableData, downloadMortalityData, formatCauseName, initSidebar } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import {  plotQuantileScatter } from "../utils/quantilePlots.js";
+import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
+
 
 window.onload = async () => {
     await start();
@@ -56,14 +58,14 @@ export function init() {
   elements.selectRace = document.getElementById("select-select-race")
   elements.graphNavLink = document.getElementById("graph-nav-link")
   elements.tableNavLink = document.getElementById("table-nav-link")
-  elements.graphContainer = document.getElementById("graph-container")
+  elements.graphContainer = document.getElementById("plot-container")
   elements.plotContainer = document.getElementById("plot-quantiles")
   elements.tableContainer = document.getElementById("table-container")
-  elements.colorLegend = document.getElementById("color-legend")
+  elements.plotLegend = document.getElementById("plot-legend")
   elements.tableNavLink.addEventListener("click", () => changeView("table"))
   elements.graphNavLink.addEventListener("click", () => changeView("plot"))
   elements.groupDownloadButton = document.querySelector('#group-download-container button');
-  elements.graphTitle = document.getElementById("graph-title")
+  elements.graphTitle = document.getElementById("plot-title")
 
   Promise.all([
     d3.json("../data/conceptMappings.json"),
@@ -73,7 +75,6 @@ export function init() {
     intitialDataLoad(mortalityData, quantileDetails, nameMappings)
   })
 
-  initSidebar()
 }
 
 function initializeState() {
@@ -168,7 +169,6 @@ function initializeState() {
 
 function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   names = nameMappings
-  names = nameMappings
   staticData.quantileDetails = quantileDetails
 
   // Initialise the input state from the data
@@ -254,7 +254,7 @@ function plotConfigUpdated(plotConfig) {
     colorDomainValues.sort()
   }
 
-  const formatRace = d => names.races[d]?.formatted
+  const formatRace = d => names.race[d]?.formatted
   const facetTickFormat = plotConfig.query.compareFacet == "race" ? formatRace : d => d
   const colorTickFormat = plotConfig.query.compareColor == "race" ? formatRace : d => d
 
@@ -300,7 +300,7 @@ function updateLegend(data, query) {
     let selectedValues = colorDomainValues.filter(d => checkedValueSet.has(d))
     if (selectedValues.length == 0) selectedValues = colorDomainValues
 
-    const formatRace = d => names.races[d]?.formatted
+    const formatRace = d => names.race[d]?.formatted
     const colorTickFormat = query.compareColor == "race" ? formatRace : d => d
     const legend = checkableLegend(colorDomainValues, d3.schemeTableau10, selectedValues, colorTickFormat)
     legendContainer.appendChild(legend)
@@ -321,6 +321,7 @@ function changeView(view) {
     elements.graphNavLink.classList.add("active")
     elements.graphContainer.style.display = "flex"
     elements.tableContainer.style.display = "none"
+    elements.plotLegend.style.display = "block"
 
     state.trigger("plotConfig") // Trigger a redraw so sizing is correct.
   } else if (view == "table") {
@@ -328,6 +329,7 @@ function changeView(view) {
     elements.tableNavLink.classList.add("active")
     elements.graphContainer.style.display = "none"
     elements.tableContainer.style.display = "block"
+    elements.plotLegend.style.display = "none"
 
     if (state.mortalityData.length > 0) {
       plotTable()
@@ -346,7 +348,6 @@ function addDownloadButton() {
   const baseFilename = "epitracker_quantile"
 
   const groupDownloadContainer = document.getElementById("download-container")
-  createDropdownDownloadButton
   const downloadButton = createDropdownDownloadButton(false, [
     {label: "Download data (CSV)", listener: () => downloadMortalityData(state.mortalityData, baseFilename, "csv")},
     {label: "Download data (TSV)", listener: () => downloadMortalityData(state.mortalityData, baseFilename, "tsv")},
@@ -442,15 +443,22 @@ function plotTable() {
 }
 
 function toggleLoading(loading, soft=false) {
-  if (loading) {
-    document.getElementById("plots-container").style.opacity = soft ? "0.5" : "0";
-    document.getElementById("loader-container").style.visibility = "visible";
-  } else {
-    document.getElementById("plots-container").style.opacity = "1";
-    document.getElementById("loader-container").style.visibility = "hidden";
-  }
-}
 
+  if (loading) {
+    document.getElementById("plot-container").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("plot-title").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("loader-container").style.visibility = "visible";
+    document.getElementById("table-container").style.visibility = "hidden"
+
+  } else {
+    document.getElementById("plot-container").style.opacity = "1";
+    document.getElementById("plot-title").style.opacity = "1";
+    document.getElementById("loader-container").style.visibility = "hidden";
+    document.getElementById("table-container").style.visibility = "visible"
+
+  }
+
+}
 function updateGraphTitle() {
   let compareString = [state.compareColor, state.compareFacet]
     .filter(d => d != "none")

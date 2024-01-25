@@ -351,45 +351,45 @@ const reSizePlots = (id, large, scale = 1.5) => {
   // })
 }
 
+// export function initSidebar() {
+//   const button = document.getElementById('sidebar-toggle');
+//   if (!button) return;
+
+//   button.addEventListener('click', () => {
+//     const child = Array.from(button.childNodes)[1];
+//     if (child.classList.contains('fa-caret-left')) {
+//       // reSizePlots(graphId, true);
+//       child.classList.remove('fa-caret-left');
+//       child.classList.add('fa-caret-right');
+//       document.getElementById('sidebar').classList.remove('col-xl-2');
+//       document.getElementById('sidebar').classList.add('d-none');
+//       document.getElementById('main-content').classList.remove('col-xl-10');
+//       document.getElementById('main-content').classList.add('col-xl-12');
+//     }
+//     else {
+//       // reSizePlots(graphId, false);
+//       child.classList.remove('fa-caret-right');
+//       child.classList.add('fa-caret-left');
+//       document.getElementById('sidebar').classList.add('col-xl-2');
+//       document.getElementById('sidebar').classList.remove('d-none');
+//       document.getElementById('main-content').classList.add('col-xl-10');
+//       document.getElementById('main-content').classList.remove('col-xl-12');
+//     }
+//   })
+// }
+
 export function initSidebar() {
-  const button = document.getElementById('sidebar-toggle');
-  if (!button) return;
-
-  button.addEventListener('click', () => {
-    const child = Array.from(button.childNodes)[1];
-    if (child.classList.contains('fa-caret-left')) {
-      // reSizePlots(graphId, true);
-      child.classList.remove('fa-caret-left');
-      child.classList.add('fa-caret-right');
-      document.getElementById('sidebar').classList.remove('col-xl-2');
-      document.getElementById('sidebar').classList.add('d-none');
-      document.getElementById('main-content').classList.remove('col-xl-10');
-      document.getElementById('main-content').classList.add('col-xl-12');
-    }
-    else {
-      // reSizePlots(graphId, false);
-      child.classList.remove('fa-caret-right');
-      child.classList.add('fa-caret-left');
-      document.getElementById('sidebar').classList.add('col-xl-2');
-      document.getElementById('sidebar').classList.remove('d-none');
-      document.getElementById('main-content').classList.add('col-xl-10');
-      document.getElementById('main-content').classList.remove('col-xl-12');
-    }
-  })
-}
-
-export function initSidebar2() {
   // TODO: Remove 'ex' prefixes.
-  const button = document.getElementById("ex-sidebar-toggle") 
-  const sidebar = document.getElementById("ex-sidebar")
+  const button = document.getElementById("sidebar-toggle") 
+  const sidebar = document.getElementById("sidebar")
 
   button.addEventListener('click', () => {
+    console.log("Hide sidebar")
     if (sidebar.classList.contains("sidebar-hidden")) {
       sidebar.classList.remove("sidebar-hidden")
     } else {
       sidebar.classList.add("sidebar-hidden")
     }
-    
   })
 }
 

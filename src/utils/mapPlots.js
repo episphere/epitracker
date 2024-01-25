@@ -256,8 +256,24 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
   legendDiv.classList.add("legend-wrapper")
   legendDiv.appendChild(sharedColorLegend)
   // document.getElementById("color-legend").style.top = "5px"
+
+  const legendButtons = document.createElement("div")
+  legendButtons.classList.add("legend-buttons")
+  const settingsButton = document.createElement("i")
+  settingsButton.className = "fa-solid fa-gear"
+  legendButtons.appendChild(settingsButton)
+  const pinButton = document.createElement("i")
+  pinButton.className = "fa-solid fa-thumbtack pin-button"
+  legendButtons.appendChild(pinButton)
+
+  pinButton.addEventListener("click", () => {
+    legendContainer.classList.toggle("unpinned")
+  })
+
+  
   legendContainer.innerHTML = ``
   legendContainer.appendChild(legendDiv)
+  legendContainer.appendChild(legendButtons)
 
 
 }
