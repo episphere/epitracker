@@ -241,7 +241,7 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
     );
 
     mapDiv.appendChild(plot);
-    addIndividualDownloadButton(mapDiv, config)
+    //addIndividualDownloadButton(mapDiv, config)
     mapsContainer.appendChild(mapDiv)
 
     addChoroplethInteractivity(plot, mapDiv, config.data, mortalityData, options.level, options.measureField, 
@@ -572,22 +572,22 @@ function generateCombinations(arr1, arr2, varName1, varName2) {
 // Handle download buttons
 // ========================
 
-function addIndividualDownloadButton(element, config) {
-  // TODO: More detailed filename based on inputs and grid plot
-  const baseFilename = "epitracker_data"
+// function addIndividualDownloadButton(element, config) {
+//   // TODO: More detailed filename based on inputs and grid plot
+//   const baseFilename = "epitracker_data"
 
-  const buttonElement = createDropdownDownloadButton(true, [
-    {label: "Download data (CSV)", listener: () => downloadMortalityData(config.data, baseFilename, "csv")},
-    {label: "Download data (TSV)", listener: () => downloadMortalityData(config.data, baseFilename, "tsv")},
-    {label: "Download data (JSON)", listener: () => downloadMortalityData(config.data, baseFilename, "json")},
-    {label: "Download map (PNG)", listener: () => downloadMap(element)},
-  ])
-  buttonElement.style.position = "absolute"
-  buttonElement.style.top = "5px"
-  buttonElement.style.right = "5px"
+//   const buttonElement = createDropdownDownloadButton(true, [
+//     {label: "Download data (CSV)", listener: () => downloadMortalityData(config.data, baseFilename, "csv")},
+//     {label: "Download data (TSV)", listener: () => downloadMortalityData(config.data, baseFilename, "tsv")},
+//     {label: "Download data (JSON)", listener: () => downloadMortalityData(config.data, baseFilename, "json")},
+//     {label: "Download map (PNG)", listener: () => downloadMap(element)},
+//   ])
+//   buttonElement.style.position = "absolute"
+//   buttonElement.style.top = "5px"
+//   buttonElement.style.right = "5px"
 
-  element.appendChild(buttonElement)
-}
+//   element.appendChild(buttonElement)
+// }
 
 function downloadMap(element) {
   const svg = element.querySelector("svg")
