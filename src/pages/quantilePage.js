@@ -370,21 +370,27 @@ function addDownloadButton() {
   groupDownloadContainer.appendChild(downloadButton)
 }
 
-
 function downloadGraph() {
   const temporaryContainer = elements.graphContainer.cloneNode(true)
-  const legend = temporaryContainer.querySelector("#plot-legend")
+  const temporaryLegend = elements.plotLegend.cloneNode(true)
+  const temporaryTitle = elements.graphTitle.cloneNode(true)
 
-  const legendChecks = temporaryContainer.querySelectorAll(".legend-check")
+  const legendChecks = temporaryLegend.querySelectorAll(".legend-check")
   legendChecks.forEach(check => {
     if (!check.hasAttribute("checked")) {
       check.style.display = "none"
     }
   })
 
-  const checkPaths = legend.querySelectorAll(".legend-check path")
+  console.log({elements});
+  const checkPaths = temporaryLegend.querySelectorAll(".legend-check path")
   checkPaths.forEach(path => path.style.visibility = "hidden")
-  return downloadElementAsImage(temporaryContainer, "epitracker-quantile-plot")
+
+  const wrapperElement = document.createElement('div')
+  wrapperElement.appendChild(temporaryLegend)
+  wrapperElement.appendChild(temporaryTitle)
+  wrapperElement.appendChild(temporaryContainer)
+  return downloadElementAsImage(wrapperElement, "epitracker-quantile-plot")
 }
 
 /**
