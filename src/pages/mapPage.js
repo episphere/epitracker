@@ -25,7 +25,7 @@ window.onload = async () => {
  */
 const COMPARABLE_FIELDS = ["race", "sex"]
 const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
-const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"]
+const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate", "deaths", "population"]
 const SPATIAL_LEVELS = ["county", "state"]
 
 // The default state, shown if no URL params. 
@@ -339,6 +339,7 @@ function plotConfigUpdated(plotConfig) {
   initMapCellResize()
   updateMapTitle()
   toggleLoading(false)
+  
 }
 
 // =================================
