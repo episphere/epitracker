@@ -530,7 +530,7 @@ export function downloadMortalityData(mortalityData, filename, format) {
 }
 
 export function deepMerge(obj1, obj2) {
-  const result = {...obj1}; 
+  const result = Array.isArray(obj1) ? [...obj1] : {...obj1}; 
 
   for (const key in obj2) {
     if (obj2.hasOwnProperty(key)) {

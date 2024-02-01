@@ -167,7 +167,7 @@ function initialDataLoad(mortalityData, nameMappings) {
   names = nameMappings
 
   // Initialise the input state from the data
-  state.compareBarOptions = ["none", ...COMPARABLE_FIELDS]
+  state.compareBarOptions = [...COMPARABLE_FIELDS]
     .map(field => ({ value: field, label: names.fields[field] }))
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS]
     .map(field => ({ value: field, label: names.fields[field] }))
@@ -232,6 +232,12 @@ async function queryUpdated(query) {
   updateTitle()
 }
 
+function sortAgeGroups(ageGroups) {
+  const groups = ageGroups.map(d => ({raw: d, first: parseInt(d.split("-")[0])}))
+  groups.sort((a,b) => a.first - b.first)
+  return groups.map(d => d.raw)
+}
+
 function plotConfigUpdated() {
   if (!state.mortalityData) {
     return 
@@ -240,14 +246,25 @@ function plotConfigUpdated() {
   const xFormat = d => formatName(names, state.compareBar, d)
   const tickFormat = d => formatName(names, state.compareFacet, d)
 
+  const xOptions = {tickFormat: xFormat, label: formatName(names, "fields", state.compareBar)}
+  const fxOptions = {tickFormat: tickFormat, label: formatName(names, "fields", state.compareFacet)}
+
+  let ageDomain = null 
+  if (state.compareBar == "age_group" || state.compareFacet == "age_group") {
+    const ageGroups = [...new Set(state.mortalityData)].map(d => d.age_group)
+    ageDomain =  sortAgeGroups(ageGroups)
+    const options = state.compareBar == "age_group" ? xOptions : fxOptions
+    options.domain = ageDomain
+  }
+
   const barContainer = elements.barContainer
   plotDemographicPlots(barContainer, state.mortalityData, {
     compareBar: state.compareBar != "none" ? state.compareBar : null,
     compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
     measure: state.measure,
     plotOptions: {
-      x: {tickFormat: xFormat, label: formatName(names, "fields", state.compareBar)},
-      fx: {tickFormat: tickFormat, label: formatName(names, "fields", state.compareFacet)},
+      x: xOptions,
+      fx: fxOptions,
       y: {label: formatName(names, "measures", state.measure)}
     },
     yStartZero: state.startZero,
