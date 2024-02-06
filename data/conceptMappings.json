@@ -13,6 +13,10 @@
     "deaths":"Death",
     "population":"Population"
   },
+    "rate ratios": {
+    "First": "Relative to the first",
+    "last": "Relative to the first"
+  },
   "colorSchemes": {
     "Blues": "Blues (sequential, single-hue)",
     "Greens": "Greens (sequential, single-hue)",
