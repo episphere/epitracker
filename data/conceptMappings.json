@@ -10,6 +10,10 @@
   "measures": {
     "crude_rate": "Crude Mortality Rate (per 100,000)",
     "age_adjusted_rate": "Age-Adjusted Mortality Rate (per 100,000)",
+    "first_age_adjusted_rate": "First Age-Adjusted Mortality Rate",
+    "last_age_adjusted_rate":"Last Age-Adjusted Mortality Rate",
+    "first_crude_rate":"First Crude Mortality Rate",
+    "last_crude_rate":"Last Crude Mortality Rate",
     "deaths":"Death",
     "population":"Population"
   },
