@@ -21,7 +21,7 @@ window.onload = async () => {
 const COMPARABLE_FIELDS = ["race", "sex"]
 const DATA_YEARS = ["2018", "2019", "2020"] //, "2018-2020"] // TODO: Re-add grouped year
 const QUANTILE_NUMBERS  = ["8 (octiles)"]
-const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate", "deaths", "population"]
+const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate", "first_age_adjusted_rate","last_age_adjusted_rate","first_crude_rate","last_crude_rate", "deaths", "population"]
 
 // The default state, shown if no URL params. 
 const INITIAL_STATE = {
@@ -146,7 +146,7 @@ function initializeState() {
     {id: "#select-select-cause", propertyName: "cause", searchable: true},
     {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},
     {id: "#select-measure", propertyName: "measure"},
-    {id: "#select-quantile-field", propertyName: "quantileField", searchable: true},
+        {id: "#select-quantile-field", propertyName: "quantileField", searchable: true},
     {id: "#select-quantile-number", propertyName: "quantileNumber"},
   ]) {
     const sorter = createOptionSorter(["All", "None"], inputSelectConfig.propertyName == "year" ? ["2018-2020"] : [])
@@ -229,8 +229,23 @@ async function queryUpdated(query) {
   if (query.compareColor != "none") dataQuery[query.compareColor] = "*"
   if (query.compareFacet != "none") dataQuery[query.compareFacet] = "*"
 
-  const data = await dataManager.getQuantileMortalityData(dataQuery, {includeTotals: false})
-  data.forEach(row => {
+    const data = await dataManager.getQuantileMortalityData(dataQuery, {includeTotals: false})
+  const maleSortedByQuantile = data.filter(i => i.sex.toLowerCase() === 'male')
+  .sort((a, b) => Number(a.quantile) - Number(b.quantile))
+
+const femaleSortedByQuantile = data.filter(i => i.sex.toLowerCase() === 'female')
+  .sort((a, b) => Number(a.quantile) - Number(b.quantile))
+
+data.forEach(row => {
+  const maleOrFemaleData = row.sex.toLowerCase() === 'male' ? maleSortedByQuantile : femaleSortedByQuantile
+  const lastIndex = maleOrFemaleData.length - 1
+  const firstIndex = 0
+
+  row["first_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
+  row["last_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[lastIndex].age_adjusted_rate;
+  row["first_crude_rate"] = row.crude_rate / maleOrFemaleData[firstIndex].crude_rate;
+  row["last_crude_rate"] = row.crude_rate / maleOrFemaleData[lastIndex].crude_rate;
+
     for (const measure of NUMERIC_MEASURES) {
       const se = row[measure] / Math.sqrt(row.deaths)
       row[measure+"_low"] = parseFloat((row[measure] - 1.96*se).toFixed(2))
@@ -238,11 +253,10 @@ async function queryUpdated(query) {
     }
   })
 
-  state.mortalityData = data 
+  state.mortalityData = data
   
   updateLegend(data, query)
 }
-
 function plotConfigUpdated(plotConfig) {
   console.log('plotConfigUpdated', {plotConfig: plotConfig, state});
   const year = plotConfig.query.year.split("-").at(-1)
