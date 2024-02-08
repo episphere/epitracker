@@ -20,7 +20,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex", "age_group"]
-const DATA_YEARS = ["2020"]//["2018", "2019", "2020", "2018-2020"]
+const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
 const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate", "deaths", "population"]
 
 // The default state, shown if no URL params. 
