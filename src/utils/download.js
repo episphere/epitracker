@@ -1,4 +1,5 @@
 import {json2other} from "./../shared.js";
+import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm'
 
 export function toggleLoading(spinnerId, downloadId, isShow) {
   const spinner = document.getElementById(spinnerId)
