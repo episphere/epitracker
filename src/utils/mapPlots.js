@@ -125,6 +125,7 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
     valueFormat: null,
     prepareDataForDownload: d => d, 
     measureLabel: null,
+    minMapHeight: 550,
     ...options 
   }
 
@@ -193,7 +194,8 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
 
   const bbox = mapsContainer.getBoundingClientRect()
   const mapWidth = 0.9 * bbox.width / nColumns
-  const mapHeight = 0.9 * bbox.height
+  const mapHeight = Math.max(0.9 * bbox.height, options.minMapHeight)
+  console.log(mapHeight)
 
   const mean = d3.mean(mortalityData, d => d[options.measureField])
   const domain = d3.extent(mortalityData, d => d[options.measureField])
