@@ -2466,6 +2466,8 @@ button.previous-btn {
 
 #map-grid {
   display: grid;
+  height: 100%;
+  margin-bottom: 30px;
 }
 
 .map-grid-cell {
@@ -2473,6 +2475,7 @@ button.previous-btn {
   justify-content: center;
   align-items: center;
   padding-top: 10px;
+  padding-bottom: 30px; /* This is kind of a workaround, would rather have margin in plot-container or map-grid but difficult. */
 }
 
 .main-plot-panel {
@@ -2773,6 +2776,7 @@ button.previous-btn {
 }
 
 #plot-container {
+  height: 100%;
   max-height: calc(100% - 120px); /* TODO: This is hack-y, fix */
   /* width: 100%; */
   justify-content: center;

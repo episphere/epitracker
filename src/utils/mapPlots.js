@@ -1,4 +1,5 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+import { geoPath, geoAlbersUsa } from "https://cdn.jsdelivr.net/npm/d3-geo@3.1.0/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { colorRampLegendMeanDiverge, createDropdownDownloadButton } from "./helper.js";
 import { addPopperTooltip, initSidebar, downloadStringAsFile, downloadMortalityData } from "./helper.js";
@@ -113,7 +114,6 @@ export function createChoroplethPlot(spatialData, featureCollection, options={})
 
 export function plotMortalityMapGrid(container, legendContainer, mortalityData, mainFeatureCollection, options={}) {
   const mapsContainer = container
-  console.log('plotMortalityMapGrid', {mortalityData});
 
   options = {
     overlayFeatureCollection: null,
@@ -194,6 +194,13 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
 
   const bbox = mapsContainer.getBoundingClientRect()
   const mapWidth = 0.9 * bbox.width / nColumns
+  const mapHeight = 0.9 * bbox.height
+
+  // const projection = geoAlbersUsa() 
+  // const path = geoPath().projection(projection)
+  // const geoBounds = path.bounds(plotGeo)
+  // const aspectRatio = (bounds[1][0] - bounds[0][0]) / (bounds[1][1] - bounds[0][1])
+
 
   const mean = d3.mean(mortalityData, d => d[options.measureField])
   const domain = d3.extent(mortalityData, d => d[options.measureField])
@@ -236,6 +243,7 @@ export function plotMortalityMapGrid(container, legendContainer, mortalityData, 
         scheme: options.scheme,
         overlayFeatureCollection: options.overlayFeatureCollection,
         width: mapWidth,
+        height: mapHeight,
         color: {pivot:mean, domain, scheme: options.scheme, reverse: true}
       }
     );
