@@ -458,7 +458,7 @@ function downloadMapGrid() {
 
   const temporaryDiv = document.createElement("div")
   temporaryDiv.className = "d-flex flex-column gap-2 p-3"
-  temporaryDiv.appendChild(document.getElementById("graph-title").cloneNode(true))
+  temporaryDiv.appendChild(document.getElementById("plot-title").cloneNode(true))
   temporaryDiv.appendChild(legend)
   temporaryDiv.appendChild(temporaryGrid)
   return downloadElementAsImage(temporaryDiv, "epitracker-map")
