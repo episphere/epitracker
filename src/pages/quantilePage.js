@@ -233,19 +233,19 @@ async function queryUpdated(query) {
   const maleSortedByQuantile = data.filter(i => i.sex.toLowerCase() === 'male')
   .sort((a, b) => Number(a.quantile) - Number(b.quantile))
 
-const femaleSortedByQuantile = data.filter(i => i.sex.toLowerCase() === 'female')
+const femaleSortedByQuantile = data.filter(i => i.sex.toLowerCase() !== 'male')
   .sort((a, b) => Number(a.quantile) - Number(b.quantile))
 
 data.forEach(row => {
   const maleOrFemaleData = row.sex.toLowerCase() === 'male' ? maleSortedByQuantile : femaleSortedByQuantile
   const lastIndex = maleOrFemaleData.length - 1
   const firstIndex = 0
-
-  row["first_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
-  row["last_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[lastIndex].age_adjusted_rate;
-  row["first_crude_rate"] = row.crude_rate / maleOrFemaleData[firstIndex].crude_rate;
-  row["last_crude_rate"] = row.crude_rate / maleOrFemaleData[lastIndex].crude_rate;
-
+  if (maleOrFemaleData.length || femaleSortedByQuantile.length) {
+    row["first_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
+    row["last_age_adjusted_rate"] = row.age_adjusted_rate / maleOrFemaleData[lastIndex].age_adjusted_rate;
+    row["first_crude_rate"] = row.crude_rate / maleOrFemaleData[firstIndex].crude_rate;
+    row["last_crude_rate"] = row.crude_rate / maleOrFemaleData[lastIndex].crude_rate; 
+ }
     for (const measure of NUMERIC_MEASURES) {
       const se = row[measure] / Math.sqrt(row.deaths)
       row[measure+"_low"] = parseFloat((row[measure] - 1.96*se).toFixed(2))
