@@ -2732,7 +2732,7 @@ button.previous-btn {
 #topbar-cnt {
   display: flex;
   justify-content: space-between;
-  gap: 30px;
+  gap: 15px;
   padding-block: 15px;
   align-items: end;
   /* width: 100%; */
@@ -2844,4 +2844,8 @@ footer {
   width: 30px;
   /* background: #f9fbff;
   border-left: solid 1px var(--bs-border-color); */
+}
+
+g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {
+  cursor: zoom-in;
 }

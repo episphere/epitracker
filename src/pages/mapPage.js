@@ -11,11 +11,11 @@ import { hookSelectChoices } from "../utils/input2.js";
 import { plotMortalityMapGrid } from "../utils/mapPlots.js";
 import {
   dataToTableData,
-  initSidebar,
   downloadMortalityData,
   createDropdownDownloadButton,
   formatCauseName,
   createOptionSorter,
+  sortCompare,
 } from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
@@ -165,10 +165,13 @@ function initializeState() {
     },
     // {id: "#select-scheme", propertyName: "scheme", searchable: true},
   ]) {
-    const sorter = createOptionSorter(
-      ["All", "None"],
-      inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
-    );
+    const sorter =
+      inputSelectConfig.propertyName !== "areaCounty"
+        ? createOptionSorter(
+            ["All", "None"],
+            inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
+          )
+        : undefined;
 
     choices[inputSelectConfig.id] = hookSelectChoices(
       inputSelectConfig.id,
@@ -196,6 +199,12 @@ export function init() {
 
   addGroupDownloadButton();
 
+  const selectCountyElement = document.getElementById("select-select-county");
+  if (selectCountyElement) {
+    elements.selectChoicesListCounty =
+      selectCountyElement.parentNode.nextSibling.lastChild;
+    elements.selectChoicesListCounty.classList.add("text-secondary");
+  }
   elements.selectSex = document.getElementById("select-select-sex");
   elements.selectRace = document.getElementById("select-select-race");
   elements.mapNavLink = document.getElementById("map-nav-link");
@@ -266,20 +275,37 @@ function initialDataLoad(
     label: nameMappings.fields[level],
   }));
 
-  const areaStateOptions = [...new Set(mortalityData.map((d) => d.state_fips))]
-    .sort()
-    .map((d) => ({ value: d, label: fipsMap.get(d) }));
-  const areaCountyOptions = [
+  const areaStateSet = [
+    ...new Set(mortalityData.map((d) => d.state_fips)),
+  ].sort(sortCompare);
+  const areaCountySet = [
     ...new Set(mortalityData.map((d) => d.county_fips)),
-  ]
-    .sort()
-    .map((d) => ({
-      value: d,
-      label:
-        d == "All"
-          ? "All"
-          : fipsMap.get(d) + ", " + nameMappings.states[d.slice(0, 2)].short,
-    }));
+  ].sort();
+
+  const areaStateOptions = areaStateSet.map((d) => ({
+    value: d,
+    label: fipsMap.get(d),
+  }));
+
+  const areaCountyOptions = areaCountySet.map((d) => ({
+    value: d,
+    label:
+      d == "All"
+        ? "All"
+        : fipsMap.get(d) + ", " + nameMappings.states[d.slice(0, 2)].short,
+  }));
+
+  const groupedAreaCountyOptions = areaStateSet.map((d) => ({
+    value: d,
+    label: fipsMap.get(d),
+    choices: areaCountySet
+      .filter((i) => i.startsWith(d))
+      .map((i) => ({
+        value: i,
+        label: fipsMap.get(i),
+      }))
+      .sort((a, b) => sortCompare(a, b, "name")),
+  }));
 
   state.areaStateOptions = areaStateOptions;
   state.subscribe("areaState", (areaState) => {
@@ -289,7 +315,7 @@ function initialDataLoad(
         ...areaCountyOptions.filter((d) => d.value.startsWith(areaState)),
       ];
     } else {
-      state.areaCountyOptions = areaCountyOptions;
+      state.areaCountyOptions = groupedAreaCountyOptions;
     }
     state.areaCounty = "All";
   });
@@ -301,6 +327,23 @@ function initialDataLoad(
   setInputsEnabled(true);
 
   state.trigger("areaState"); // Updates the county options and also triggers the initial query.
+
+  initializeResetQuery();
+}
+
+function initializeResetQuery() {
+  const resetButton = document.getElementById("reset-query");
+  if (resetButton) {
+    resetButton.onclick = () => {
+      const { measure, scheme, ...restInitialState } = INITIAL_STATE;
+
+      for (const [key, value] of Object.entries(restInitialState)) {
+        if (state.hasProperty(key)) {
+          state[key] = value;
+        }
+      }
+    };
+  }
 }
 
 function updateURLParam(value, param) {
@@ -313,8 +356,20 @@ function updateURLParam(value, param) {
   history.replaceState({}, "", staticData.url.toString());
 }
 
+function updateDisableResetQueryButton() {
+  const queryParams = staticData.url.search;
+  const resetButton = document.getElementById("reset-query");
+  if (resetButton) {
+    resetButton.disabled = !queryParams;
+  }
+}
+
 async function queryUpdated(query) {
   toggleLoading(true);
+
+  console.log({ state });
+
+  updateDisableResetQueryButton();
 
   if (query.compareRow == "race" || query.compareColumn == "race") {
     choices["#select-select-race"].disable();
@@ -356,6 +411,29 @@ async function queryUpdated(query) {
     includeTotals: false,
   });
   state.mortalityData = mortalityData; //.filter(d => )
+
+  if (elements.selectChoicesListCounty) {
+    const mortalityDataWithCounties = await dataManager.getCountyMortalityData(
+      dataQuery,
+      { includeTotals: false, includeCountyFips: true }
+    );
+    const uniqueCountiesData = [
+      ...new Set(mortalityDataWithCounties.map((d) => d.county_fips)),
+    ];
+
+    uniqueCountiesData.forEach((county) => {
+      const elementCountyItem = elements.selectChoicesListCounty.querySelector(
+        `[data-value='${county}']`
+      );
+      if (elementCountyItem) {
+        elementCountyItem.classList.add("text-dark");
+      }
+    });
+    console.log({
+      uniqueCountiesData,
+      selectChoicesListCounty: elements.selectChoicesListCounty,
+    });
+  }
 }
 
 function plotConfigUpdated(plotConfig) {
@@ -416,6 +494,7 @@ function plotConfigUpdated(plotConfig) {
         plotConfig.mortalityData,
         primaryGeoJSON,
         {
+          state,
           overlayFeatureCollection: overlayGeoJSON,
           rowField: plotConfig.query.compareRow,
           columnField: plotConfig.query.compareColumn,

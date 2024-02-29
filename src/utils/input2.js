@@ -100,6 +100,7 @@ export function hookSelectChoices(
   });
 
   select.addEventListener("change", () => {
+    console.log({ valueProperty, state });
     state[valueProperty] = select.value;
   });
 

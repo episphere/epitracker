@@ -67,6 +67,7 @@ export class EpiTrackerData {
   // TODO: Support multiple selection queries
   async getCountyMortalityData(query, args = {}) {
     args = {
+      includeCountyFips: false,
       includeTotals: true,
       includeReduntantFields: true, // TODO: Implement
       ...args,
@@ -91,7 +92,9 @@ export class EpiTrackerData {
     const aqFilter = [];
     for (const [k, v] of Object.entries(query)) {
       if (v != "*") {
-        aqFilter.push(`row.${k} == "${v}"`);
+        if (k !== "county_fips" || !args.includeCountyFips) {
+          aqFilter.push(`row.${k} == "${v}"`);
+        }
       } else if (!args.includeTotals) {
         aqFilter.push(`row.${k} != "All"`);
       }

@@ -315,6 +315,8 @@ export function plotMortalityMapGrid(
         valueFormat: options.valueFormat,
       }
     );
+
+    zoomOnMap(mainFeatureCollection, options.state);
   }
 
   const legendDiv = document.createElement("div");
@@ -338,6 +340,28 @@ export function plotMortalityMapGrid(
   legendContainer.innerHTML = ``;
   legendContainer.appendChild(legendDiv);
   legendContainer.appendChild(legendButtons);
+}
+
+function zoomOnMap(featureCollection, state) {
+  const gNodes = d3.selectAll("g[aria-label='geo'").nodes();
+  const selectedAreaState = state["areaState"] !== "All" || !state["areaState"];
+
+  gNodes.forEach((g, index) => {
+    if (index % 2 === 0 || selectedAreaState) {
+      const gSelect = d3.select(g);
+      const geoSelect = gSelect.selectAll("path");
+
+      geoSelect.on("click", (e, d) => {
+        const feature = featureCollection.features[d];
+        const areaState = featureCollection.features[d].state;
+        if (!state["areaState"] || state["areaState"] == "All") {
+          state["areaState"] = areaState.id;
+        } else if (!state["areaCounty"] || state["areaCounty"] == "All") {
+          state["areaCounty"] = feature.id;
+        }
+      });
+    }
+  });
 }
 
 function addChoroplethInteractivity(
@@ -374,6 +398,7 @@ function addChoroplethInteractivity(
   const tooltip = addPopperTooltip(plotContainer);
 
   const previousStroke = null;
+
   gSelect.on("mouseleave.interact", () => {
     // if (!state.isSelectedStateCounty) {
     //   state.plotHighlight =

@@ -84,6 +84,21 @@ export function createOptionSorter(forceStart = [], forceEnd = []) {
   };
 }
 
+// export const createGroupingOptionSorter = (forceStart=[], forceEnd=[]) => {
+//   const forceStartSet = new Set(forceStart)
+//   const forceEndSet = new Set(forceEnd)
+
+//   return (a,b) => {
+//     if (forceStartSet.has(a.label) || forceEndSet.has(b.label) || a.customProperties.active || !b.customProperties.active) {
+//       return -1
+//     } else if (forceEndSet.has(a.label)  || forceStartSet.has(b.label) || a.customProperties.active || !b.customProperties.active) {
+//       return 1
+//     } else {
+//       return a.label.localeCompare(b.label)
+//     }
+//   }
+// }
+
 export function replaceSelectsWithChoices(opts = {}) {
   opts = {
     searchable: [],
@@ -430,20 +445,21 @@ export function initSidebar() {
   });
 }
 
-export function sort(items, key) {
-  return items.sort((a, b) => {
-    const nameA = a[key].toUpperCase();
-    const nameB = b[key].toUpperCase();
-    if (nameA < nameB) {
-      return -1;
-    }
-    if (nameA > nameB) {
-      return 1;
-    }
+export function sortCompare(a, b, key) {
+  const nameA = key ? a[key] : a;
+  const nameB = key ? b[key] : b;
 
-    // names must be equal
-    return 0;
-  });
+  if (nameA === "All" || nameB === "All") return 1;
+
+  if (nameA < nameB) {
+    return -1;
+  }
+  if (nameA > nameB) {
+    return 1;
+  }
+
+  // names must be equal
+  return 0;
 }
 
 export function downloadStringAsFile(content, filename, contentType) {
