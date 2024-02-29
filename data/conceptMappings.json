@@ -10,12 +10,12 @@
   "measures": {
     "crude_rate": "Crude Mortality Rate (per 100,000)",
     "age_adjusted_rate": "Age-Adjusted Mortality Rate (per 100,000)",
-    "first_age_adjusted_rate": "Rate Ratio Relative to the First Age-Adjusted Mortality",
-    "last_age_adjusted_rate":"Rate Ratio Relative to the Last Age-Adjusted Mortality",
-    "first_crude_rate":"Rate Ratio Relative to the First Crude Mortality Rate",
-    "last_crude_rate":"Rate Ratio Relative to the Last Crude Mortality Rate",
-    "deaths":"Death",
-    "population":"Population"
+    "first_age_adjusted_rate": "Age Adjusted Rate Ratio (Ref=Q1)",
+    "last_age_adjusted_rate": "Age Adjusted Rate Ratio (Ref=Q7)",
+    "first_crude_rate": "Crude Adjusted Rate Ratio (Ref=Q1)",
+    "last_crude_rate": "Crude Adjusted Rate Ratio (Ref=Q7)",
+    "deaths": "Death",
+    "population": "Population"
   },
   "colorSchemes": {
     "Blues": "Blues (sequential, single-hue)",
@@ -787,7 +787,7 @@
     }
   },
   "race": {
-    "Hispanic": {"formatted": "Hispanic"},
+    "Hispanic": { "formatted": "Hispanic" },
     "Non-Hispanic American Indian or Alaska Native": {
       "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
       "half_short": "American Indian or Alaska Native (NH)"
