@@ -2,33 +2,43 @@
  * @file The input and basic control logic for the map page.
  * @author Lee Mason <masonlk@nih.gov>
  */
-import { DataTable } from 'https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm';
+import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
 
-import {start} from '../../main.js'
+import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import { hookSelectChoices } from "../utils/input2.js";
 import { plotMortalityMapGrid } from "../utils/mapPlots.js";
-import {  dataToTableData, initSidebar, downloadMortalityData, 
-  createDropdownDownloadButton, formatCauseName, createOptionSorter } from "../utils/helper.js";
+import {
+  dataToTableData,
+  downloadMortalityData,
+  createDropdownDownloadButton,
+  formatCauseName,
+  createOptionSorter,
+  sortCompare,
+} from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
-import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
-
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 
 window.onload = async () => {
   await start();
-  init()
+  init();
 };
 
 /**
  * Defining some of the necessary configuration options and default values.
  */
-const COMPARABLE_FIELDS = ["race", "sex"]
-const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"]
-const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate", "deaths", "population"]
-const SPATIAL_LEVELS = ["county", "state"]
+const COMPARABLE_FIELDS = ["race", "sex"];
+const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"];
+const NUMERIC_MEASURES = [
+  "crude_rate",
+  "age_adjusted_rate",
+  "deaths",
+  "population",
+];
+const SPATIAL_LEVELS = ["county", "state"];
 
-// The default state, shown if no URL params. 
+// The default state, shown if no URL params.
 const INITIAL_STATE = {
   compareRow: "sex",
   compareColumn: "none",
@@ -40,347 +50,505 @@ const INITIAL_STATE = {
   spatialLevel: "county",
   areaState: "All",
   areaCounty: "All",
-  scheme: "RdYlBu"
-}
+  scheme: "RdYlBu",
+};
 
-
-let state, dataManager
-let staticData, elements, choices, names
-
+let state, dataManager;
+let staticData, elements, choices, names;
 
 /**
- * Setting up the properties in the state object. These will be used to control the logic of the page and connect the 
+ * Setting up the properties in the state object. These will be used to control the logic of the page and connect the
  * HTML elements to the current state of the system. The values will be populated and modified when the data is loaded.
  */
 function initializeState() {
+  const initialState = { ...INITIAL_STATE };
 
-  const initialState = {...INITIAL_STATE}
-
-  staticData.url = new URL(window.location.href)
+  staticData.url = new URL(window.location.href);
   for (const [paramName, paramValue] of staticData.url.searchParams) {
-    initialState[paramName] = paramValue
+    initialState[paramName] = paramValue;
   }
 
-  state.defineProperty("compareRow", initialState.compareRow)
-  state.defineProperty("compareRowOptions", null)
-  state.defineProperty("compareColumn", initialState.compareColumn)
-  state.defineProperty("compareColumnOptions", null)
-  state.defineProperty("year", initialState.year)
-  state.defineProperty("yearOptions", DATA_YEARS)
-  state.defineProperty("cause", initialState.cause)
-  state.defineProperty("causeOptions", null)
-  state.defineProperty("measure", initialState.measure)
-  state.defineProperty("measureOptions", NUMERIC_MEASURES)
-  state.defineProperty("spatialLevel", initialState.spatialLevel)
-  state.defineProperty("spatialLevelOptions", SPATIAL_LEVELS)
-  state.defineProperty("areaState", initialState.areaState)
-  state.defineProperty("areaStateOptions")
-  state.defineProperty("areaCounty", initialState.areaCounty, ["areaState"])
-  state.defineProperty("areaCountyOptions", null, ["areaState"])
-  state.defineProperty("scheme", initialState.scheme)
-  state.defineProperty("schemeOptions")
+  state.defineProperty("compareRow", initialState.compareRow);
+  state.defineProperty("compareRowOptions", null);
+  state.defineProperty("compareColumn", initialState.compareColumn);
+  state.defineProperty("compareColumnOptions", null);
+  state.defineProperty("year", initialState.year);
+  state.defineProperty("yearOptions", DATA_YEARS);
+  state.defineProperty("cause", initialState.cause);
+  state.defineProperty("causeOptions", null);
+  state.defineProperty("measure", initialState.measure);
+  state.defineProperty("measureOptions", NUMERIC_MEASURES);
+  state.defineProperty("spatialLevel", initialState.spatialLevel);
+  state.defineProperty("spatialLevelOptions", SPATIAL_LEVELS);
+  state.defineProperty("areaState", initialState.areaState);
+  state.defineProperty("areaStateOptions");
+  state.defineProperty("areaCounty", initialState.areaCounty, ["areaState"]);
+  state.defineProperty("areaCountyOptions", null, ["areaState"]);
+  state.defineProperty("scheme", initialState.scheme);
+  state.defineProperty("schemeOptions");
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
-  for (const [childProperty, parentProperty] of [["compareRow", "compareColumn"], ["compareColumn", "compareRow"]]) {
-    state.linkProperties(childProperty, parentProperty)
+  for (const [childProperty, parentProperty] of [
+    ["compareRow", "compareColumn"],
+    ["compareColumn", "compareRow"],
+  ]) {
+    state.linkProperties(childProperty, parentProperty);
     state.subscribe(parentProperty, () => {
-      if (state[parentProperty] == state[childProperty] && state[childProperty] != "none") {
-        state[childProperty] = "none"
-      } 
-    })
+      if (
+        state[parentProperty] == state[childProperty] &&
+        state[childProperty] != "none"
+      ) {
+        state[childProperty] = "none";
+      }
+    });
   }
 
   // The values for the selections are dependent on the compares (e.g. if we are comparing by race, then the race select
-  // must be equal to "all"). 
-  state.defineProperty("race", initialState.race, ["compareRow", "compareColumn"])
-  state.defineProperty("raceOptions", []) 
-  state.defineProperty("sex", initialState.sex, ["compareRow", "compareColumn"])
-  state.defineProperty("sexOptions", []) 
+  // must be equal to "all").
+  state.defineProperty("race", initialState.race, [
+    "compareRow",
+    "compareColumn",
+  ]);
+  state.defineProperty("raceOptions", []);
+  state.defineProperty("sex", initialState.sex, [
+    "compareRow",
+    "compareColumn",
+  ]);
+  state.defineProperty("sexOptions", []);
   for (const compareProperty of ["compareRow", "compareColumn"]) {
     state.subscribe(compareProperty, () => {
       if (COMPARABLE_FIELDS.includes(state[compareProperty])) {
-        state[state[compareProperty]] = "All"
-      } 
-    })
+        state[state[compareProperty]] = "All";
+      }
+    });
   }
 
-  state.defineJointProperty("query", 
-    ["compareRow", "compareColumn", "cause", "race", "sex", "year", "spatialLevel", "areaState", "areaCounty"])
-  state.defineProperty("mortalityData", null, ["query"])
-  state.defineJointProperty("plotConfig", ["mortalityData", "query", "measure", "scheme"])
+  state.defineJointProperty("query", [
+    "compareRow",
+    "compareColumn",
+    "cause",
+    "race",
+    "sex",
+    "year",
+    "spatialLevel",
+    "areaState",
+    "areaCounty",
+  ]);
+  state.defineProperty("mortalityData", null, ["query"]);
+  state.defineJointProperty("plotConfig", [
+    "mortalityData",
+    "query",
+    "measure",
+    "scheme",
+  ]);
 
   for (const param of Object.keys(initialState)) {
     if (state.hasProperty(param)) {
-      state.subscribe(param, updateURLParam)
+      state.subscribe(param, updateURLParam);
     }
   }
 
   for (const inputSelectConfig of [
-    {id: "#select-compare-row", propertyName: "compareRow"},
-    {id: "#select-compare-column", propertyName: "compareColumn"},
-    {id: "#select-select-race", propertyName: "race"},
-    {id: "#select-select-sex", propertyName: "sex"},
-    {id: "#select-select-cause", propertyName: "cause", searchable: true},
-    {id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020"},
-    {id: "#select-measure", propertyName: "measure"},
-    {id: "#select-level", propertyName: "spatialLevel"},
-    {id: "#select-select-state", propertyName: "areaState", searchable: true},
-    {id: "#select-select-county", propertyName: "areaCounty", searchable: true},
+    { id: "#select-compare-row", propertyName: "compareRow" },
+    { id: "#select-compare-column", propertyName: "compareColumn" },
+    { id: "#select-select-race", propertyName: "race" },
+    { id: "#select-select-sex", propertyName: "sex" },
+    { id: "#select-select-cause", propertyName: "cause", searchable: true },
+    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020" },
+    { id: "#select-measure", propertyName: "measure" },
+    { id: "#select-level", propertyName: "spatialLevel" },
+    { id: "#select-select-state", propertyName: "areaState", searchable: true },
+    {
+      id: "#select-select-county",
+      propertyName: "areaCounty",
+      searchable: true,
+    },
     // {id: "#select-scheme", propertyName: "scheme", searchable: true},
   ]) {
-    const sorter = createOptionSorter(["All", "None"], inputSelectConfig.propertyName == "year" ? ["2018-2020"] : [])
+    const sorter =
+      inputSelectConfig.propertyName !== "areaCounty"
+        ? createOptionSorter(
+            ["All", "None"],
+            inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
+          )
+        : undefined;
 
-    choices[inputSelectConfig.id] = hookSelectChoices(inputSelectConfig.id, state, 
-      inputSelectConfig.propertyName, inputSelectConfig.propertyName + "Options", d => d, inputSelectConfig.searchable, sorter)
+    choices[inputSelectConfig.id] = hookSelectChoices(
+      inputSelectConfig.id,
+      state,
+      inputSelectConfig.propertyName,
+      inputSelectConfig.propertyName + "Options",
+      (d) => d,
+      inputSelectConfig.searchable,
+      sorter
+    );
   }
 }
 
 export function init() {
-  toggleLoading(true)
+  toggleLoading(true);
 
-  state = new State()
-  dataManager = new EpiTrackerData()
+  state = new State();
+  dataManager = new EpiTrackerData();
 
-  staticData = {}
-  elements = {}
-  choices = {}
+  staticData = {};
+  elements = {};
+  choices = {};
 
-  initializeState()
+  initializeState();
 
-  addGroupDownloadButton()
+  addGroupDownloadButton();
 
-  elements.selectSex = document.getElementById("select-select-sex")
-  elements.selectRace = document.getElementById("select-select-race")
-  elements.mapNavLink = document.getElementById("map-nav-link")
-  elements.tableNavLink = document.getElementById("table-nav-link")
-  elements.mapsContainer = document.getElementById("plot-container")
-  elements.mapGrid = document.getElementById("map-grid")
-  elements.tableContainer = document.getElementById("table-container")
-  elements.colorLegend = document.getElementById("color-legend")
-  elements.mapTitle = document.getElementById("plot-title")
+  const selectCountyElement = document.getElementById("select-select-county");
+  if (selectCountyElement) {
+    elements.selectChoicesListCounty =
+      selectCountyElement.parentNode.nextSibling.lastChild;
+    elements.selectChoicesListCounty.classList.add("text-secondary");
+  }
+  elements.selectSex = document.getElementById("select-select-sex");
+  elements.selectRace = document.getElementById("select-select-race");
+  elements.mapNavLink = document.getElementById("map-nav-link");
+  elements.tableNavLink = document.getElementById("table-nav-link");
+  elements.mapsContainer = document.getElementById("plot-container");
+  elements.mapGrid = document.getElementById("map-grid");
+  elements.tableContainer = document.getElementById("table-container");
+  elements.colorLegend = document.getElementById("color-legend");
+  elements.mapTitle = document.getElementById("plot-title");
   elements.tableNavLink.addEventListener("click", () => {
-    setTimeout(() => changeView("table"), 0)
-  })
-  elements.mapNavLink.addEventListener("click", () => changeView("plot"))
-  elements.groupDownloadButton =  document.querySelector('#download-container button');
+    setTimeout(() => changeView("table"), 0);
+  });
+  elements.mapNavLink.addEventListener("click", () => changeView("plot"));
+  elements.groupDownloadButton = document.querySelector(
+    "#download-container button"
+  );
 
-  state.subscribe("query", queryUpdated)
-  state.subscribe("plotConfig", plotConfigUpdated)
+  state.subscribe("query", queryUpdated);
+  state.subscribe("plotConfig", plotConfigUpdated);
 
   Promise.all([
     d3.json("../data/states.json"),
     d3.json("../data/counties.json"),
     d3.json("../data/conceptMappings.json"),
-    dataManager.getCountyMortalityData({year: state.year})
+    dataManager.getCountyMortalityData({ year: state.year }),
   ]).then(([stateGeoJSON, countyGeoJSON, nameMappings, mortalityData]) => {
-    staticData.stateGeoJSON = stateGeoJSON
-    staticData.countyGeoJSON = countyGeoJSON
-    staticData.nameMappings = nameMappings
-    names = nameMappings
-    initialDataLoad(mortalityData, stateGeoJSON, countyGeoJSON, nameMappings)
-  })
+    staticData.stateGeoJSON = stateGeoJSON;
+    staticData.countyGeoJSON = countyGeoJSON;
+    staticData.nameMappings = nameMappings;
+    names = nameMappings;
+    initialDataLoad(mortalityData, stateGeoJSON, countyGeoJSON, nameMappings);
+  });
 }
 
 // =================================
 // Primary state logic handlers
 // =================================
 
-function initialDataLoad(mortalityData, stateGeoJSON, countyGeoJSON,  nameMappings) {
-  const fipsMap = new Map([["All", "All"]])
-  stateGeoJSON.features.forEach(d => fipsMap.set(d.id, d.properties.name))
-  countyGeoJSON.features.forEach(d => fipsMap.set(d.id, d.properties.name))
+function initialDataLoad(
+  mortalityData,
+  stateGeoJSON,
+  countyGeoJSON,
+  nameMappings
+) {
+  const fipsMap = new Map([["All", "All"]]);
+  stateGeoJSON.features.forEach((d) => fipsMap.set(d.id, d.properties.name));
+  countyGeoJSON.features.forEach((d) => fipsMap.set(d.id, d.properties.name));
 
   // Initialise the input state from the data
-  state.compareRowOptions = ["none", ...COMPARABLE_FIELDS]
-    .map(field => ({value: field, label: nameMappings.fields[field]}))
-  state.compareColumnOptions = ["none", ...COMPARABLE_FIELDS]
-    .map(field => ({value: field, label: nameMappings.fields[field]}))
-  state.causeOptions = [...new Set(mortalityData.map(d => d.cause))]
-  state.sexOptions = [...new Set(mortalityData.map(d => d.sex))]
-  state.raceOptions = [...new Set(mortalityData.map(d => d.race))]
+  state.compareRowOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
+    value: field,
+    label: nameMappings.fields[field],
+  }));
+  state.compareColumnOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
+    value: field,
+    label: nameMappings.fields[field],
+  }));
+  state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
+  state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
+  state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
 
-  state.measureOptions = NUMERIC_MEASURES
-    .map(field => ({value: field, label: nameMappings.measures[field]}))
-  state.spatialLevelOptions = SPATIAL_LEVELS
-    .map(level => ({value: level, label: nameMappings.fields[level]}))
+  state.measureOptions = NUMERIC_MEASURES.map((field) => ({
+    value: field,
+    label: nameMappings.measures[field],
+  }));
+  state.spatialLevelOptions = SPATIAL_LEVELS.map((level) => ({
+    value: level,
+    label: nameMappings.fields[level],
+  }));
 
-  const areaStateOptions = [...new Set(mortalityData.map(d => d.state_fips))].sort()
-    .map(d => ({value: d, label: fipsMap.get(d)}))
-  const areaCountyOptions = [...new Set(mortalityData.map(d => d.county_fips))].sort()
-   .map(d => ({value: d, label: d == "All" ? "All" : fipsMap.get(d) + ", " + nameMappings.states[d.slice(0,2)].short}))
+  const areaStateSet = [
+    ...new Set(mortalityData.map((d) => d.state_fips)),
+  ].sort(sortCompare);
+  const areaCountySet = [
+    ...new Set(mortalityData.map((d) => d.county_fips)),
+  ].sort();
 
-  state.areaStateOptions = areaStateOptions
+  const areaStateOptions = areaStateSet.map((d) => ({
+    value: d,
+    label: fipsMap.get(d),
+  }));
+
+  const areaCountyOptions = areaCountySet.map((d) => ({
+    value: d,
+    label:
+      d == "All"
+        ? "All"
+        : fipsMap.get(d) + ", " + nameMappings.states[d.slice(0, 2)].short,
+  }));
+
+  const groupedAreaCountyOptions = areaStateSet.map((d) => ({
+    value: d,
+    label: fipsMap.get(d),
+    choices: areaCountySet
+      .filter((i) => i.startsWith(d))
+      .map((i) => ({
+        value: i,
+        label: fipsMap.get(i),
+      }))
+      .sort((a, b) => sortCompare(a, b, "name")),
+  }));
+
+  state.areaStateOptions = areaStateOptions;
   state.subscribe("areaState", (areaState) => {
     if (areaState != "All") {
-      state.areaCountyOptions = ["All", ...areaCountyOptions.filter(d => d.value.startsWith(areaState))]
+      state.areaCountyOptions = [
+        "All",
+        ...areaCountyOptions.filter((d) => d.value.startsWith(areaState)),
+      ];
     } else {
-      state.areaCountyOptions = areaCountyOptions
+      state.areaCountyOptions = groupedAreaCountyOptions;
     }
-    state.areaCounty = "All"
-  })
+    state.areaCounty = "All";
+  });
 
-  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(([k,v]) => ({value: k, label: v}))
+  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(
+    ([k, v]) => ({ value: k, label: v })
+  );
 
-  setInputsEnabled(true)
-  
-  state.trigger("areaState") // Updates the county options and also triggers the initial query.
+  setInputsEnabled(true);
+
+  state.trigger("areaState"); // Updates the county options and also triggers the initial query.
+
+  initializeResetQuery();
+}
+
+function initializeResetQuery() {
+  const resetButton = document.getElementById("reset-query");
+  if (resetButton) {
+    resetButton.onclick = () => {
+      const { measure, scheme, ...restInitialState } = INITIAL_STATE;
+
+      for (const [key, value] of Object.entries(restInitialState)) {
+        if (state.hasProperty(key)) {
+          state[key] = value;
+        }
+      }
+    };
+  }
 }
 
 function updateURLParam(value, param) {
-  const url = staticData.url 
+  const url = staticData.url;
   if (INITIAL_STATE[param] != value) {
-    url.searchParams.set(param, value)
+    url.searchParams.set(param, value);
   } else {
-    url.searchParams.delete(param) 
+    url.searchParams.delete(param);
   }
-  history.replaceState({}, '', staticData.url.toString())
+  history.replaceState({}, "", staticData.url.toString());
+}
+
+function updateDisableResetQueryButton() {
+  const queryParams = staticData.url.search;
+  const resetButton = document.getElementById("reset-query");
+  if (resetButton) {
+    resetButton.disabled = !queryParams;
+  }
 }
 
 async function queryUpdated(query) {
-  toggleLoading(true)
+  toggleLoading(true);
+
+  console.log({ state });
+
+  updateDisableResetQueryButton();
 
   if (query.compareRow == "race" || query.compareColumn == "race") {
-    choices["#select-select-race"].disable()
+    choices["#select-select-race"].disable();
   } else {
-    choices["#select-select-race"].enable()
+    choices["#select-select-race"].enable();
   }
   if (query.compareRow == "sex" || query.compareColumn == "sex") {
-    choices["#select-select-sex"].disable()
+    choices["#select-select-sex"].disable();
   } else {
-    choices["#select-select-sex"].enable()
+    choices["#select-select-sex"].enable();
   }
 
   if (query.spatialLevel == "state") {
-    choices["#select-select-county"].disable()
+    choices["#select-select-county"].disable();
   } else {
-    choices["#select-select-county"].enable()
+    choices["#select-select-county"].enable();
   }
-
 
   const dataQuery = {
-    year: query.year, 
+    year: query.year,
     cause: query.cause,
-    race: query.race, 
+    race: query.race,
     sex: query.sex,
-    state_fips: query.areaState != "All" ? query.areaState : "*", 
+    state_fips: query.areaState != "All" ? query.areaState : "*",
     county_fips: query.areaCounty,
-  }
-  
+  };
+
   if (query.spatialLevel == "county" && query.areaCounty == "All") {
-    dataQuery.county_fips = "*"
+    dataQuery.county_fips = "*";
   } else if (query.spatialLevel == "state") {
-    dataQuery.state_fips = "*"
-    dataQuery.county_fips = "All"
+    dataQuery.state_fips = "*";
+    dataQuery.county_fips = "All";
   }
 
-  if (query.compareRow != "none") dataQuery[query.compareRow] = "*"
-  if (query.compareColumn != "none") dataQuery[query.compareColumn] = "*"
+  if (query.compareRow != "none") dataQuery[query.compareRow] = "*";
+  if (query.compareColumn != "none") dataQuery[query.compareColumn] = "*";
 
-  let mortalityData = await dataManager.getCountyMortalityData(dataQuery, {includeTotals: false})
-  state.mortalityData = mortalityData//.filter(d => )
+  let mortalityData = await dataManager.getCountyMortalityData(dataQuery, {
+    includeTotals: false,
+  });
+  state.mortalityData = mortalityData; //.filter(d => )
+
+  if (elements.selectChoicesListCounty) {
+    const mortalityDataWithCounties = await dataManager.getCountyMortalityData(
+      dataQuery,
+      { includeTotals: false, includeCountyFips: true }
+    );
+    const uniqueCountiesData = [
+      ...new Set(mortalityDataWithCounties.map((d) => d.county_fips)),
+    ];
+
+    uniqueCountiesData.forEach((county) => {
+      const elementCountyItem = elements.selectChoicesListCounty.querySelector(
+        `[data-value='${county}']`
+      );
+      if (elementCountyItem) {
+        elementCountyItem.classList.add("text-dark");
+      }
+    });
+    console.log({
+      uniqueCountiesData,
+      selectChoicesListCounty: elements.selectChoicesListCounty,
+    });
+  }
 }
 
 function plotConfigUpdated(plotConfig) {
-  toggleLoading(true)
+  toggleLoading(true);
 
-  let primaryGeoJSON = plotConfig.query.spatialLevel == "county" ? staticData.countyGeoJSON : staticData.stateGeoJSON
-  let overlayGeoJSON = plotConfig.query.spatialLevel == "county" ? staticData.stateGeoJSON : null
+  let primaryGeoJSON =
+    plotConfig.query.spatialLevel == "county"
+      ? staticData.countyGeoJSON
+      : staticData.stateGeoJSON;
+  let overlayGeoJSON =
+    plotConfig.query.spatialLevel == "county" ? staticData.stateGeoJSON : null;
 
   if (plotConfig.query.areaCounty != "All") {
     primaryGeoJSON = {
-      type: "FeatureCollection", 
-      features: primaryGeoJSON.features.filter(d => d.id == plotConfig.query.areaCounty)
-    }
-    overlayGeoJSON = null
+      type: "FeatureCollection",
+      features: primaryGeoJSON.features.filter(
+        (d) => d.id == plotConfig.query.areaCounty
+      ),
+    };
+    overlayGeoJSON = null;
   } else if (plotConfig.query.areaState != "All") {
     primaryGeoJSON = {
-      type: "FeatureCollection", 
-      features: primaryGeoJSON.features.filter(d => d.id.startsWith(plotConfig.query.areaState))
-    }
-    overlayGeoJSON = null
+      type: "FeatureCollection",
+      features: primaryGeoJSON.features.filter((d) =>
+        d.id.startsWith(plotConfig.query.areaState)
+      ),
+    };
+    overlayGeoJSON = null;
   }
 
-  const legendContainer = document.getElementById("color-legend")
+  const legendContainer = document.getElementById("color-legend");
 
-  const featureNameFormat = feature => {
-    let name = feature.properties.name 
+  const featureNameFormat = (feature) => {
+    let name = feature.properties.name;
     if (feature.id.length == "5") {
       // If the feature is a county, add the corresponding state's short name to the end of the name.
-      name += ", " + staticData.nameMappings["states"][feature.id.slice(0,2)].short
+      name +=
+        ", " + staticData.nameMappings["states"][feature.id.slice(0, 2)].short;
     }
-    return name 
-  }
+    return name;
+  };
 
   if (plotConfig.mortalityData.length == 0) {
-    elements.mapGrid.innerHTML = "<i> There is no data for this selection. </i>"
-    elements.tableContainer.innerHTML = "<i> There is no data for this selection. </i>"
-    elements.colorLegend.innerHTML = ""
-    elements.groupDownloadButton.setAttribute("disabled", "")
+    elements.mapGrid.innerHTML =
+      "<i> There is no data for this selection. </i>";
+    elements.tableContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
+    elements.colorLegend.innerHTML = "";
+    elements.groupDownloadButton.setAttribute("disabled", "");
   } else {
-    const isActiveTable = elements.tableNavLink.classList.contains('active')
+    const isActiveTable = elements.tableNavLink.classList.contains("active");
     if (isActiveTable) {
-      plotTable()
+      plotTable();
     } else {
-      plotMortalityMapGrid(elements.mapGrid, legendContainer, plotConfig.mortalityData, primaryGeoJSON, {
-        overlayFeatureCollection: overlayGeoJSON,
-        rowField: plotConfig.query.compareRow,
-        columnField: plotConfig.query.compareColumn,
-        level: plotConfig.query.spatialLevel,
-        measureField: plotConfig.measure,
-        measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
-        scheme: plotConfig.scheme,
-        featureNameFormat,
-      })
+      plotMortalityMapGrid(
+        elements.mapGrid,
+        legendContainer,
+        plotConfig.mortalityData,
+        primaryGeoJSON,
+        {
+          state,
+          overlayFeatureCollection: overlayGeoJSON,
+          rowField: plotConfig.query.compareRow,
+          columnField: plotConfig.query.compareColumn,
+          level: plotConfig.query.spatialLevel,
+          measureField: plotConfig.measure,
+          measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
+          scheme: plotConfig.scheme,
+          featureNameFormat,
+        }
+      );
     }
-    
-    elements.groupDownloadButton.removeAttribute("disabled")
+
+    elements.groupDownloadButton.removeAttribute("disabled");
   }
 
-  initMapCellResize()
-  updateMapTitle()
-  toggleLoading(false)
-  
+  initMapCellResize();
+  updateMapTitle();
+  toggleLoading(false);
 }
 
 // =================================
 // Other inputs
 // =================================
 
-
 function changeView(view) {
-  toggleLoading(true)
-    // TODO: Improve user experience by redrawing only on change. Use deferred drawing model from previous code.
+  toggleLoading(true);
+  // TODO: Improve user experience by redrawing only on change. Use deferred drawing model from previous code.
 
   setTimeout(() => {
-    console.log(elements.colorLegend)
+    console.log(elements.colorLegend);
     if (view == "plot") {
-      elements.tableNavLink.classList.remove("active")
-      elements.mapNavLink.classList.add("active")
-      elements.mapsContainer.style.display = "block"
-      elements.tableContainer.style.display = "none"
-      elements.colorLegend.style.display = "block"
+      elements.tableNavLink.classList.remove("active");
+      elements.mapNavLink.classList.add("active");
+      elements.mapsContainer.style.display = "block";
+      elements.tableContainer.style.display = "none";
+      elements.colorLegend.style.display = "block";
 
-      state.trigger("plotConfig") // Trigger a redraw so sizing is correct.
+      state.trigger("plotConfig"); // Trigger a redraw so sizing is correct.
     } else if (view == "table") {
-      elements.mapNavLink.classList.remove("active")
-      elements.tableNavLink.classList.add("active")
-      elements.mapsContainer.style.display = "none"
-      elements.tableContainer.style.display = "block"
-      elements.colorLegend.style.display = "none"
-      console.log(elements.colorLegend)
+      elements.mapNavLink.classList.remove("active");
+      elements.tableNavLink.classList.add("active");
+      elements.mapsContainer.style.display = "none";
+      elements.tableContainer.style.display = "block";
+      elements.colorLegend.style.display = "none";
+      console.log(elements.colorLegend);
 
       if (state.mortalityData.length > 0) {
-        plotTable()
+        plotTable();
       }
     }
 
-    toggleLoading(false)
-  }, 10)
-
-  
+    toggleLoading(false);
+  }, 10);
 }
-
-
 
 // =================================
 // Helper functions
@@ -388,35 +556,49 @@ function changeView(view) {
 
 function addGroupDownloadButton() {
   // TODO: More detailed filename based on inputs
-  const baseFilename = "epitracker_spatial"
+  const baseFilename = "epitracker_spatial";
 
   // TODO: Resume, try callbacks for
-  const groupDownloadContainer = document.getElementById("download-container")
+  const groupDownloadContainer = document.getElementById("download-container");
   const downloadButton = createDropdownDownloadButton(false, [
-    {label: "Download data (CSV)", listener: (callback) => {
-      downloadMortalityData(state.mortalityData, baseFilename, "csv")
-    }},
-    {label: "Download data (TSV)", listener: () => downloadMortalityData(state.mortalityData, baseFilename, "tsv")},
-    {label: "Download data (JSON)", listener: () => downloadMortalityData(state.mortalityData, baseFilename,  "json")},
-    {label: "Download maps (PNG)", listener:  downloadMapGrid},
-  ])
-  groupDownloadContainer.appendChild(downloadButton)
+    {
+      label: "Download data (CSV)",
+      listener: (callback) => {
+        downloadMortalityData(state.mortalityData, baseFilename, "csv");
+      },
+    },
+    {
+      label: "Download data (TSV)",
+      listener: () =>
+        downloadMortalityData(state.mortalityData, baseFilename, "tsv"),
+    },
+    {
+      label: "Download data (JSON)",
+      listener: () =>
+        downloadMortalityData(state.mortalityData, baseFilename, "json"),
+    },
+    { label: "Download maps (PNG)", listener: downloadMapGrid },
+  ]);
+  groupDownloadContainer.appendChild(downloadButton);
 }
 
 function initMapCellResize() {
-  const previousSizes = new Map()
+  const previousSizes = new Map();
 
-  const mapGrid = document.getElementById("map-grid")
+  const mapGrid = document.getElementById("map-grid");
   for (const child of mapGrid.children) {
-    if (child.classList.contains('map-grid-cell') && !child.classList.contains('map-grid-label')) {
-      const clientRect = child.getBoundingClientRect()
-      previousSizes.set(child, [clientRect.width, clientRect.height])
+    if (
+      child.classList.contains("map-grid-cell") &&
+      !child.classList.contains("map-grid-label")
+    ) {
+      const clientRect = child.getBoundingClientRect();
+      previousSizes.set(child, [clientRect.width, clientRect.height]);
       const resizeObserver = new ResizeObserver(() => {
-        resizeMap(child, previousSizes.get(child))
-        const clientRect = child.getBoundingClientRect()
-        previousSizes.set(child, [clientRect.width, clientRect.height])
-      })
-      resizeObserver.observe(child)
+        resizeMap(child, previousSizes.get(child));
+        const clientRect = child.getBoundingClientRect();
+        previousSizes.set(child, [clientRect.width, clientRect.height]);
+      });
+      resizeObserver.observe(child);
     }
   }
 }
@@ -425,7 +607,7 @@ function initMapCellResize() {
 // size it should be when scaled back down. Perhaps reference to size of the wider map container...?
 function resizeMap(mapCellElement, previousSize) {
   // const svg = mapCellElement.querySelector("svg")
-  // const cellWidth = mapCellElement.getBoundingClientRect().width 
+  // const cellWidth = mapCellElement.getBoundingClientRect().width
   // const scalingFactor = cellWidth / previousSize[0]
   // const svgWidth = svg.getAttribute("width")
   // // console.log(cellHeight, svgHeight)
@@ -434,79 +616,100 @@ function resizeMap(mapCellElement, previousSize) {
 }
 
 function downloadMapGrid() {
-  const mapGrid = document.getElementById("map-grid")
-  const temporaryGrid = mapGrid.cloneNode()
+  const mapGrid = document.getElementById("map-grid");
+  const temporaryGrid = mapGrid.cloneNode();
 
   for (const child of mapGrid.children) {
-    if (child.classList.contains('map-grid-cell') && !child.classList.contains('map-grid-label')) {
-      let mapSvg = child.querySelector('svg')
+    if (
+      child.classList.contains("map-grid-cell") &&
+      !child.classList.contains("map-grid-label")
+    ) {
+      let mapSvg = child.querySelector("svg");
       if (mapSvg) {
-        mapSvg = mapSvg.cloneNode(true)        
-        const clonedCell = child.cloneNode(false)
-        clonedCell.appendChild(mapSvg)
-        temporaryGrid.appendChild(clonedCell)
-      } 
+        mapSvg = mapSvg.cloneNode(true);
+        const clonedCell = child.cloneNode(false);
+        clonedCell.appendChild(mapSvg);
+        temporaryGrid.appendChild(clonedCell);
+      }
     } else {
-      temporaryGrid.appendChild(child.cloneNode(true))
+      temporaryGrid.appendChild(child.cloneNode(true));
     }
   }
 
-  temporaryGrid.style.width = "fit-content"
+  temporaryGrid.style.width = "fit-content";
 
-  const legend = elements.colorLegend.querySelector(".legend-wrapper svg").cloneNode(true)
-  legend.style.backgroundColor = "white"
+  const legend = elements.colorLegend
+    .querySelector(".legend-wrapper svg")
+    .cloneNode(true);
+  legend.style.backgroundColor = "white";
 
-  const temporaryDiv = document.createElement("div")
-  temporaryDiv.className = "d-flex flex-column gap-2 p-3"
-  temporaryDiv.appendChild(document.getElementById("plot-title").cloneNode(true))
-  temporaryDiv.appendChild(legend)
-  temporaryDiv.appendChild(temporaryGrid)
-  return downloadElementAsImage(temporaryDiv, "epitracker-map")
+  const temporaryDiv = document.createElement("div");
+  temporaryDiv.className = "d-flex flex-column gap-2 p-3";
+  temporaryDiv.appendChild(
+    document.getElementById("plot-title").cloneNode(true)
+  );
+  temporaryDiv.appendChild(legend);
+  temporaryDiv.appendChild(temporaryGrid);
+  return downloadElementAsImage(temporaryDiv, "epitracker-map");
 }
 
-
 function updateMapTitle() {
-  const level = state.spatialLevel == "county" ? "US county-level" : "US state-level"
+  const level =
+    state.spatialLevel == "county" ? "US county-level" : "US state-level";
   let compareString = [state.compareRow, state.compareColumn]
-    .filter(d => d != "none")
-    .map(d => names.fields[d].toLowerCase())
-    .join(" and ")
+    .filter((d) => d != "none")
+    .map((d) => names.fields[d].toLowerCase())
+    .join(" and ");
 
   if (compareString != "") {
-    compareString = " by " + compareString
+    compareString = " by " + compareString;
   }
-  const compareSet = new Set([state.compareRow, state.compareColumn])
+  const compareSet = new Set([state.compareRow, state.compareColumn]);
   const selects = [
-    {name: "Year", value: state.year},
-    {name: "Location", value: (() => {
-      // TODO: Name counties
-      if (state.areaCounty != "All") {
-        return state.areaCounty
-      } else {
-        return state.areaState == "All" ? "US" : staticData.nameMappings.states[state.areaState].name
-      }
-    })()},
-    {name: "Cause of death", value: formatCauseName(state.cause)}, 
-    {name: names.fields.sex, value: state.sex, exclude: compareSet.has("sex")},
-    {name: names.fields.race, value: state.race, exclude: compareSet.has("race")}
-  ]
+    { name: "Year", value: state.year },
+    {
+      name: "Location",
+      value: (() => {
+        // TODO: Name counties
+        if (state.areaCounty != "All") {
+          return state.areaCounty;
+        } else {
+          return state.areaState == "All"
+            ? "US"
+            : staticData.nameMappings.states[state.areaState].name;
+        }
+      })(),
+    },
+    { name: "Cause of death", value: formatCauseName(state.cause) },
+    {
+      name: names.fields.sex,
+      value: state.sex,
+      exclude: compareSet.has("sex"),
+    },
+    {
+      name: names.fields.race,
+      value: state.race,
+      exclude: compareSet.has("race"),
+    },
+  ];
   const selectsString = selects
-    .filter(d => !d.exclude)
-    .map(d => `${d.name}: ${d.value}`)
-    .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp")
+    .filter((d) => !d.exclude)
+    .map((d) => `${d.name}: ${d.value}`)
+    .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
 
-
-  const title = `${level} ${staticData.nameMappings.measures[state.measure].toLowerCase()} ${compareString}. </br> ${selectsString}`
-  elements.mapTitle.innerHTML = title
+  const title = `${level} ${staticData.nameMappings.measures[
+    state.measure
+  ].toLowerCase()} ${compareString}. </br> ${selectsString}`;
+  elements.mapTitle.innerHTML = title;
 }
 
 function plotTable() {
-  elements.tableContainer.innerHTML = ``
+  elements.tableContainer.innerHTML = ``;
   new DataTable(elements.tableContainer, {
     data: dataToTableData(state.mortalityData),
     perPage: 20,
-    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]]
-  })  
+    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
+  });
 }
 
 function setInputsEnabled(enabled) {
@@ -514,45 +717,45 @@ function setInputsEnabled(enabled) {
     "select-compare-row",
     "select-compare-column",
     "select-select-race",
-    "select-select-sex", 
-    "select-select-cause", 
-    "select-select-year", 
+    "select-select-sex",
+    "select-select-cause",
+    "select-select-year",
     "select-measure",
     "select-level",
     "select-select-state",
     "select-select-county",
     // "select-scheme",
   ]) {
-    const element = document.getElementById(input)
+    const element = document.getElementById(input);
     if (enabled) {
-      element.removeAttribute("disabled")
+      element.removeAttribute("disabled");
     } else {
-      element.setAttribute("disabled", "")
+      element.setAttribute("disabled", "");
     }
   }
 
   for (const choice of Object.values(choices)) {
-    choice.enable()
+    choice.enable();
   }
 }
 
-function toggleLoading(loading, soft=false) {
+function toggleLoading(loading, soft = false) {
   // TODO: Reimplement
 
   if (loading) {
-    document.getElementById("plot-container").style.opacity = soft ? "0.5" : "0";
+    document.getElementById("plot-container").style.opacity = soft
+      ? "0.5"
+      : "0";
     document.getElementById("plot-title").style.opacity = soft ? "0.5" : "0";
     document.getElementById("color-legend").style.opacity = soft ? "0.5" : "0";
     document.getElementById("loader-container").style.visibility = "visible";
-    document.getElementById("table-container").style.visibility = "hidden"
-
+    document.getElementById("table-container").style.visibility = "hidden";
   } else {
     document.getElementById("plot-container").style.opacity = "1";
     document.getElementById("plot-title").style.opacity = "1";
     document.getElementById("color-legend").style.opacity = "1";
     document.getElementById("loader-container").style.visibility = "hidden";
-    document.getElementById("table-container").style.visibility = "visible"
-
+    document.getElementById("table-container").style.visibility = "visible";
   }
 
   // if (loading) {
