@@ -2847,5 +2847,5 @@ footer {
 }
 
 g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {
-  cursor: zoom-in;
+  cursor: pointer !important;
 }
