@@ -34,8 +34,8 @@ const NUMERIC_MEASURES = [
   "last_age_adjusted_rate",
   "first_crude_rate",
   "last_crude_rate",
-  "deaths",
-  "population",
+  // "deaths",
+  // "population",
 ];
 
 // The default state, shown if no URL params.

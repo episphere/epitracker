@@ -33,8 +33,8 @@ const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"];
 const NUMERIC_MEASURES = [
   "crude_rate",
   "age_adjusted_rate",
-  // "deaths",
-  // "population",
+  "deaths",
+  "population",
 ];
 const SPATIAL_LEVELS = ["county", "state"];
 
