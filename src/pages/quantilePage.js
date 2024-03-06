@@ -306,6 +306,12 @@ async function queryUpdated(query) {
     .filter((i) => i.sex.toLowerCase() !== "male")
     .sort((a, b) => Number(a.quantile) - Number(b.quantile));
 
+  const year = query.year.split("-").at(-1);
+  const quantileDetails =
+    staticData.quantileDetails[year]["8"][query.quantileField];
+  const xTicks = quantileDetailsToTicks(quantileDetails);
+  state["quantileRanges"] = xTicks;
+
   data.forEach((row) => {
     const maleOrFemaleData =
       row.sex.toLowerCase() === "male"
@@ -313,6 +319,7 @@ async function queryUpdated(query) {
         : femaleSortedByQuantile;
     const lastIndex = maleOrFemaleData.length - 1;
     const firstIndex = 0;
+    row["quantile_range"] = xTicks[row.quantile];
     if (maleOrFemaleData.length || femaleSortedByQuantile.length) {
       row["first_age_adjusted_rate"] =
         row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
@@ -338,15 +345,9 @@ async function queryUpdated(query) {
 }
 function plotConfigUpdated(plotConfig) {
   console.log("plotConfigUpdated", { plotConfig: plotConfig, state });
-  const year = plotConfig.query.year.split("-").at(-1);
 
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
-  const quantileDetails =
-    staticData.quantileDetails[year]["8"][plotConfig.query.quantileField];
-
-  const xTicks = quantileDetailsToTicks(quantileDetails);
-  state["quantileRanges"] = xTicks;
-  const xTickFormat = (_, i) => xTicks[i];
+  const xTickFormat = (_, i) => state["quantileRanges"][i];
 
   let data = plotConfig.mortalityData;
   if (plotConfig.query.compareColor != "none") {
@@ -589,12 +590,8 @@ function setInputsEnabled(enabled) {
 
 function plotTable() {
   elements.tableContainer.innerHTML = ``;
-  const tableData = state.mortalityData.map((i) => ({
-    ...i,
-    ["quantile_range"]: state.quantileRanges[i.quantile],
-  }));
   new DataTable(elements.tableContainer, {
-    data: dataToTableData(tableData),
+    data: dataToTableData(state.mortalityData),
     perPage: 20,
     perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
   });
