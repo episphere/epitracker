@@ -37,6 +37,11 @@ const NUMERIC_MEASURES = [
   "population",
 ];
 const SPATIAL_LEVELS = ["county", "state"];
+const CAUSE_SEX_MAP = {
+  Breast: "Female", // female, male
+  "Cervix Uteri": "Female",
+  // 'Colon and Rectum': 'female'
+};
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
@@ -205,6 +210,11 @@ export function init() {
       selectCountyElement.parentNode.nextSibling.lastChild;
     elements.selectChoicesListCounty.classList.add("text-secondary");
   }
+  const selectSexElement = document.getElementById("select-select-sex");
+  if (selectSexElement) {
+    elements.selectChoicesListSex =
+      selectSexElement.parentNode.nextSibling.lastChild;
+  }
   elements.selectSex = document.getElementById("select-select-sex");
   elements.selectRace = document.getElementById("select-select-race");
   elements.mapNavLink = document.getElementById("map-nav-link");
@@ -347,6 +357,7 @@ function initializeResetQuery() {
 }
 
 function updateURLParam(value, param) {
+  console.log("updateURLParam:", { value, param });
   const url = staticData.url;
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
@@ -367,7 +378,7 @@ function updateDisableResetQueryButton() {
 async function queryUpdated(query) {
   toggleLoading(true);
 
-  console.log({ state });
+  console.log("queryUpdated: ", { state, elements });
 
   updateDisableResetQueryButton();
 
@@ -410,6 +421,29 @@ async function queryUpdated(query) {
   let mortalityData = await dataManager.getCountyMortalityData(dataQuery, {
     includeTotals: false,
   });
+
+  if (query.cause !== "All") {
+    const sexParam = CAUSE_SEX_MAP[query.cause];
+
+    if (sexParam) {
+      state.sex = sexParam;
+
+      setTimeout(() => {
+        [...elements.selectChoicesListSex.children].forEach((sexElement) => {
+          const value = sexElement.dataset.value;
+          if (value !== sexParam && value !== "All") {
+            sexElement.classList.add("text-secondary");
+          }
+        });
+      }, 0);
+    } else {
+      state.sex = "All";
+      [...elements.selectChoicesListSex.childNodes].forEach((sexElement) => {
+        sexElement.classList.remove("text-secondary");
+      });
+    }
+  }
+
   state.mortalityData = mortalityData; //.filter(d => )
 
   if (elements.selectChoicesListCounty) {

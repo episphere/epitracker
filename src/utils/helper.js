@@ -335,12 +335,28 @@ export function colorRampLegend(
   svg
     .append("g")
     .attr("transform", `translate(${margin},${startY})`)
-    .style("font-size", 13)
+    .style("font-size", 12)
     .style("color", "#424242")
     .style("stroke-width", "1px")
     .call(axis);
 
   svg.selectAll(".tick").selectAll("line").attr("stroke", "#424242");
+  const percent = (tickValues[1] * 100) / (tickValues[2] - tickValues[0]);
+  const middleTickValue = Math.trunc(tickValues[1]);
+
+  if (percent < 5) {
+    svg
+      .selectAll(".tick")
+      .selectAll("text")
+      .filter(function () {
+        const text = +d3.select(this).text().replaceAll(",", "");
+        return text >= middleTickValue - 10 && text <= middleTickValue + 10;
+      })
+      .attr(
+        "transform",
+        `translate(${Math.trunc(tickValues[0].toString().length * 8)})`
+      );
+  }
 
   // Label
 
