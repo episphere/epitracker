@@ -1424,14 +1424,20 @@ span.icon {
 .custom-tooltip {
   background-color: rgba(255, 255, 255, 1);
   font-family: sans-serif;
-  font-size: 0.7em;
+  /* font-size: 0.7em; */
   padding: 8px;
   border: none;
   border-radius: 2px;
   display: none;
   box-shadow: 1px 1px 5px rgb(81, 81, 81);
   pointer-events: none;
+  z-index: 300;
 }
+
+#map-tooltip {
+  font-size: .7em;
+}
+
 .svg-tooltip {
   background-color: rgba(255, 255, 255, 0.9) !important;
 }
@@ -2501,6 +2507,7 @@ button.previous-btn {
   box-shadow: 2px 2px 6px 1px lightgrey;
   padding-top: 12px;
   padding-bottom: 5px;
+  padding-right: 5px;
 }
 
 .map-grid-label {
@@ -2844,6 +2851,57 @@ footer {
   width: 30px;
   /* background: #f9fbff;
   border-left: solid 1px var(--bs-border-color); */
+}
+
+#color-settings-dropdown {
+  display: none; 
+  flex-direction: column;
+  padding: 10px;
+  gap: 8px;
+  pointer-events: auto;
+  width: 380px;
+}
+
+
+#color-settings-dropdown label {
+  font-size: 0.9em;
+  color: grey;
+  margin-bottom: -1px;
+}
+
+#outlier-cutoff-element {
+  display: flex;
+}
+
+
+#color-settings-dropdown .form-check-label {
+  line-height: 1.7em;
+}
+
+#outlier-cutoff-range-text {
+  width: 40px;
+  color: grey;
+}
+
+.range-with-text {
+  display: flex;
+  gap: 10px;
+}
+
+.range-with-text span {
+  text-align: right;
+}
+
+#color-settings-close {
+  color: grey;
+  margin-right: -8px;
+  margin-top: -8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#color-settings-close:hover {
+  color: lightgrey;
 }
 
 g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {

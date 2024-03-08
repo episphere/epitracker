@@ -69,6 +69,42 @@ export function addProximityHover(
   });
 }
 
+export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
+  const svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+
+  // This is a terrible way to generate a unique ID, but it's unlikely to cause a problem.
+  const gradientId = "ramp-gradient-"+Math.floor(Math.random()*10000000)
+
+  const defs = svg.append("defs")
+  const gradient = defs.append("linearGradient")
+    .attr("id", gradientId)
+    .attr("x1", "0%")
+    .attr("x2", "100%")
+
+   gradient.append("stop")
+    .attr("class", "start")
+    .attr("offset", `0%`)
+    .attr("stop-color", colorScale(0))
+
+  for (let i = 1; i < nStops+1; i++) {
+    gradient.append("stop")
+      .attr("offset", `${100*i/nStops}%`)
+      .attr("stop-color", colorScale(i/nStops))
+  }
+
+  const margin = 10
+  svg.append("rect")
+    .attr("x", margin)
+    .attr("y", 0)
+    .attr("width", width-margin*2)
+    .attr("height", height)
+    .attr("fill", `url(#${gradientId})`)
+
+  return svg.node()
+}
+
 export function createOptionSorter(forceStart = [], forceEnd = []) {
   const forceStartSet = new Set(forceStart);
   const forceEndSet = new Set(forceEnd);
@@ -79,7 +115,9 @@ export function createOptionSorter(forceStart = [], forceEnd = []) {
     } else if (forceEndSet.has(a.label) || forceStartSet.has(b.label)) {
       return 1;
     } else {
-      return a.label.localeCompare(b.label);
+      const aLabel = a.label.value ? a.label.value : a.label
+      const bLabel = b.label.value ? b.label.value : b.label
+      return aLabel.localeCompare(bLabel);
     }
   };
 }
@@ -146,7 +184,7 @@ export function addPopperTooltip(element) {
     tooltipElement.style.display = "none";
   }
 
-  return { show, hide };
+  return { show, hide, tooltipElement };
 }
 
 export function addTooltip(svgSelect, elementSelect = null) {
@@ -261,13 +299,14 @@ export function colorRampLegend(
   valueExtent,
   label = "",
   tickValues = null,
-  size = null
+  size = null,
+  outlierColors = null,
 ) {
   const nGrad = 16;
-  const margin = 30;
+  const margin = 20;
 
   if (size == null) {
-    size = label ? [400, 60] : [400, 40];
+    size = label ? [370 - (outlierColors ? outlierColors.length : 0)*45, 60] : [370 - outlierColors.length*45, 40];
   }
   const startY = label ? 20 : 0;
 
@@ -312,9 +351,9 @@ export function colorRampLegend(
     .attr("y", startY)
     .attr("width", size[0] - margin * 2)
     .attr("height", size[1] - 23 - startY)
-    .attr("fill", `url(#${gradientId})`);
+    .attr("fill", `url(#${gradientId})`)
 
-  // Ticks
+ // Ticks
 
   const scale = d3
     .scaleLinear()
@@ -368,10 +407,25 @@ export function colorRampLegend(
       .append("text")
       .attr("x", margin)
       .attr("y", 15)
-      .text(label);
+      .text(label)
   }
 
-  return svg.node();
+  const legendDiv = document.createElement("div")
+  legendDiv.style.display = "flex"
+  legendDiv.style.alignItems = "end"
+
+  if (outlierColors && outlierColors.length > 1) {
+    legendDiv.appendChild(outlierLabel(outlierColors[0]))
+  }
+  
+  legendDiv.appendChild(svg.node())
+
+  if (outlierColors) {
+    legendDiv.appendChild(outlierLabel(outlierColors.at(-1)))
+  }
+
+
+  return legendDiv;
 }
 
 export function colorRampLegendMeanDiverge(
@@ -379,29 +433,74 @@ export function colorRampLegendMeanDiverge(
   schemeName,
   label = null,
   size = null,
-  reverse = false
+  reverse = false,
+  outlierColors = null,
+  centerMean = true,
 ) {
-  if (!values.length) return;
+  //if (!values.length) return;
 
-  const mean = d3.mean(values);
-  const extent = d3.extent(values);
-  const maxSide = Math.max(mean - extent[0], extent[1] - mean);
+  let domainValues = values 
+
+  const extent = d3.extent(domainValues);
+  const mean = d3.mean(domainValues);
+
+
+  let colorDomain = extent
+  if (centerMean) {
+    const maxSide = Math.max(mean - extent[0], extent[1] - mean);
+    colorDomain = [mean - maxSide, mean + maxSide]
+  }
+
+  if (reverse) {
+    colorDomain = [colorDomain[1], colorDomain[0]]
+  }
 
   const colorScale = d3
     .scaleSequential(d3["interpolate" + schemeName])
-    .domain(
-      reverse
-        ? [mean + maxSide, mean - maxSide]
-        : [mean - maxSide, mean + maxSide]
-    );
+    .domain(colorDomain);
+
+  const ticks = centerMean ? [extent[0], mean, extent[1]] : extent
 
   return colorRampLegend(
     colorScale,
     extent,
     label,
-    [extent[0], mean, extent[1]],
-    size
+    ticks,
+    size,
+    outlierColors
   );
+}
+
+function outlierLabel(color) {
+  const svg = d3.create("svg") 
+    .attr("width", 45)
+    .attr("height", 40)
+
+  var rectWidth = 16
+  var rectHeight = 18
+  var rectColor = color
+  
+  var textLabel = "Outliers";
+  
+  svg.append("rect")
+     .attr("x", 22-rectWidth/2) 
+     .attr("y", 0)           
+     .attr("width", rectWidth)
+     .attr("height", rectHeight)
+     .attr("fill", rectColor)
+     .attr("rx", 3)
+     .attr("ry", 3)
+  
+  svg.append("text")
+    .attr("x", 22)
+    .attr("y", 37)
+    .text(textLabel)
+    .attr("fill", "rgb(66, 66, 66)")
+    .attr("text-anchor", "middle")
+    .style("font-size", "12px")
+    .style("font-family", "sans-serif")
+
+  return svg.node()
 }
 
 const reSizePlots = (id, large, scale = 1.5) => {

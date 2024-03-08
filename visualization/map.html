@@ -121,7 +121,7 @@
             <ul>
         </div>
         <div id="topbar-cnt">
-          <button id="reset-query" class="btn btn-outline-secondary" disabled>reset</button>
+          <button id="reset-query" class="btn btn-outline-secondary" disabled>Reset</button>
           <div id="download-container"></div>
         </div>
        
@@ -143,6 +143,45 @@
     </div>
 <!-- 
     <div id="right-margin"></div> -->
+  </div>
+
+
+  <!-- The color settings element dropdown, initially hidden -->
+  <div id="color-settings-dropdown">
+    <div class="d-flex justify-content-between">
+      <h5><i class="bi bi-gear-fill me-2"></i>Color Scheme Settings</h5>
+      <i id="color-settings-close" class="fa-solid fa-xmark"></i>
+    </div>
+
+    <div class="mb-2">
+      <label for="select-color-scheme">Color scheme</label>
+      <select id="select-color-scheme" class="form-select mb-2" aria-label="Color scheme select" disabled>
+      </select>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="check-reverse-color" checked="">
+      <label class="form-check-label" for="check-reverse-color">Reverse</label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="check-center-mean-color" checked="">
+      <label class="form-check-label" for="check-center-mean-color">Center on mean</label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="check-exclude-outliers" checked="">
+      <label class="form-check-label" for="check-exclude-outliers">Exclude outliers</label>
+    </div>
+
+    <div >
+      <label for="outlier-cutoff-range" class="form-label">Outlier threshold</label>
+      <div id="outlier-cutoff-element" class="range-with-text">
+        <input type="range" class="form-range" id="outlier-cutoff-range" min="1" max="5" step="0.5">
+        <span id="outlier-cutoff-range-text"></span>
+      </div>
+    </div>
+
   </div>
 
 
