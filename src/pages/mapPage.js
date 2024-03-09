@@ -7,7 +7,7 @@ import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
-import { hookSelectChoices } from "../utils/input2.js";
+import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
 import { plotMortalityMapGrid } from "../utils/mapPlots.js";
 import {
   dataToTableData,
@@ -16,6 +16,8 @@ import {
   formatCauseName,
   createOptionSorter,
   sortCompare,
+  addPopperTooltip,
+  scaleGradient,
 } from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
@@ -56,6 +58,10 @@ const INITIAL_STATE = {
   areaState: "All",
   areaCounty: "All",
   scheme: "RdYlBu",
+  colorReverse: true,
+  colorCenterMean: true,
+  colorExcludeOutliers: true,
+  outlierCutoff: 3,
 };
 
 let state, dataManager;
@@ -91,6 +97,12 @@ function initializeState() {
   state.defineProperty("areaCountyOptions", null, ["areaState"]);
   state.defineProperty("scheme", initialState.scheme);
   state.defineProperty("schemeOptions");
+  state.defineProperty("colorReverse", initialState.colorReverse);
+  state.defineProperty("colorReverseOptions");
+  state.defineProperty("colorCenterMean", initialState.colorCenterMean);
+  state.defineProperty("colorCenterMeanOptions");
+  state.defineProperty("colorExcludeOutliers", INITIAL_STATE.outlierCutoff)
+  state.defineProperty("outlierCutoff", INITIAL_STATE.outlierCutoff);
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -145,6 +157,10 @@ function initializeState() {
     "query",
     "measure",
     "scheme",
+    "colorReverse",
+    "colorCenterMean",
+    "colorExcludeOutliers",
+    "outlierCutoff"
   ]);
 
   for (const param of Object.keys(initialState)) {
@@ -163,6 +179,7 @@ function initializeState() {
     { id: "#select-measure", propertyName: "measure" },
     { id: "#select-level", propertyName: "spatialLevel" },
     { id: "#select-select-state", propertyName: "areaState", searchable: true },
+    { id: "#select-color-scheme", propertyName: "scheme", searchable: true },
     {
       id: "#select-select-county",
       propertyName: "areaCounty",
@@ -188,6 +205,19 @@ function initializeState() {
       sorter
     );
   }
+
+  hookCheckbox("#check-reverse-color", state, "colorReverse")
+  hookCheckbox("#check-center-mean-color", state, "colorCenterMean")
+  hookCheckbox("#check-exclude-outliers", state, "colorExcludeOutliers")
+
+  const outlierCutoffRange = document.getElementById("outlier-cutoff-range")
+  const outlierCutoffRangeText =  document.getElementById("outlier-cutoff-range-text")
+  outlierCutoffRange.addEventListener("input", () => {
+    state.outlierCutoff = outlierCutoffRange.value
+    outlierCutoffRangeText.innerText = "±" + outlierCutoffRange.value + "σ"
+  })
+  outlierCutoffRange.value = state.outlierCutoff
+  outlierCutoffRangeText.innerText = "±" + state.outlierCutoff + "σ"
 }
 
 export function init() {
@@ -231,6 +261,7 @@ export function init() {
   elements.groupDownloadButton = document.querySelector(
     "#download-container button"
   );
+  elements.outlierCutoffRange = document.getElementById("outlier-cutoff-range")
 
   state.subscribe("query", queryUpdated);
   state.subscribe("plotConfig", plotConfigUpdated);
@@ -330,9 +361,18 @@ function initialDataLoad(
     state.areaCounty = "All";
   });
 
-  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(
-    ([k, v]) => ({ value: k, label: v })
-  );
+  
+  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(([k, name]) => {
+    const colorScale = d3.scaleSequential(d3["interpolate" + k])
+    const div = document.createElement("div")
+    const labelSpan = document.createElement("span")
+    labelSpan.innerText = name
+    div.appendChild(scaleGradient(colorScale, 6, 100))
+    div.appendChild(labelSpan)
+    div.value = name
+    return { value: k, label: div.outerHTML }
+  })
+    
 
   setInputsEnabled(true);
 
@@ -357,7 +397,6 @@ function initializeResetQuery() {
 }
 
 function updateURLParam(value, param) {
-  console.log("updateURLParam:", { value, param });
   const url = staticData.url;
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
@@ -377,8 +416,6 @@ function updateDisableResetQueryButton() {
 
 async function queryUpdated(query) {
   toggleLoading(true);
-
-  console.log("queryUpdated: ", { state, elements });
 
   updateDisableResetQueryButton();
 
@@ -463,10 +500,6 @@ async function queryUpdated(query) {
         elementCountyItem.classList.add("text-dark");
       }
     });
-    console.log({
-      uniqueCountiesData,
-      selectChoicesListCounty: elements.selectChoicesListCounty,
-    });
   }
 }
 
@@ -498,6 +531,11 @@ function plotConfigUpdated(plotConfig) {
     overlayGeoJSON = null;
   }
 
+  if (plotConfig.colorExcludeOutliers) {
+    elements.outlierCutoffRange.removeAttribute("disabled")
+  } else {
+    elements.outlierCutoffRange.setAttribute("disabled", "")
+  }
   const legendContainer = document.getElementById("color-legend");
 
   const featureNameFormat = (feature) => {
@@ -509,6 +547,31 @@ function plotConfigUpdated(plotConfig) {
     }
     return name;
   };
+
+  //if (elements.)
+
+  if (!state.onSettingsClick) {
+    const plotsElement = document.getElementById("plots")
+    const colorSettingsTooltip = addPopperTooltip(plotsElement)
+    const colorSettingsElement = document.getElementById("color-settings-dropdown")
+    const colorSettingsClose = document.getElementById("color-settings-close")
+  
+    let tooltipShown = false
+    state.onSettingsClick = (settingsButton) => {
+      colorSettingsElement.style.display = "flex"
+      if (tooltipShown) {
+        colorSettingsTooltip.hide()
+      } else {
+        colorSettingsTooltip.show(settingsButton, colorSettingsElement)
+      }
+      tooltipShown = !tooltipShown
+    }
+
+    colorSettingsClose.addEventListener("click", () => {
+      tooltipShown = !tooltipShown
+      colorSettingsTooltip.hide()
+    })
+  }
 
   if (plotConfig.mortalityData.length == 0) {
     elements.mapGrid.innerHTML =
@@ -537,6 +600,10 @@ function plotConfigUpdated(plotConfig) {
           measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
           scheme: plotConfig.scheme,
           featureNameFormat,
+          outlierThreshold: state.colorExcludeOutliers ? state.outlierCutoff : null,
+          reverseColorScheme: plotConfig.colorReverse,
+          centerColorMean: plotConfig.colorCenterMean,
+          onSettingsClick: state.onSettingsClick
         }
       );
     }
@@ -558,7 +625,6 @@ function changeView(view) {
   // TODO: Improve user experience by redrawing only on change. Use deferred drawing model from previous code.
 
   setTimeout(() => {
-    console.log(elements.colorLegend);
     if (view == "plot") {
       elements.tableNavLink.classList.remove("active");
       elements.mapNavLink.classList.add("active");
@@ -573,7 +639,6 @@ function changeView(view) {
       elements.mapsContainer.style.display = "none";
       elements.tableContainer.style.display = "block";
       elements.colorLegend.style.display = "none";
-      console.log(elements.colorLegend);
 
       if (state.mortalityData.length > 0) {
         plotTable();

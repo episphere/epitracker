@@ -72,7 +72,7 @@ export function hookSelectChoices(
   }
 
   const choices = new Choices(select, {
-    allowHTML: false,
+    allowHTML: true,
     itemSelectText: "",
     searchEnabled,
     sorter,
@@ -100,7 +100,6 @@ export function hookSelectChoices(
   });
 
   select.addEventListener("change", () => {
-    console.log({ valueProperty, state });
     state[valueProperty] = select.value;
   });
 

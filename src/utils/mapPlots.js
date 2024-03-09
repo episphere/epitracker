@@ -22,6 +22,8 @@ export function createChoroplethPlot(
 
   options = {
     drawBorders: true,
+    outlierColor: "#3d3d3d",
+    onSettingsClick: d => d,
     ...restOptions,
   };
 
@@ -31,25 +33,38 @@ export function createChoroplethPlot(
 
   const spatialDataMap = d3.index(spatialData, (d) => d[options.indexField]);
 
+  let values = spatialData.map(d => d[options.measureField])
+  // if (options.outlierThreshold) {
+  //   const mean = d3.mean(values)
+  //   const std = d3.deviation(values)
+  //   //console.log(" > ", values.filter(d => ((d-mean)/std) > options.outlierThreshold))
+  //   values = values.filter(d => ((d-mean)/std) <= options.outlierThreshold)
+  // }
+
   let color = options.color;
   if (!color) {
-    color.pivot = d3.mean(spatialData, (d) => d[options.measureField]);
-    color.domain = d3.extent(spatialData, (d) => d[options.measureField]);
+    color.pivot = d3.mean(values);
+    color.domain = d3.extent(values);
     color.reverse = true;
     color.scheme = "RdYlBu";
   }
 
-  const maxSide = Math.max(
-    color.pivot - color.domain[0],
-    color.domain[1] - color.pivot
-  );
+  let colorDomain = color.domain 
+  if (color.pivot != null) {
+    const maxSide = Math.max(
+      color.pivot - color.domain[0],
+      color.domain[1] - color.pivot
+    );
+    colorDomain = [color.pivot - maxSide, color.pivot + maxSide] 
+  } 
+
+  if (color.reverse) {
+    colorDomain = [colorDomain[1], colorDomain[0]]
+  }
+
   const colorScale = d3
     .scaleSequential(d3["interpolate" + color.scheme])
-    .domain(
-      color.reverse
-        ? [color.pivot + maxSide, color.pivot - maxSide]
-        : [color.pivot - maxSide, color.pivot + maxSide]
-    );
+    .domain(colorDomain);
   // const color = {
   //   scheme: options.scheme,
   //   pivot: meanValue,
@@ -64,12 +79,16 @@ export function createChoroplethPlot(
     Plot.geo(featureCollection, {
       stroke: (d) =>
         options.drawBorders
-          ? "lightgrey"
+          ? spatialDataMap.get(d.id)?.[options.measureField] ? "none" : "lightgrey"
           : spatialDataMap.get(d.id)?.[options.measureField],
       fill: (d) => {
         const row = spatialDataMap.get(d.id);
         if (row && row[options.measureField] != null) {
-          return colorScale(row[options.measureField]);
+          if (row[options.measureField] >= color.domain[0] && row[options.measureField] <= color.domain[1]) {
+            return colorScale(row[options.measureField]);
+          } else {
+            return options.outlierColor
+          }
         } else {
           return "white";
         }
@@ -98,13 +117,6 @@ export function createChoroplethPlot(
   if (options.width) plotOptions.width = options.width;
   if (options.height) plotOptions.height = options.height;
 
-  // const colorLegend = colorRampLegendMeanDiverge(
-  //   spatialData.map((d) => d[options.measureField]),
-  //   options.scheme, options.colorLegendLabel, null, true)
-  // if (colorLegend) {
-  //   colorLegend.style.position = "relative"
-  //   colorLegend.style.zIndex = 100
-  // }
 
   const figure = document.createElement("figure");
   const plot = Plot.plot(plotOptions);
@@ -156,6 +168,9 @@ export function plotMortalityMapGrid(
     prepareDataForDownload: (d) => d,
     measureLabel: null,
     minMapHeight: 550,
+    reverseColorScheme: false,
+    centerColorMean: true,
+    outlierThreshold: 3,
     ...options,
   };
 
@@ -239,10 +254,19 @@ export function plotMortalityMapGrid(
   const bbox = mapsContainer.getBoundingClientRect();
   const mapWidth = (0.9 * bbox.width) / nColumns;
   const mapHeight = Math.max(0.9 * bbox.height, options.minMapHeight);
-  console.log(mapHeight);
 
-  const mean = d3.mean(mortalityData, (d) => d[options.measureField]);
-  const domain = d3.extent(mortalityData, (d) => d[options.measureField]);
+  let values = mortalityData.map((d) => d[options.measureField])
+  const mean = d3.mean(values);
+  let domain = d3.extent(values);
+
+  if (options.outlierThreshold && values.length > 1) {
+    const std = d3.deviation(values)
+    const clipDomain = [-options.outlierThreshold, options.outlierThreshold].map(d => d*std+mean)
+    domain = [
+      Math.max(domain[0], clipDomain[0]),
+      Math.min(domain[1], clipDomain[1]),
+    ]
+  }
 
   const baseHistogramConfig = {
     options: {
@@ -268,11 +292,13 @@ export function plotMortalityMapGrid(
   };
 
   let sharedColorLegend = colorRampLegendMeanDiverge(
-    mortalityData.map((d) => d[options.measureField]),
+    values.filter(d => d >= domain[0] && d <= domain[1]),
     options.scheme,
     options.measureLabel,
     null,
-    true
+    options.reverseColorScheme,
+    ["#3d3d3d"],
+    options.centerColorMean
   );
 
   for (const config of mapConfigs) {
@@ -282,6 +308,9 @@ export function plotMortalityMapGrid(
     mapDiv.classList.add("map-grid-cell");
     mapDiv.style.gridRow = `${(config.rowIndex ?? 1) + 1} `;
     mapDiv.style.gridColumn = `${(config.columnIndex ?? 1) + 1}`;
+
+    const color = { pivot: options.centerColorMean ? mean : null, 
+      domain, scheme: options.scheme, reverse: options.reverseColorScheme }
 
     const { plot, colorLegend } = createChoroplethPlot(
       config.data,
@@ -293,7 +322,8 @@ export function plotMortalityMapGrid(
         overlayFeatureCollection: options.overlayFeatureCollection,
         width: mapWidth,
         height: mapHeight,
-        color: { pivot: mean, domain, scheme: options.scheme, reverse: true },
+        color,
+        outlierThreshold: 1,
       }
     );
 
@@ -321,7 +351,9 @@ export function plotMortalityMapGrid(
 
   const legendDiv = document.createElement("div");
   legendDiv.classList.add("legend-wrapper");
-  legendDiv.appendChild(sharedColorLegend);
+  if (sharedColorLegend) {
+    legendDiv.appendChild(sharedColorLegend);
+  }
   // document.getElementById("color-legend").style.top = "5px"
 
   const legendButtons = document.createElement("div");
@@ -337,9 +369,15 @@ export function plotMortalityMapGrid(
     legendContainer.classList.toggle("unpinned");
   });
 
+  settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
+
   legendContainer.innerHTML = ``;
   legendContainer.appendChild(legendDiv);
   legendContainer.appendChild(legendButtons);
+}
+
+function createColorSettings() {
+ 
 }
 
 function zoomOnMap(featureCollection, state) {
@@ -396,6 +434,7 @@ function addChoroplethInteractivity(
   const geoSelect = gSelect.selectAll("path");
 
   const tooltip = addPopperTooltip(plotContainer);
+  tooltip.tooltipElement.setAttribute("id", "map-tooltip")
 
   const previousStroke = null;
 
