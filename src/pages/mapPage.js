@@ -101,7 +101,7 @@ function initializeState() {
   state.defineProperty("colorReverseOptions");
   state.defineProperty("colorCenterMean", initialState.colorCenterMean);
   state.defineProperty("colorCenterMeanOptions");
-  state.defineProperty("colorExcludeOutliers", INITIAL_STATE.outlierCutoff)
+  state.defineProperty("colorExcludeOutliers", INITIAL_STATE.outlierCutoff);
   state.defineProperty("outlierCutoff", INITIAL_STATE.outlierCutoff);
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
@@ -160,7 +160,7 @@ function initializeState() {
     "colorReverse",
     "colorCenterMean",
     "colorExcludeOutliers",
-    "outlierCutoff"
+    "outlierCutoff",
   ]);
 
   for (const param of Object.keys(initialState)) {
@@ -206,18 +206,20 @@ function initializeState() {
     );
   }
 
-  hookCheckbox("#check-reverse-color", state, "colorReverse")
-  hookCheckbox("#check-center-mean-color", state, "colorCenterMean")
-  hookCheckbox("#check-exclude-outliers", state, "colorExcludeOutliers")
+  hookCheckbox("#check-reverse-color", state, "colorReverse");
+  hookCheckbox("#check-center-mean-color", state, "colorCenterMean");
+  hookCheckbox("#check-exclude-outliers", state, "colorExcludeOutliers");
 
-  const outlierCutoffRange = document.getElementById("outlier-cutoff-range")
-  const outlierCutoffRangeText =  document.getElementById("outlier-cutoff-range-text")
+  const outlierCutoffRange = document.getElementById("outlier-cutoff-range");
+  const outlierCutoffRangeText = document.getElementById(
+    "outlier-cutoff-range-text"
+  );
   outlierCutoffRange.addEventListener("input", () => {
-    state.outlierCutoff = outlierCutoffRange.value
-    outlierCutoffRangeText.innerText = "±" + outlierCutoffRange.value + "σ"
-  })
-  outlierCutoffRange.value = state.outlierCutoff
-  outlierCutoffRangeText.innerText = "±" + state.outlierCutoff + "σ"
+    state.outlierCutoff = outlierCutoffRange.value;
+    outlierCutoffRangeText.innerText = "±" + outlierCutoffRange.value + "σ";
+  });
+  outlierCutoffRange.value = state.outlierCutoff;
+  outlierCutoffRangeText.innerText = "±" + state.outlierCutoff + "σ";
 }
 
 export function init() {
@@ -261,7 +263,7 @@ export function init() {
   elements.groupDownloadButton = document.querySelector(
     "#download-container button"
   );
-  elements.outlierCutoffRange = document.getElementById("outlier-cutoff-range")
+  elements.outlierCutoffRange = document.getElementById("outlier-cutoff-range");
 
   state.subscribe("query", queryUpdated);
   state.subscribe("plotConfig", plotConfigUpdated);
@@ -343,7 +345,9 @@ function initialDataLoad(
       .filter((i) => i.startsWith(d))
       .map((i) => ({
         value: i,
-        label: fipsMap.get(i),
+        label:
+          fipsMap.get(i) +
+          (d !== "All" ? ", " + nameMappings.states[d].short : ""),
       }))
       .sort((a, b) => sortCompare(a, b, "name")),
   }));
@@ -361,18 +365,18 @@ function initialDataLoad(
     state.areaCounty = "All";
   });
 
-  
-  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(([k, name]) => {
-    const colorScale = d3.scaleSequential(d3["interpolate" + k])
-    const div = document.createElement("div")
-    const labelSpan = document.createElement("span")
-    labelSpan.innerText = name
-    div.appendChild(scaleGradient(colorScale, 6, 100))
-    div.appendChild(labelSpan)
-    div.value = name
-    return { value: k, label: div.outerHTML }
-  })
-    
+  state.schemeOptions = Object.entries(nameMappings.colorSchemes).map(
+    ([k, name]) => {
+      const colorScale = d3.scaleSequential(d3["interpolate" + k]);
+      const div = document.createElement("div");
+      const labelSpan = document.createElement("span");
+      labelSpan.innerText = name;
+      div.appendChild(scaleGradient(colorScale, 6, 100));
+      div.appendChild(labelSpan);
+      div.value = name;
+      return { value: k, label: div.outerHTML };
+    }
+  );
 
   setInputsEnabled(true);
 
@@ -457,6 +461,8 @@ async function queryUpdated(query) {
 
   let mortalityData = await dataManager.getCountyMortalityData(dataQuery, {
     includeTotals: false,
+    counties: state.areaCountyOptions,
+    states: state.areaStateOptions,
   });
 
   if (query.cause !== "All") {
@@ -484,6 +490,7 @@ async function queryUpdated(query) {
   state.mortalityData = mortalityData; //.filter(d => )
 
   if (elements.selectChoicesListCounty) {
+    // NOTE: This is for changes choices option color
     const mortalityDataWithCounties = await dataManager.getCountyMortalityData(
       dataQuery,
       { includeTotals: false, includeCountyFips: true }
@@ -532,9 +539,9 @@ function plotConfigUpdated(plotConfig) {
   }
 
   if (plotConfig.colorExcludeOutliers) {
-    elements.outlierCutoffRange.removeAttribute("disabled")
+    elements.outlierCutoffRange.removeAttribute("disabled");
   } else {
-    elements.outlierCutoffRange.setAttribute("disabled", "")
+    elements.outlierCutoffRange.setAttribute("disabled", "");
   }
   const legendContainer = document.getElementById("color-legend");
 
@@ -551,26 +558,28 @@ function plotConfigUpdated(plotConfig) {
   //if (elements.)
 
   if (!state.onSettingsClick) {
-    const plotsElement = document.getElementById("plots")
-    const colorSettingsTooltip = addPopperTooltip(plotsElement)
-    const colorSettingsElement = document.getElementById("color-settings-dropdown")
-    const colorSettingsClose = document.getElementById("color-settings-close")
-  
-    let tooltipShown = false
+    const plotsElement = document.getElementById("plots");
+    const colorSettingsTooltip = addPopperTooltip(plotsElement);
+    const colorSettingsElement = document.getElementById(
+      "color-settings-dropdown"
+    );
+    const colorSettingsClose = document.getElementById("color-settings-close");
+
+    let tooltipShown = false;
     state.onSettingsClick = (settingsButton) => {
-      colorSettingsElement.style.display = "flex"
+      colorSettingsElement.style.display = "flex";
       if (tooltipShown) {
-        colorSettingsTooltip.hide()
+        colorSettingsTooltip.hide();
       } else {
-        colorSettingsTooltip.show(settingsButton, colorSettingsElement)
+        colorSettingsTooltip.show(settingsButton, colorSettingsElement);
       }
-      tooltipShown = !tooltipShown
-    }
+      tooltipShown = !tooltipShown;
+    };
 
     colorSettingsClose.addEventListener("click", () => {
-      tooltipShown = !tooltipShown
-      colorSettingsTooltip.hide()
-    })
+      tooltipShown = !tooltipShown;
+      colorSettingsTooltip.hide();
+    });
   }
 
   if (plotConfig.mortalityData.length == 0) {
@@ -600,10 +609,12 @@ function plotConfigUpdated(plotConfig) {
           measureLabel: staticData.nameMappings["measures"][plotConfig.measure],
           scheme: plotConfig.scheme,
           featureNameFormat,
-          outlierThreshold: state.colorExcludeOutliers ? state.outlierCutoff : null,
+          outlierThreshold: state.colorExcludeOutliers
+            ? state.outlierCutoff
+            : null,
           reverseColorScheme: plotConfig.colorReverse,
           centerColorMean: plotConfig.colorCenterMean,
-          onSettingsClick: state.onSettingsClick
+          onSettingsClick: state.onSettingsClick,
         }
       );
     }
