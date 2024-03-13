@@ -1,6 +1,6 @@
 import jszip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
 import * as aq from "https://cdn.jsdelivr.net/npm/arquero@5.2.0/+esm";
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3-dsv@3.0.1/+esm";
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 export class EpiTrackerData {
   constructor(args = {}) {
@@ -103,7 +103,7 @@ export class EpiTrackerData {
     const filterString =
       aqFilter.length > 0 ? `row => ` + aqFilter.join(" && ") : "row => true";
 
-    return this.postProcessCountyMortalityData(
+    const data = this.postProcessCountyMortalityData(
       countyMortalityData.filter(filterString).derive({
         deaths: (d) => d.aq.op.parse_float(d.deaths),
         population: (d) => d.aq.op.parse_float(d.population),
@@ -111,6 +111,26 @@ export class EpiTrackerData {
         age_adjusted_rate: (d) => aq.op.parse_float(d.age_adjusted_rate),
       })
     ).objects();
+
+    if (args?.counties && args?.states) {
+      const statesMap = d3.index(args.states, (d) => d["value"]);
+      let countiesMap = d3.index(args.counties, (d) => d["value"]);
+
+      if (query.state_fips === "*") {
+        const integratedCounties = args.counties.reduce((pv, cv) => {
+          return [...pv, ...cv.choices];
+        }, []);
+        countiesMap = d3.index(integratedCounties, (d) => d["value"]);
+      }
+
+      return data.map((item) => ({
+        ...item,
+        state: statesMap.get(item.state_fips).label,
+        county: countiesMap.get(item.county_fips).label,
+      }));
+    }
+
+    return data;
   }
 
   async getDemographicMortalityData(query, args = {}) {
