@@ -1,4 +1,5 @@
 import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
+import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
@@ -500,8 +501,20 @@ function addDownloadButton() {
         downloadMortalityData(state.mortalityData, baseFilename, "json"),
     },
     { label: "Download plot (PNG)", listener: downloadGraph },
+    { label: "Download plot (SVG)", listener: downloadGraphSVG },
   ]);
   groupDownloadContainer.appendChild(downloadButton);
+}
+
+function downloadGraphSVG() {
+  toSvg(document.getElementById("plots")).then((data) => {
+    const link = document.createElement('a')
+    link.download = 'plot-svg';
+    link.href = data;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  })
 }
 
 function downloadGraph() {
