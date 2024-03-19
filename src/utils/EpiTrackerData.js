@@ -126,7 +126,7 @@ export class EpiTrackerData {
       return data.map((item) => ({
         ...item,
         state: statesMap.get(item.state_fips).label,
-        county: countiesMap.get(item.county_fips).label,
+        county: countiesMap.get(item.county_fips)?.label,
       }));
     }
 
