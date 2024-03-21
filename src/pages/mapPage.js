@@ -3,7 +3,7 @@
  * @author Lee Mason <masonlk@nih.gov>
  */
 import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
-
+import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
@@ -688,6 +688,7 @@ function addGroupDownloadButton() {
         downloadMortalityData(state.mortalityData, baseFilename, "json"),
     },
     { label: "Download maps (PNG)", listener: downloadMapGrid },
+    { label: "Download maps (SVG)", listener: downloadMapSVG },
   ]);
   groupDownloadContainer.appendChild(downloadButton);
 }
@@ -723,6 +724,17 @@ function resizeMap(mapCellElement, previousSize) {
   // // console.log(cellHeight, svgHeight)
   // svg.setAttribute("width", svgWidth*scalingFactor)
   // console.log(cellWidth, previousSize[0])
+}
+
+function downloadMapSVG() {
+  toSvg(document.getElementById("plots")).then((data) => {
+    const link = document.createElement('a')
+    link.download = 'map-svg';
+    link.href = data;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  })
 }
 
 function downloadMapGrid() {
