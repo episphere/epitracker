@@ -727,15 +727,24 @@ function resizeMap(mapCellElement, previousSize) {
 }
 
 function downloadMapSVG() {
-  toSvg(document.getElementById("plots")).then((data) => {
+  const plotsElement = document.getElementById("plots")
+  console.log({plotsElement});
+  const legendButtonsElement = plotsElement.getElementsByClassName("legend-buttons")[0]
+  if (legendButtonsElement) {
+    legendButtonsElement.style.display = "none"
+  }
+  return toSvg(plotsElement)
+  .then((data) => {
     const link = document.createElement('a')
     link.download = 'map-svg';
     link.href = data;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    legendButtonsElement.style.display = "flex"
   })
 }
+
 
 function downloadMapGrid() {
   const mapGrid = document.getElementById("map-grid");
