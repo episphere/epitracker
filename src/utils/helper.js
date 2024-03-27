@@ -2,7 +2,17 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm";
 
 export function dataToTableData(data) {
-  const keys = Object.keys(data[0]);
+  const temporaryKeys = Object.keys(data[0]);
+  const quantileKeyIndex = temporaryKeys.indexOf('quantile')
+  const keys = []
+
+  if (quantileKeyIndex !== -1) {
+    keys.push(...temporaryKeys.slice(0, quantileKeyIndex + 1), 'quantile_range')
+    keys.push(...temporaryKeys.filter(i => i !== 'quantile_range').slice(quantileKeyIndex + 1))
+  } else {
+    keys.push(...temporaryKeys)
+  }
+
   const array = [];
   for (const row of data) {
     array.push(keys.map((key) => row[key]));
@@ -10,6 +20,7 @@ export function dataToTableData(data) {
 
   return { headings: keys, data: array };
 }
+
 
 export function addProximityHover(
   elementsSelect,

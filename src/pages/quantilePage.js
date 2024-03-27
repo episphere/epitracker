@@ -507,7 +507,7 @@ function addDownloadButton() {
 }
 
 function downloadGraphSVG() {
-  toSvg(document.getElementById("plots")).then((data) => {
+  return toSvg(document.getElementById("plots")).then((data) => {
     const link = document.createElement('a')
     link.download = 'plot-svg';
     link.href = data;

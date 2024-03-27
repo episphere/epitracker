@@ -215,7 +215,7 @@ export function plotMortalityMapGrid(
   const nRows = Math.max(valuesColumn.length, 1);
   const nColumns = Math.max(valuesColumn.length, 1);
 
-  mapsContainer.innerHTML = ``;
+  options.minMapHeight = Math.floor(550 / nColumns)
   //mapsContainer.style.display = 'grid';
   mapsContainer.style.gridTemplateRows = `repeat(${
     options.rowField ? nRows + 1 : nRows
@@ -253,7 +253,7 @@ export function plotMortalityMapGrid(
 
   const bbox = mapsContainer.getBoundingClientRect();
   const mapWidth = (0.9 * bbox.width) / nColumns;
-  const mapHeight = Math.max(0.9 * bbox.height, options.minMapHeight);
+  const mapHeight = Math.max(0.9 * bbox.height / nColumns, options.minMapHeight);
 
   let values = mortalityData.map((d) => d[options.measureField])
   const mean = d3.mean(values);
