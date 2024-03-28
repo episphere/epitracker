@@ -21,7 +21,6 @@ export function dataToTableData(data) {
   return { headings: keys, data: array };
 }
 
-
 export function addProximityHover(
   elementsSelect,
   plotSelect,
