@@ -7,13 +7,13 @@
     "state": "State",
     "age_group": "Age Group"
   },
-  "measures": {
+    "measures": {
     "crude_rate": "Crude Mortality Rate (per 100,000)",
     "age_adjusted_rate": "Age-Adjusted Mortality Rate (per 100,000)",
-    "first_age_adjusted_rate": "Age Adjusted Rate Ratio (Ref=Q1)",
-    "last_age_adjusted_rate": "Age Adjusted Rate Ratio (Ref=Q8)",
-    "first_crude_rate": "Crude Adjusted Rate Ratio (Ref=Q1)",
-    "last_crude_rate": "Crude Adjusted Rate Ratio (Ref=Q8)",
+    "Age Adjusted Rate Ratio (Ref=Q1)": "Age Adjusted Rate Ratio (Ref=Q1)",
+    "Age Adjusted Rate Ratio (Ref=Q8)": "Age Adjusted Rate Ratio (Ref=Q8)",
+    "Crude Adjusted Rate Ratio (Ref=Q1)": "Crude Adjusted Rate Ratio (Ref=Q1)",
+    "Crude Adjusted Rate Ratio (Ref=Q8)": "Crude Adjusted Rate Ratio (Ref=Q8)",
     "deaths": "Death",
     "population": "Population"
   },

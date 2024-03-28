@@ -29,12 +29,12 @@ const COMPARABLE_FIELDS = ["race", "sex"];
 const DATA_YEARS = ["2018", "2019", "2020"]; //, "2018-2020"] // TODO: Re-add grouped year
 const QUANTILE_NUMBERS = ["8 (octiles)"];
 const NUMERIC_MEASURES = [
-  "crude_rate",
+   "crude_rate",
   "age_adjusted_rate",
-  "first_age_adjusted_rate",
-  "last_age_adjusted_rate",
-  "first_crude_rate",
-  "last_crude_rate",
+  "Age Adjusted Rate Ratio (Ref=Q1)",
+  "Age Adjusted Rate Ratio (Ref=Q8)",
+  "Crude Adjusted Rate Ratio (Ref=Q1)",
+  "Crude Adjusted Rate Ratio (Ref=Q8)",
   // "deaths",
   // "population",
 ];
@@ -321,14 +321,14 @@ async function queryUpdated(query) {
     const lastIndex = maleOrFemaleData.length - 1;
     const firstIndex = 0;
     row["quantile_range"] = xTicks[row.quantile];
-    if (maleOrFemaleData.length || femaleSortedByQuantile.length) {
-      row["first_age_adjusted_rate"] =
+   if (maleOrFemaleData.length || femaleSortedByQuantile.length) {
+      row["Age Adjusted Rate Ratio (Ref=Q1)"] =
         row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
-      row["last_age_adjusted_rate"] =
+      row["Age Adjusted Rate Ratio (Ref=Q8)"] =
         row.age_adjusted_rate / maleOrFemaleData[lastIndex].age_adjusted_rate;
-      row["first_crude_rate"] =
+      row["Crude Adjusted Rate Ratio (Ref=Q1)"] =
         row.crude_rate / maleOrFemaleData[firstIndex].crude_rate;
-      row["last_crude_rate"] =
+      row["Crude Adjusted Rate Ratio (Ref=Q8)"] =
         row.crude_rate / maleOrFemaleData[lastIndex].crude_rate;
     }
     for (const measure of NUMERIC_MEASURES) {
