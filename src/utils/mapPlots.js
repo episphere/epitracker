@@ -216,6 +216,7 @@ export function plotMortalityMapGrid(
   const nColumns = Math.max(valuesColumn.length, 1);
 
   options.minMapHeight = Math.floor(550 / nColumns)
+  mapsContainer.innerHTML = ``;
   //mapsContainer.style.display = 'grid';
   mapsContainer.style.gridTemplateRows = `repeat(${
     options.rowField ? nRows + 1 : nRows

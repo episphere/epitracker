@@ -745,7 +745,6 @@ function downloadMapSVG() {
   })
 }
 
-
 function downloadMapGrid() {
   const mapGrid = document.getElementById("map-grid");
   const temporaryGrid = mapGrid.cloneNode();
