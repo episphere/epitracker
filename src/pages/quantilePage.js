@@ -287,16 +287,16 @@ async function queryUpdated(query) {
 
   const dataQuery = {
     year: query.year,
+    sex: query.sex,
     cause: query.cause,
     race: query.race,
-    sex: query.sex,
     quantile_field: query.quantileField,
   };
 
   if (query.compareColor != "none") dataQuery[query.compareColor] = "*";
   if (query.compareFacet != "none") dataQuery[query.compareFacet] = "*";
 
-  const data = await dataManager.getQuantileMortalityData(dataQuery, {
+  let data = await dataManager.getQuantileMortalityData(dataQuery, {
     includeTotals: false,
   });
   const maleSortedByQuantile = data
@@ -313,7 +313,7 @@ async function queryUpdated(query) {
   const xTicks = quantileDetailsToTicks(quantileDetails);
   state["quantileRanges"] = xTicks;
 
-  data.forEach((row) => {
+  data = data.map((row) => {
     const maleOrFemaleData =
       row.sex.toLowerCase() === "male"
         ? maleSortedByQuantile
@@ -338,6 +338,20 @@ async function queryUpdated(query) {
         (row[measure] + 1.96 * se).toFixed(2)
       );
     }
+    const rowKeys = Object.keys(row)
+    const temporaryKeys = []
+    const quantileKeyIndex = rowKeys.findIndex(key => key === "quantile")
+    if (quantileKeyIndex !== -1) {
+      temporaryKeys.push(...rowKeys.slice(0, quantileKeyIndex + 1), 'quantile_range')
+      temporaryKeys.push(...rowKeys.filter(i => i !== 'quantile_range').slice(quantileKeyIndex + 1))
+    } else {
+      temporaryKeys.push(...rowKeys)
+    }
+    
+    return temporaryKeys.reduce((pv, cv, ci) => {
+      return {...pv, [cv]: row[cv]}
+    }, {})
+
   });
 
   state.mortalityData = data;

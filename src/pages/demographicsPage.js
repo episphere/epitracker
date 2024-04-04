@@ -3,6 +3,7 @@
  * @author Lee Mason <masonlk@nih.gov>
  */
 
+import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import {
@@ -10,6 +11,7 @@ import {
   createOptionSorter,
   formatCauseName,
   formatName,
+  dataToTableData
 } from "../utils/helper.js";
 import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
@@ -51,11 +53,17 @@ export function init() {
     barContainer: document.getElementById("plot-container"),
     sidebar: document.getElementById("sidebar"),
     title: document.getElementById("plot-title"),
+    tableContainer: document.getElementById("table-container"),
+    graphNavLink: document.getElementById("graph-nav-link"),
+    tableNavLink: document.getElementById("table-nav-link"),
   };
 
   elements.barContainer.style.height = elements.barContainer.style.maxHeight;
   console.log("Set height", elements.barContainer.style.maxHeight);
   initializeState();
+
+  elements.tableNavLink.addEventListener("click", () => changeView("table"));
+  elements.graphNavLink.addEventListener("click", () => changeView("plot"));
 }
 
 function initializeState() {
@@ -327,6 +335,8 @@ function plotConfigUpdated() {
     },
     yStartZero: state.startZero,
   });
+
+  plotTable()
 }
 
 function updateURLParam(value, param) {
@@ -439,4 +449,39 @@ function updateTitle() {
 
 function downloadMortalityData() {}
 
-function downloadGraph() {}
+function downloadGraph() { }
+
+function plotTable() {
+  elements.tableContainer.innerHTML = ``;
+  new DataTable(elements.tableContainer, {
+    data: dataToTableData(state.mortalityData),
+    perPage: 20,
+    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
+  });
+}
+
+function changeView(view) {
+  // toggleLoading(true);
+
+  if (view == "plot") {
+    elements.tableNavLink.classList.remove("active");
+    elements.graphNavLink.classList.add("active");
+    elements.barContainer.style.display = "block";
+    elements.tableContainer.style.display = "none";
+    elements.title.style.display = "block";
+
+    state.trigger("plotConfig"); // Trigger a redraw so sizing is correct.
+  } else if (view == "table") {
+    elements.graphNavLink.classList.remove("active");
+    elements.tableNavLink.classList.add("active");
+    elements.barContainer.style.display = "none";
+    elements.tableContainer.style.display = "block";
+    elements.title.style.display = "none";
+
+    if (state.mortalityData.length > 0) {
+      plotTable();
+    }
+  }
+
+  // toggleLoading(false);
+}
