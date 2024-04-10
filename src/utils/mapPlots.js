@@ -18,6 +18,7 @@ export function createChoroplethPlot(
   featureCollection,
   options = {}
 ) {
+
   const { ...restOptions } = options;
 
   options = {
@@ -109,7 +110,11 @@ export function createChoroplethPlot(
   }
 
   const plotOptions = {
-    projection: { type: "albers-usa", domain: featureCollection },
+    projection: { 
+      type: "albers-usa", 
+      //domain: featureCollection,
+      domain: options.overlayFeatureCollection ? options.overlayFeatureCollection : featureCollection 
+    },
     //color: color,
     marks: marks,
   };

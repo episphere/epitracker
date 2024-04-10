@@ -270,7 +270,7 @@ export function init() {
 
   Promise.all([
     d3.json("../data/states.json"),
-    d3.json("../data/counties.json"),
+    d3.json("../data/geograpy/us_counties_simplified_more.json"),
     d3.json("../data/conceptMappings.json"),
     dataManager.getCountyMortalityData({ year: state.year }),
   ]).then(([stateGeoJSON, countyGeoJSON, nameMappings, mortalityData]) => {
@@ -624,6 +624,7 @@ function plotConfigUpdated(plotConfig) {
 
   initMapCellResize();
   updateMapTitle();
+
   toggleLoading(false);
 }
 
