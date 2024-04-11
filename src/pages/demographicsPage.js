@@ -4,6 +4,7 @@
  */
 
 import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
+import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import {
@@ -17,6 +18,7 @@ import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
 import { plotDemographicPlots } from "../utils/demographicPlots.js";
+import { downloadElementAsImage } from "../utils/download.js";
 
 window.onload = async () => {
   init();
@@ -393,8 +395,43 @@ function addDownloadButton() {
         downloadMortalityData(state.mortalityData, baseFilename, "json"),
     },
     { label: "Download plot (PNG)", listener: downloadGraph },
+    { label: "Download plot (SVG)", listener: downloadGraphSVG },
   ]);
   groupDownloadContainer.appendChild(downloadButton);
+}
+
+function downloadGraphSVG() {
+  return toSvg(document.getElementById("plots")).then((data) => {
+    const link = document.createElement('a')
+    link.download = 'plot-svg';
+    link.href = data;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  })
+}
+
+function downloadGraph() {
+  const temporaryContainer = elements.barContainer.cloneNode(true);
+  // const temporaryLegend = elements.plotLegend.cloneNode(true);
+  const temporaryTitle = elements.title.cloneNode(true);
+
+  // const legendChecks = temporaryLegend.querySelectorAll(".legend-check");
+  // legendChecks.forEach((check) => {
+  //   if (!check.hasAttribute("checked")) {
+  //     check.style.display = "none";
+  //   }
+  // });
+
+  console.log({ elements });
+  // const checkPaths = temporaryLegend.querySelectorAll(".legend-check path");
+  // checkPaths.forEach((path) => (path.style.visibility = "hidden"));
+
+  const wrapperElement = document.createElement("div");
+  // wrapperElement.appendChild(temporaryLegend);
+  wrapperElement.appendChild(temporaryTitle);
+  wrapperElement.appendChild(temporaryContainer);
+  return downloadElementAsImage(wrapperElement, "demograpic-plot");
 }
 
 function updateTitle() {
@@ -447,9 +484,29 @@ function updateTitle() {
   elements.title.innerHTML = title;
 }
 
-function downloadMortalityData() {}
+export function downloadStringAsFile(content, filename, contentType) {
+  const blob = new Blob([content], { type: contentType });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.target = "_blank";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
-function downloadGraph() { }
+function downloadMortalityData(mortalityData, filename, format) {
+  const data = mortalityData; //prepareMortalityDataForDownload(mortalityData)
+  let str = null;
+  if (format == "csv") {
+    str = d3.csvFormat(data);
+  } else if (format == "tsv") {
+    str = d3.tsvFormat(data);
+  } else {
+    str = JSON.stringify(data, null, 2);
+  }
+  downloadStringAsFile(str, filename + "." + format, "text/" + format);
+}
 
 function plotTable() {
   elements.tableContainer.innerHTML = ``;
