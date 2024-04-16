@@ -1,6 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { deepMerge } from "./helper.js";
+import {COLORS} from './color.js'
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
   const containerWidth = container.getBoundingClientRect().width
@@ -39,7 +40,8 @@ function plotBar(data, options={}) {
   const facetFormat = options.plotOptions.fx.tickFormat ? options.plotOptions.fx.tickFormat : d => d
 
   // Estimate label width
-  const labelWidth = d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH
+  const labelWidth = options.compareFacet ? 
+    d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
   const facetLabelWidth = options.compareFacet ? 
     d3.max([...new Set(data.map(d => d[options.compareFacet]))].map(d => facetFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
   // Label box size
@@ -56,12 +58,15 @@ function plotBar(data, options={}) {
   // Calculate the final plot width
   const plotWidth = barWidth * nBars * nFacets + marginWidth
 
-
   const barOptions = {
     y: options.measure,
     x: options.compareBar,
-    fill: "#1eb8d0",
-    tip: true,
+    fill: (d) => {
+      const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
+      const color = COLORS[selectedCompare]
+      return color[d[selectedCompare]]
+    },
+    tip: true,                                                                      
   }
 
   if (options.compareFacet) {

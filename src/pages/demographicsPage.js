@@ -214,7 +214,7 @@ function initialDataLoad(mortalityData, nameMappings) {
   names = nameMappings;
 
   // Initialise the input state from the data
-  state.compareBarOptions = [...COMPARABLE_FIELDS].map((field) => ({
+  state.compareBarOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
     label: names.fields[field],
   }));
@@ -310,19 +310,19 @@ function plotConfigUpdated() {
 
   const xOptions = {
     tickFormat: xFormat,
-    label: formatName(names, "fields", state.compareBar),
+    label: '',
   };
   const fxOptions = {
     tickFormat: tickFormat,
-    label: formatName(names, "fields", state.compareFacet),
+    label: '',
   };
 
   let ageDomain = null;
   if (state.compareBar == "age_group" || state.compareFacet == "age_group") {
     const ageGroups = [...new Set(state.mortalityData)].map((d) => d.age_group);
     ageDomain = sortAgeGroups(ageGroups);
-    const options = state.compareBar == "age_group" ? xOptions : fxOptions;
-    options.domain = ageDomain;
+    // const options = state.compareBar == "age_group" ? xOptions : fxOptions;
+    // options.domain = ageDomain;
   }
 
   const barContainer = elements.barContainer;
