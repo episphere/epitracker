@@ -397,9 +397,9 @@ function zoomOnMap(featureCollection, state) {
 
       geoSelect.on("click", (e, d) => {
         const feature = featureCollection.features[d];
-        const areaState = featureCollection.features[d].state;
+        const areaState = feature.id.slice(0,2)
         if (!state["areaState"] || state["areaState"] == "All") {
-          state["areaState"] = areaState.id;
+          state["areaState"] = areaState;
         } else if (!state["areaCounty"] || state["areaCounty"] == "All") {
           state["areaCounty"] = feature.id;
         }
