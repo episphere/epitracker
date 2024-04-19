@@ -805,7 +805,6 @@ function updateMapTitle() {
         if (state.areaCounty != "All") {
           return state.areaCounty;
         } else {
-          console.log(state.areaState)
           return state.areaState == "All"
             ? "US"
             : staticData.nameMappings.states[state.areaState].name;

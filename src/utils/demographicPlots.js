@@ -28,7 +28,7 @@ function plotBar(data, options={}) {
     ...options
   }
   
-  const CHAR_SIZE = 7.0
+  const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
   
   let nBars = 1
@@ -40,7 +40,7 @@ function plotBar(data, options={}) {
   const facetFormat = options.plotOptions.fx.tickFormat ? options.plotOptions.fx.tickFormat : d => d
 
   // Estimate label width
-  const labelWidth = options.compareFacet ? 
+  const labelWidth = options.compareBar ? 
     d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
   const facetLabelWidth = options.compareFacet ? 
     d3.max([...new Set(data.map(d => d[options.compareFacet]))].map(d => facetFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH

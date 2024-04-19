@@ -42,7 +42,7 @@ li {
   font-weight: bold;
   font-size: 0.9em;
   text-align: center;
-  margin-bottom: 100px;
+  margin-bottom: 30px;
   margin-top: 20px;
 }
 
@@ -2778,7 +2778,7 @@ button.previous-btn {
 
 #plot-container {
   height: 100%;
-  max-height: calc(100% - 120px); /* TODO: This is hack-y, fix */
+  max-height: calc(100% - 100px); /* TODO: This is hack-y, fix */
   /* width: 100%; */
   justify-content: center;
   max-width: 100%;
@@ -2788,7 +2788,7 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  height: calc(100% - 180px); /* TODO: This is hack-y, fix */
+  height: calc(100% - 10px); /* TODO: This is hack-y, fix */
 }
 
 #plot-container svg {
