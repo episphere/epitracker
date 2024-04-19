@@ -48,9 +48,6 @@ function plotBar(data, options={}) {
   const labelBox = labelWidth * Math.sin(Math.PI/4)
   const facetLabelBox = facetLabelWidth * Math.sin(Math.PI/4)
 
-  console.log(options.compareFacet)
-  console.log("LB",CHAR_SIZE, BASE_LABEL_WIDTH, d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length)))
-
   // Estimate the bar width at the target plot width.
   const marginWidth = labelBox + 50
   const infoWidth = options.targetWidth - marginWidth
