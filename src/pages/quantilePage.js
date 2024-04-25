@@ -11,6 +11,8 @@ import {
   dataToTableData,
   downloadMortalityData,
   formatCauseName,
+  grayOutSexSelectionBasedOnCause,
+  CAUSE_SEX_MAP,
   initSidebar,
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
@@ -69,7 +71,11 @@ export function init() {
 
   initializeState();
   addDownloadButton();
-
+const selectSexElement = document.getElementById("select-select-sex");
+  if (selectSexElement) {
+    elements.selectChoicesListSex =
+      selectSexElement.parentNode.nextSibling.lastChild;
+  }
   elements.selectSex = document.getElementById("select-select-sex");
   elements.selectRace = document.getElementById("select-select-race");
   elements.graphNavLink = document.getElementById("graph-nav-link");
@@ -353,6 +359,7 @@ async function queryUpdated(query) {
     }, {})
 
   });
+  grayOutSexSelectionBasedOnCause(query, elements)
 
   state.mortalityData = data;
 
@@ -588,6 +595,11 @@ function updateURLParam(value, param) {
     url.searchParams.set(param, value);
   } else {
     url.searchParams.delete(param);
+  }
+   console.log({elements});
+
+  if (CAUSE_SEX_MAP[value]) {
+    state.sex = CAUSE_SEX_MAP[value]
   }
   history.replaceState({}, "", staticData.url.toString());
 }

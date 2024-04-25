@@ -18,6 +18,8 @@ import {
   sortCompare,
   addPopperTooltip,
   scaleGradient,
+  CAUSE_SEX_MAP,
+  grayOutSexSelectionBasedOnCause
 } from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
@@ -39,11 +41,6 @@ const NUMERIC_MEASURES = [
   "population",
 ];
 const SPATIAL_LEVELS = ["county", "state"];
-const CAUSE_SEX_MAP = {
-  Breast: "Female", // female, male
-  "Cervix Uteri": "Female",
-  // 'Colon and Rectum': 'female'
-};
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
@@ -407,6 +404,13 @@ function updateURLParam(value, param) {
   } else {
     url.searchParams.delete(param);
   }
+
+  console.log({elements});
+
+  if (CAUSE_SEX_MAP[value]) {
+    state.sex = CAUSE_SEX_MAP[value]
+  }
+
   history.replaceState({}, "", staticData.url.toString());
 }
 
@@ -465,27 +469,7 @@ async function queryUpdated(query) {
     states: state.areaStateOptions,
   });
 
-  if (query.cause !== "All") {
-    const sexParam = CAUSE_SEX_MAP[query.cause];
-
-    if (sexParam) {
-      state.sex = sexParam;
-
-      setTimeout(() => {
-        [...elements.selectChoicesListSex.children].forEach((sexElement) => {
-          const value = sexElement.dataset.value;
-          if (value !== sexParam && value !== "All") {
-            sexElement.classList.add("text-secondary");
-          }
-        });
-      }, 0);
-    } else {
-      state.sex = "All";
-      [...elements.selectChoicesListSex.childNodes].forEach((sexElement) => {
-        sexElement.classList.remove("text-secondary");
-      });
-    }
-  }
+  grayOutSexSelectionBasedOnCause(query, elements)
 
   state.mortalityData = mortalityData; //.filter(d => )
 

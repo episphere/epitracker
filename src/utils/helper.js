@@ -1,6 +1,33 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm";
 
+export const CAUSE_SEX_MAP = {
+  Breast: "Female", // female, male
+  "Cervix Uteri": "Female",
+  // 'Colon and Rectum': 'female'
+};
+
+export function grayOutSexSelectionBasedOnCause(query, elements) {
+  if (query.cause !== "All") {
+    const sexParam = CAUSE_SEX_MAP[query.cause];
+
+    if (sexParam) {
+      setTimeout(() => {
+        [...elements.selectChoicesListSex.children].forEach((sexElement) => {
+          const value = sexElement.dataset.value;
+          if (value !== sexParam && value !== "All") {
+            sexElement.classList.add("text-secondary");
+          }
+        });
+      }, 0);
+    } else {
+      [...elements.selectChoicesListSex.childNodes].forEach((sexElement) => {
+        sexElement.classList.remove("text-secondary");
+      });
+    }
+  }
+}
+
 export function dataToTableData(data) {
   const temporaryKeys = Object.keys(data[0]);
   const quantileKeyIndex = temporaryKeys.indexOf('quantile')

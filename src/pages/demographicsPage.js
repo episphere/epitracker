@@ -12,7 +12,9 @@ import {
   createOptionSorter,
   formatCauseName,
   formatName,
-  dataToTableData
+  dataToTableData,
+  CAUSE_SEX_MAP,
+  grayOutSexSelectionBasedOnCause
 } from "../utils/helper.js";
 import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
@@ -51,6 +53,9 @@ let elements, url, names;
 export function init() {
   state = new State();
   dataManager = new EpiTrackerData();
+
+  initializeState();
+
   elements = {
     barContainer: document.getElementById("plot-container"),
     sidebar: document.getElementById("sidebar"),
@@ -61,9 +66,15 @@ export function init() {
   };
 
   elements.barContainer.style.height = elements.barContainer.style.maxHeight;
-  console.log("Set height", elements.barContainer.style.maxHeight);
-  initializeState();
 
+  const selectSexElement = document.getElementById("select-select-sex");
+
+  if (selectSexElement) {
+    elements.selectChoicesListSex =
+      selectSexElement.parentNode.nextSibling.lastChild;
+  }
+
+  elements.selectSex = document.getElementById("select-select-sex");
   elements.tableNavLink.addEventListener("click", () => changeView("table"));
   elements.graphNavLink.addEventListener("click", () => changeView("plot"));
 }
@@ -276,7 +287,7 @@ async function queryUpdated(query) {
     year: query.year,
     cause: query.cause,
     race: query.race,
-    sex: query.sex,
+    sex:  query.sex,
     age_group: query.ageGroup,
     state_fips: query.areaState,
   };
@@ -287,6 +298,9 @@ async function queryUpdated(query) {
   let mortalityData = await dataManager.getDemographicMortalityData(dataQuery, {
     includeTotals: false,
   });
+
+  grayOutSexSelectionBasedOnCause(query, elements)
+
   state.mortalityData = mortalityData;
   updateTitle();
 }
@@ -325,27 +339,45 @@ function plotConfigUpdated() {
     // options.domain = ageDomain;
   }
 
-  const barContainer = elements.barContainer;
-  plotDemographicPlots(barContainer, state.mortalityData, {
-    compareBar: state.compareBar != "none" ? state.compareBar : null,
-    compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
-    measure: state.measure,
-    plotOptions: {
-      x: xOptions,
-      fx: fxOptions,
-      y: { label: formatName(names, "measures", state.measure) },
-    },
-    yStartZero: state.startZero,
-  });
+  if (state.mortalityData.length == 0) {
+    elements.barContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
+    elements.tableContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
+  } else {
+    const barContainer = elements.barContainer;
+    const isActiveTable = elements.tableNavLink.classList.contains("active");
+    if (isActiveTable) {
+      plotTable()
 
-  plotTable()
+    } else {
+      plotDemographicPlots(barContainer, state.mortalityData, {
+        compareBar: state.compareBar != "none" ? state.compareBar : null,
+        compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
+        measure: state.measure,
+        plotOptions: {
+          x: xOptions,
+          fx: fxOptions,
+          y: { label: formatName(names, "measures", state.measure) },
+        },
+        yStartZero: state.startZero,
+      });
+    }
+  }
+
+  
 }
 
 function updateURLParam(value, param) {
+  console.log({ value, param, tt: CAUSE_SEX_MAP[value]});
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
   } else {
     url.searchParams.delete(param);
+  }
+
+  if (CAUSE_SEX_MAP[value]) {
+    state.sex = CAUSE_SEX_MAP[value]
   }
   history.replaceState({}, "", url.toString());
 }
