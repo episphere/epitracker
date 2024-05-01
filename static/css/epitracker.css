@@ -2788,7 +2788,8 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  height: calc(100% - 10px); /* TODO: This is hack-y, fix */
+  /* height: calc(100% - 10px); */ /* TODO: This is hack-y, fix */
+  height: 80%; /* TODO: This is hack-y, fix */
 }
 
 #plot-container svg {

@@ -30,14 +30,31 @@ function plotBar(data, options={}) {
   
   const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
+
+  const barDomain = [...new Set(data.map(d => d[options.compareBar]))].sort()
+  const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
+
+  if (options.compareBar == "age_group") {
+    barDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
+  } 
+  if (options.compareFacet == "age_group") {
+    facetDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
+  }
   
   let nBars = 1
   let nFacets = 1 
-  if (options.compareBar) nBars = new Set(data.map(d => d[options.compareBar])).size
-  if (options.compareFacet) nFacets = new Set(data.map(d => d[options.compareFacet])).size
+  if (options.compareBar) nBars = barDomain.length
+  if (options.compareFacet) nFacets = facetDomain.length
 
   const xFormat = options.plotOptions.x.tickFormat ? options.plotOptions.x.tickFormat : d => d
   const facetFormat = options.plotOptions.fx.tickFormat ? options.plotOptions.fx.tickFormat : d => d
+
+  // data.forEach(d =>  {
+  //   const ageGroup = d.ageGroup.split("-")
+  //   ageGroup[0] = ageGroup[0].padStart(2, "0")
+  //   d.ageG
+  // })
+
 
   // Estimate label width
   const labelWidth = options.compareBar ? 
@@ -79,7 +96,7 @@ function plotBar(data, options={}) {
     style: {
       fontSize: 15
     },
-    fx: {tickRotate: 45},
+    fx: {tickRotate: 45, domain: facetDomain},
     height: 640,
     width: plotWidth,
     marginBottom: labelBox,
@@ -91,7 +108,7 @@ function plotBar(data, options={}) {
 
   const rule = options.yStartZero ? 0 : domain[0]
 
-  plotOptions.x = {tickRotate: 45, type: "band"}
+  plotOptions.x = {tickRotate: 45, type: "band", domain: barDomain}
   plotOptions.marks = [
     Plot.frame({ strokeOpacity: 0.1 }),
     Plot.barY(data, barOptions),
