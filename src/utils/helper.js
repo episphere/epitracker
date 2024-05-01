@@ -42,7 +42,12 @@ export function dataToTableData(data) {
 
   const array = [];
   for (const row of data) {
-    array.push(keys.map((key) => row[key]));
+    array.push(keys.map((key) => {
+      if (key === 'quantile') {
+        return +row[key] + 1
+      }
+      return row[key]
+    }));
   }
 
   return { headings: keys, data: array };

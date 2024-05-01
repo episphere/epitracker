@@ -1,5 +1,5 @@
 import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
-import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
+import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm";
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
@@ -31,7 +31,7 @@ const COMPARABLE_FIELDS = ["race", "sex"];
 const DATA_YEARS = ["2018", "2019", "2020"]; //, "2018-2020"] // TODO: Re-add grouped year
 const QUANTILE_NUMBERS = ["8 (octiles)"];
 const NUMERIC_MEASURES = [
-   "crude_rate",
+  "crude_rate",
   "age_adjusted_rate",
   "Age Adjusted Rate Ratio (Ref=Q1)",
   "Age Adjusted Rate Ratio (Ref=Q8)",
@@ -71,7 +71,7 @@ export function init() {
 
   initializeState();
   addDownloadButton();
-const selectSexElement = document.getElementById("select-select-sex");
+  const selectSexElement = document.getElementById("select-select-sex");
   if (selectSexElement) {
     elements.selectChoicesListSex =
       selectSexElement.parentNode.nextSibling.lastChild;
@@ -305,13 +305,6 @@ async function queryUpdated(query) {
   let data = await dataManager.getQuantileMortalityData(dataQuery, {
     includeTotals: false,
   });
-  const maleSortedByQuantile = data
-    .filter((i) => i.sex.toLowerCase() === "male")
-    .sort((a, b) => Number(a.quantile) - Number(b.quantile));
-
-  const femaleSortedByQuantile = data
-    .filter((i) => i.sex.toLowerCase() !== "male")
-    .sort((a, b) => Number(a.quantile) - Number(b.quantile));
 
   const year = query.year.split("-").at(-1);
   const quantileDetails =
@@ -320,23 +313,33 @@ async function queryUpdated(query) {
   state["quantileRanges"] = xTicks;
 
   data = data.map((row) => {
-    const maleOrFemaleData =
-      row.sex.toLowerCase() === "male"
-        ? maleSortedByQuantile
-        : femaleSortedByQuantile;
-    const lastIndex = maleOrFemaleData.length - 1;
-    const firstIndex = 0;
-    row["quantile_range"] = xTicks[row.quantile];
-   if (maleOrFemaleData.length || femaleSortedByQuantile.length) {
-      row["Age Adjusted Rate Ratio (Ref=Q1)"] =
-        row.age_adjusted_rate / maleOrFemaleData[firstIndex].age_adjusted_rate;
-      row["Age Adjusted Rate Ratio (Ref=Q8)"] =
-        row.age_adjusted_rate / maleOrFemaleData[lastIndex].age_adjusted_rate;
-      row["Crude Adjusted Rate Ratio (Ref=Q1)"] =
-        row.crude_rate / maleOrFemaleData[firstIndex].crude_rate;
-      row["Crude Adjusted Rate Ratio (Ref=Q8)"] =
-        row.crude_rate / maleOrFemaleData[lastIndex].crude_rate;
+    row['quantile_range'] = xTicks[row.quantile]
+
+    const key = query.compareFacet !== 'none' ? query.compareFacet : query.compareColor !== 'none' ? query.compareColor : 'sex'
+    if (query.compareColor === "sex") {
+      const filteredData =
+        query.compareFacet === "race"
+          ? data.filter(
+              (i) =>
+                i.race.toLowerCase() === row.race.toLowerCase() &&
+                i.sex.toLowerCase() === row.sex.toLowerCase()
+            )
+          : data;
+      getAgeAdjustedRateData(filteredData, row, key);
+    } else if (query.compareColor === "race") {
+      const filteredData =
+        query.compareFacet === "sex"
+          ? data.filter(
+              (i) =>
+                i.race.toLowerCase() === row.race.toLowerCase() &&
+                i.sex.toLowerCase() === row.sex.toLowerCase()
+            )
+          : data;
+      getAgeAdjustedRateData(filteredData, row, key);
+    } else {
+      getAgeAdjustedRateData(data, row, key);
     }
+
     for (const measure of NUMERIC_MEASURES) {
       const se = row[measure] / Math.sqrt(row.deaths);
       row[measure + "_low"] = parseFloat((row[measure] - 1.96 * se).toFixed(2));
@@ -344,22 +347,29 @@ async function queryUpdated(query) {
         (row[measure] + 1.96 * se).toFixed(2)
       );
     }
-    const rowKeys = Object.keys(row)
-    const temporaryKeys = []
-    const quantileKeyIndex = rowKeys.findIndex(key => key === "quantile")
+    const rowKeys = Object.keys(row);
+    const temporaryKeys = [];
+    const quantileKeyIndex = rowKeys.findIndex((key) => key === "quantile");
     if (quantileKeyIndex !== -1) {
-      temporaryKeys.push(...rowKeys.slice(0, quantileKeyIndex + 1), 'quantile_range')
-      temporaryKeys.push(...rowKeys.filter(i => i !== 'quantile_range').slice(quantileKeyIndex + 1))
-    } else {
-      temporaryKeys.push(...rowKeys)
-    }
-    
-    return temporaryKeys.reduce((pv, cv, ci) => {
-      return {...pv, [cv]: row[cv]}
-    }, {})
+      temporaryKeys.push(
+        ...rowKeys.slice(0, quantileKeyIndex + 1),
+        "quantile_range"
+      );
+      temporaryKeys.push(
+        ...rowKeys
+          .filter((i) => i !== "quantile_range")
+          .slice(quantileKeyIndex + 1)
+      );
 
+    } else {
+      temporaryKeys.push(...rowKeys);
+    }
+
+    return temporaryKeys.reduce((pv, cv) => {
+      return { ...pv, [cv]: row[cv] };
+    }, {});
   });
-  grayOutSexSelectionBasedOnCause(query, elements)
+  grayOutSexSelectionBasedOnCause(query, elements);
 
   state.mortalityData = data;
 
@@ -529,13 +539,13 @@ function addDownloadButton() {
 
 function downloadGraphSVG() {
   return toSvg(document.getElementById("plots")).then((data) => {
-    const link = document.createElement('a')
-    link.download = 'plot-svg';
+    const link = document.createElement("a");
+    link.download = "plot-svg";
     link.href = data;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  })
+  });
 }
 
 function downloadGraph() {
@@ -596,10 +606,10 @@ function updateURLParam(value, param) {
   } else {
     url.searchParams.delete(param);
   }
-   console.log({elements});
+  console.log({ elements });
 
   if (CAUSE_SEX_MAP[value]) {
-    state.sex = CAUSE_SEX_MAP[value]
+    state.sex = CAUSE_SEX_MAP[value];
   }
   history.replaceState({}, "", staticData.url.toString());
 }
@@ -685,4 +695,26 @@ function updateGraphTitle() {
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
   const title = `${measureName} by octile of US county characteristic: ${quantileMeasure.toLowerCase()}${compareString}  </br> ${selectsString}`;
   elements.graphTitle.innerHTML = title;
+}
+
+function getAgeAdjustedRateData(data, row, key) {
+  const dataSortedByQuantile = data
+    .filter((i) => i[key].toLowerCase() === row[key].toLowerCase())
+    .sort((a, b) => Number(a.quantile) - Number(b.quantile));
+
+  const lastIndex = dataSortedByQuantile.length - 1;
+  const firstIndex = 0;
+
+  if (dataSortedByQuantile.length) {
+    row["Age Adjusted Rate Ratio (Ref=Q1)"] =
+      +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate).toFixed(2);
+    row["Age Adjusted Rate Ratio (Ref=Q8)"] =
+      +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate).toFixed(2);
+    row["Crude Adjusted Rate Ratio (Ref=Q1)"] =
+      +parseFloat(row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate).toFixed(2);
+    row["Crude Adjusted Rate Ratio (Ref=Q8)"] =
+      +parseFloat(row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate).toFixed(2);
+  }
+
+  console.log({ key, dataSortedByQuantile, row });
 }
