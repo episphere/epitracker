@@ -35,8 +35,8 @@ const NUMERIC_MEASURES = [
   "age_adjusted_rate",
   "Age Adjusted Rate Ratio (Ref=Q1)",
   "Age Adjusted Rate Ratio (Ref=Q8)",
-  "Crude Adjusted Rate Ratio (Ref=Q1)",
-  "Crude Adjusted Rate Ratio (Ref=Q8)",
+  "Crude Rate Ratio (Ref=Q1)",
+  "Crude Rate Ratio (Ref=Q8)",
   // "deaths",
   // "population",
 ];
@@ -710,9 +710,9 @@ function getAgeAdjustedRateData(data, row, key) {
       +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate).toFixed(2);
     row["Age Adjusted Rate Ratio (Ref=Q8)"] =
       +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate).toFixed(2);
-    row["Crude Adjusted Rate Ratio (Ref=Q1)"] =
+    row["Crude Rate Ratio (Ref=Q1)"] =
       +parseFloat(row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate).toFixed(2);
-    row["Crude Adjusted Rate Ratio (Ref=Q8)"] =
+    row["Crude Rate Ratio (Ref=Q8)"] =
       +parseFloat(row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate).toFixed(2);
   }
 
