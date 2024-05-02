@@ -10,11 +10,10 @@ export const COLORS = {
     "Non-Hispanic White": "#e6e2d3",
     "Non-Hispanic Asian": "##d6cbd3",
     "Hispanic": "#465177",
-    "Non-Hispanic More than one race": "#563f46",
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": "#0ffk000"
   },
   age_group: {
-    "85+": "#555",
+    "85+": "#563f46",
     "75-84": "#f0f0f0",
     "65-74": "#ff00f0",
     "55-64": "#0ff",
