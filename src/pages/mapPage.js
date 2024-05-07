@@ -2,13 +2,12 @@
  * @file The input and basic control logic for the map page.
  * @author Lee Mason <masonlk@nih.gov>
  */
-import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
 import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
-import { plotMortalityMapGrid } from "../utils/mapPlots.js";
+import { plotMortalityMapGrid } from "../plots/mapPlots.js";
 import {
   dataToTableData,
   downloadMortalityData,
@@ -19,10 +18,12 @@ import {
   addPopperTooltip,
   scaleGradient,
   CAUSE_SEX_MAP,
-  grayOutSexSelectionBasedOnCause
+  grayOutSexSelectionBasedOnCause,
+  plotDataTable
 } from "../utils/helper.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
+import { mapTableColumns } from "../utils/tableDefinitions.js";
 
 window.onload = async () => {
   await start();
@@ -405,8 +406,6 @@ function updateURLParam(value, param) {
     url.searchParams.delete(param);
   }
 
-  console.log({elements});
-
   if (CAUSE_SEX_MAP[value]) {
     state.sex = CAUSE_SEX_MAP[value]
   }
@@ -713,7 +712,6 @@ function resizeMap(mapCellElement, previousSize) {
 
 function downloadMapSVG() {
   const plotsElement = document.getElementById("plots")
-  console.log({plotsElement});
   const legendButtonsElement = plotsElement.getElementsByClassName("legend-buttons")[0]
   if (legendButtonsElement) {
     legendButtonsElement.style.display = "none"
@@ -819,12 +817,9 @@ function updateMapTitle() {
 }
 
 function plotTable() {
-  elements.tableContainer.innerHTML = ``;
-  new DataTable(elements.tableContainer, {
-    data: dataToTableData(state.mortalityData),
-    perPage: 20,
-    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
-  });
+  plotDataTable(state.mortalityData, elements.tableContainer, {
+    columns: mapTableColumns
+  }) //, ["state_fips"])//["cause", "race", "sex", "state", "county"])
 }
 
 function setInputsEnabled(enabled) {

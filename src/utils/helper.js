@@ -1,11 +1,95 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm";
+import { Tabulator, FrozenColumnsModule, SortModule, FormatModule} from 'https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm'
+Tabulator.registerModule( [FrozenColumnsModule, SortModule, FormatModule])
+
 
 export const CAUSE_SEX_MAP = {
   Breast: "Female", // female, male
   "Cervix Uteri": "Female",
   // 'Colon and Rectum': 'female'
 };
+
+export function plotDataTable(data, container, options={}) {
+  const {
+    order = [],
+    colDefinitions = new Map(),
+    columns = [],
+  } = options 
+
+  // const colDefMap = d3.index(colDefinitions, d => d.field)
+  columns.forEach(col => {
+    if (!col.title) col.title = col.field
+  })
+
+  const table = document.createElement("div")
+  container.innerHTML = ``;
+  container.appendChild(table)
+
+  const tabulator = new Tabulator(table, {
+    height: Math.min(data.length*48 + 100, container.getBoundingClientRect().height), 
+    data,
+    columns,
+    // columns: [
+    //   { field: "state_fips", title: "state_fips"},
+    //   { field: "race", title: "race"}
+    // ]
+    //autoColumns: true,
+    // autoColumnsDefinitions: (columns) =>
+    //      columns.map((d) => {
+    //       const def = { ...d, frozen: pin.has(d.field) ? true : false, maxWidth: 200 }
+    //       console.log(def)
+    //       return def
+    //     }),
+  })
+
+
+  // tabulator.on("tableBuilt", () => {
+  //   console.log("move")
+  //   tabulator.moveColumn("state", "state_fips", true)
+
+  //   // container.innerHTML = ``;
+  //   // container.appendChild(table)
+  // })
+  
+  // tabulator.on("tableBuilt", () => {
+
+
+  //   let definitions = [...tabulator.getColumnDefinitions()]
+
+  //   const definitionIndex = d3.index(definitions, d => d.field)
+
+  //   const newDefinitions = [] 
+  //   for (const field of order) {
+  //     newDefinitions.push(definitionIndex.get(field))
+  //     definitions = definitions.filter(d => d.field != field)
+  //   }
+  //   for (let definition of definitions) {
+      
+  //     newDefinitions.push(definition)
+  //   }  
+
+  //   for (let definition of newDefinitions) {
+  //     const userDefinition = colDefMap.get(definition.field)
+  //     if (userDefinition) {
+  //       for (const [k,v] of Object.entries(userDefinition)) {
+  //         definition[k] = v
+  //       }
+  //     }
+     
+  //   }
+
+
+  //   console.log("New definitions", newDefinitions)
+
+  //   tabulator.setColumns(newDefinitions)
+  
+  // })
+ 
+  //definitions.sort
+
+
+}
 
 export function grayOutSexSelectionBasedOnCause(query, elements) {
   if (query.cause !== "All") {
@@ -53,63 +137,108 @@ export function dataToTableData(data) {
   return { headings: keys, data: array };
 }
 
-export function addProximityHover(
-  elementsSelect,
-  plotSelect,
-  listener,
-  minDistance = 30
-) {
-  const plotRect = plotSelect.node().getBoundingClientRect();
+export function addProximityHover(elementsSelect, plotSelect, listener, minDistance=30) {
+  let delauney = null 
+  let points = []
+  let plotRect = null 
+  const observer = new ResizeObserver(() => {
+    plotRect = plotSelect.node().getBoundingClientRect()
+    points = []
+    elementsSelect.each((_,i,nodes) => {
+      const elemRect = nodes[i].getBoundingClientRect()
+      const centroid = [elemRect.x + elemRect.width/2, elemRect.y+elemRect.height/2]
+      const relCentroid = [centroid[0]-plotRect.x, centroid[1]-plotRect.y]
+      points.push(relCentroid)
+    })
+    delauney = d3.Delaunay.from(points, d => d[0], d => d[1])
+  })
+  observer.observe(plotSelect.node())
+  
+  const distSqr = minDistance**2
 
-  const points = [];
-  elementsSelect.each((_, i, nodes) => {
-    const elemRect = nodes[i].getBoundingClientRect();
-    const centroid = [
-      elemRect.x + elemRect.width / 2,
-      elemRect.y + elemRect.height / 2,
-    ];
-    const relCentroid = [centroid[0] - plotRect.x, centroid[1] - plotRect.y];
-    points.push(relCentroid);
-  });
+  let previousHover = null
 
-  const delauney = d3.Delaunay.from(
-    points,
-    (d) => d[0],
-    (d) => d[1]
-  );
-  const distSqr = minDistance ** 2;
-
-  let previousHover = null;
-
-  plotSelect.on("mousemove.interact", (e, d) => {
+  plotSelect.on("mousemove.interact", (e,d) => {
+    // Someday I'll understand this. Today is not that day. 
     // To account for elements rescaled by CSS
-    const domPoint = new DOMPointReadOnly(e.clientX, e.clientY);
-    const pt = domPoint.matrixTransform(
-      plotSelect.node().getScreenCTM().inverse()
-    );
-    const mousePoint = [pt.x, pt.y];
+    //const domPoint = new DOMPointReadOnly(e.clientX, e.clientY)
+    // const domPoint = new DOMPointReadOnly(e.offsetX, e.offsetY)
+    // const pt = domPoint.matrixTransform(plotSelect.node().getScreenCTM().inverse())
+    // const mousePoint = [pt.x, pt.y]
+    const mousePoint = [e.offsetX, e.offsetY]
 
-    const index = delauney.find(mousePoint[0], mousePoint[1]);
-    const point = points[index];
+    const pointIndex = delauney.find(mousePoint[0], mousePoint[1])
+    const point = points[pointIndex] 
 
     if (minDistance != null) {
-      const distance =
-        (mousePoint[0] - point[0]) ** 2 + (mousePoint[1] - point[1]) ** 2;
-      if (distance < distSqr) {
-        if (index != previousHover) {
-          const elem = elementsSelect.nodes()[index];
-          listener(index, elem, elementsSelect.nodes()[previousHover]);
-          previousHover = index;
-        }
-      } else {
-        if (previousHover != null) {
-          listener(null, null, elementsSelect.nodes()[previousHover]);
-          previousHover = null;
-        }
-      }
+      const distance = (mousePoint[0]-point[0])**2 + (mousePoint[1]-point[1])**2
+
+      let newHover = distance < distSqr ? pointIndex : null 
+      if (newHover != previousHover) {
+        listener(newHover, elementsSelect.nodes()[newHover], previousHover, elementsSelect.nodes()[previousHover])
+        previousHover = newHover
+      } 
     }
-  });
+  })
 }
+
+// export function addProximityHover(
+//   elementsSelect,
+//   plotSelect,
+//   listener,
+//   minDistance = 30
+// ) {
+//   const plotRect = plotSelect.node().getBoundingClientRect();
+
+//   const points = [];
+//   elementsSelect.each((_, i, nodes) => {
+//     const elemRect = nodes[i].getBoundingClientRect();
+//     const centroid = [
+//       elemRect.x + elemRect.width / 2,
+//       elemRect.y + elemRect.height / 2,
+//     ];
+//     const relCentroid = [centroid[0] - plotRect.x, centroid[1] - plotRect.y];
+//     points.push(relCentroid);
+//   });
+
+//   const delauney = d3.Delaunay.from(
+//     points,
+//     (d) => d[0],
+//     (d) => d[1]
+//   );
+//   const distSqr = minDistance ** 2;
+
+//   let previousHover = null;
+
+//   plotSelect.on("mousemove.interact", (e, d) => {
+//     // To account for elements rescaled by CSS
+//     const domPoint = new DOMPointReadOnly(e.clientX, e.clientY);
+//     const pt = domPoint.matrixTransform(
+//       plotSelect.node().getScreenCTM().inverse()
+//     );
+//     const mousePoint = [pt.x, pt.y];
+
+//     const index = delauney.find(mousePoint[0], mousePoint[1]);
+//     const point = points[index];
+
+//     if (minDistance != null) {
+//       const distance =
+//         (mousePoint[0] - point[0]) ** 2 + (mousePoint[1] - point[1]) ** 2;
+//       if (distance < distSqr) {
+//         if (index != previousHover) {
+//           const elem = elementsSelect.nodes()[index];
+//           listener(index, elem, elementsSelect.nodes()[previousHover]);
+//           previousHover = index;
+//         }
+//       } else {
+//         if (previousHover != null) {
+//           listener(null, null, elementsSelect.nodes()[previousHover]);
+//           previousHover = null;
+//         }
+//       }
+//     }
+//   });
+// }
 
 export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
   const svg = d3.create("svg")

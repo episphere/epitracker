@@ -3,14 +3,14 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 import {
   colorRampLegendMeanDiverge,
   createDropdownDownloadButton,
-} from "./helper.js";
+} from "../utils/helper.js";
 import {
   addPopperTooltip,
   initSidebar,
   downloadStringAsFile,
   downloadMortalityData,
-} from "./helper.js";
-import { downloadElementAsImage } from "./download.js";
+} from "../utils/helper.js";
+import { downloadElementAsImage } from "../utils/download.js";
 
 // Just the static plot.
 export function createChoroplethPlot(
@@ -258,8 +258,13 @@ export function plotMortalityMapGrid(
   }
 
   const bbox = mapsContainer.getBoundingClientRect();
-  const mapWidth = (0.9 * bbox.width) / nColumns;
-  const mapHeight = Math.max(0.9 * bbox.height / nColumns, options.minMapHeight);
+  let mapWidth = (0.9 * bbox.width) / nColumns;
+  let mapHeight = Math.max(0.87 * bbox.height / nColumns, options.minMapHeight);
+  
+  // const aspectRatio = 1.72 
+  // console.log(bbox.width, mapWidth, mapHeight)
+  //mapWidth = mapHeight * aspectRatio
+  // container.style.width = "fit-content"
 
   let values = mortalityData.map((d) => d[options.measureField])
   const mean = d3.mean(values);

@@ -1,4 +1,4 @@
-import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/+esm";
+import { Tabulator, FrozenColumnsModule, SortModule} from 'https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm'
 import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm";
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
@@ -14,10 +14,16 @@ import {
   grayOutSexSelectionBasedOnCause,
   CAUSE_SEX_MAP,
   initSidebar,
+  plotDataTable,
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
-import { plotQuantileScatter } from "../utils/quantilePlots.js";
+import { plotQuantileScatter } from "../plots/quantilePlots.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+import { quantileTableColumns } from '../utils/tableDefinitions.js';
+
+
+Tabulator.registerModule( [FrozenColumnsModule, SortModule])
 
 window.onload = async () => {
   await start();
@@ -376,7 +382,6 @@ async function queryUpdated(query) {
   updateLegend(data, query);
 }
 function plotConfigUpdated(plotConfig) {
-  console.log("plotConfigUpdated", { plotConfig: plotConfig, state });
 
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
   const xTickFormat = (_, i) => state["quantileRanges"][i];
@@ -413,6 +418,14 @@ function plotConfigUpdated(plotConfig) {
   if (isActiveTable) {
     plotTable();
   } else {
+    // console.log("Plot height", elements.plotContainer.getBoundingClientRect().height)
+    // elements.plotContainer.innerHTML = ''
+    // elements.plotContainer.appendChild(Plot.plot({
+    //   height: elements.plotContainer.getBoundingClientRect().height*.95,
+    //   marks: [
+    //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
+    //   ]
+    // }))
     plotQuantileScatter(elements.plotContainer, data, {
       valueField: plotConfig.measure,
       facet:
@@ -560,7 +573,6 @@ function downloadGraph() {
     }
   });
 
-  console.log({ elements });
   const checkPaths = temporaryLegend.querySelectorAll(".legend-check path");
   checkPaths.forEach((path) => (path.style.visibility = "hidden"));
 
@@ -606,7 +618,6 @@ function updateURLParam(value, param) {
   } else {
     url.searchParams.delete(param);
   }
-  console.log({ elements });
 
   if (CAUSE_SEX_MAP[value]) {
     state.sex = CAUSE_SEX_MAP[value];
@@ -638,12 +649,11 @@ function setInputsEnabled(enabled) {
 }
 
 function plotTable() {
-  elements.tableContainer.innerHTML = ``;
-  new DataTable(elements.tableContainer, {
-    data: dataToTableData(state.mortalityData),
-    perPage: 20,
-    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
-  });
+  const pin = ["cause", "race", "sex", "quantile_field", "quantile", "quantile_range"].map(d => ({field: d, frozen: true}))
+  plotDataTable(state.mortalityData, elements.tableContainer, {
+    colDefinitions: pin,
+    columns: quantileTableColumns
+  })
 }
 
 function toggleLoading(loading, soft = false) {
@@ -667,7 +677,7 @@ function updateGraphTitle() {
     .map((d) => names.fields[d].toLowerCase())
     .join(" and ");
   if (compareString != "") {
-    compareString = "</br> Stratified by " + compareString;
+    //compareString = "</br> Stratified by " + compareString;
   }
   const compareSet = new Set([state.compareColor, state.compareFacet]);
   const selects = [
@@ -693,7 +703,7 @@ function updateGraphTitle() {
   const quantileMeasure = names["quantile_fields"][state.quantileField].measure;
   let measureName = names.measures[state.measure].toLowerCase();
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
-  const title = `${measureName} by octile of US county characteristic: ${quantileMeasure.toLowerCase()}${compareString}  </br> ${selectsString}`;
+  const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
   elements.graphTitle.innerHTML = title;
 }
 
@@ -716,5 +726,4 @@ function getAgeAdjustedRateData(data, row, key) {
       +parseFloat(row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate).toFixed(2);
   }
 
-  console.log({ key, dataSortedByQuantile, row });
 }
