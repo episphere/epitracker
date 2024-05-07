@@ -1,6 +1,6 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { checkableLegend } from "./checkableLegend.js";
-import { addPopperTooltip, addProximityHover } from "./helper.js";
+import { checkableLegend } from "../utils/checkableLegend.js";
+import { addPopperTooltip, addProximityHover } from "../utils/helper.js";
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 
 
@@ -30,7 +30,9 @@ export function plotQuantileScatter(container, data, options={}) {
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
   //const containerWidth = container.getBoundingClientRect().width
-  const height = Math.max(options.minHeight, container.getBoundingClientRect().height)
+  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
+                                                                                           // to prevent the SVG from resizing 
+                                                                                           // the flex box incorrectly.
 
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
@@ -121,7 +123,7 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
 
   const plotSelect = d3.select(plot)
   const dotSelect = plotSelect.selectAll("circle")
-  addProximityHover(dotSelect, plotSelect, (i,element,prevElement) => {
+  addProximityHover(dotSelect, plotSelect, (i,element,j,prevElement) => {
     if (i == null) {
       tooltip.hide()
     } else {
@@ -135,6 +137,9 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
       text += `${row[measure]}`
       tooltip.show(element, text)
     }
-    d3.select(prevElement).attr("r", 4)
+
+    if (prevElement) {
+      d3.select(prevElement).attr("r", 4)
+    }
   }, 20)
 }

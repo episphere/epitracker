@@ -14,13 +14,15 @@ import {
   formatName,
   dataToTableData,
   CAUSE_SEX_MAP,
-  grayOutSexSelectionBasedOnCause
+  grayOutSexSelectionBasedOnCause,
+  plotDataTable
 } from "../utils/helper.js";
 import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
-import { plotDemographicPlots } from "../utils/demographicPlots.js";
+import { plotDemographicPlots } from "../plots/demographicPlots.js";
 import { downloadElementAsImage } from "../utils/download.js";
+import { demographicTableColumns } from "../utils/tableDefinitions.js";
 
 window.onload = async () => {
   init();
@@ -369,7 +371,6 @@ function plotConfigUpdated() {
 }
 
 function updateURLParam(value, param) {
-  console.log({ value, param, tt: CAUSE_SEX_MAP[value]});
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
   } else {
@@ -455,7 +456,6 @@ function downloadGraph() {
   //   }
   // });
 
-  console.log({ elements });
   // const checkPaths = temporaryLegend.querySelectorAll(".legend-check path");
   // checkPaths.forEach((path) => (path.style.visibility = "hidden"));
 
@@ -541,12 +541,11 @@ function downloadMortalityData(mortalityData, filename, format) {
 }
 
 function plotTable() {
-  elements.tableContainer.innerHTML = ``;
-  new DataTable(elements.tableContainer, {
-    data: dataToTableData(state.mortalityData),
-    perPage: 20,
-    perPageSelect: [20, 40, 60, 80, 100, ["All", -1]],
-  });
+  // const pin = ["state_fips", "race", "sex", "cause", "age_group"].map(d => ({field: d, frozen: true, formatter: "plaintext", minWidth: 100}))
+  // console.log(state.mortalityData) 
+  plotDataTable(state.mortalityData, elements.tableContainer, {
+    columns: demographicTableColumns
+  })
 }
 
 function changeView(view) {

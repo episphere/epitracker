@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { deepMerge } from "./helper.js";
-import {COLORS} from './color.js'
+import { deepMerge } from "../utils/helper.js";
+import {COLORS} from '../utils/color.js'
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
   const containerWidth = container.getBoundingClientRect().width
