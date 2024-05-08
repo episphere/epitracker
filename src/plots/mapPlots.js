@@ -260,6 +260,7 @@ export function plotMortalityMapGrid(
   const bbox = mapsContainer.getBoundingClientRect();
   let mapWidth = (0.9 * bbox.width) / nColumns;
   let mapHeight = Math.max(0.87 * bbox.height / nColumns, options.minMapHeight);
+
   
   // const aspectRatio = 1.72 
   // console.log(bbox.width, mapWidth, mapHeight)
