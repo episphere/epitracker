@@ -2547,15 +2547,18 @@ button.previous-btn {
 
 #plot-quantiles {
   width: 100%;
-  height: 100%;
+  /* height: fit-content; */
   display: flex;
   justify-content: center;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 #plot-quantiles svg {
   margin-bottom: 10px;
   flex-shrink: 0;
+  overflow: visible;
+  height: fit-content;
 }
 
 /* #maps-container {
@@ -2843,17 +2846,16 @@ button.previous-btn {
 }
 
 #plot-container {
-  height: 100%;
+  /* height: 100%; */
   /* max-height: calc(100% - 40px); */ /* TODO: This is hack-y, fix*/
   justify-content: center;
   max-width: 100%;
   flex-grow: 1;
-  flex-shrink: 1;
+  flex-shrink: 0;
   text-align: center;
   display: flex;
   /* position: absolute; */
-  width: calc(100% - 0px)
-  /* width: 100%; */
+  width: calc(100% - 30px);
 }
 
 #plot-legend {
@@ -2869,7 +2871,8 @@ button.previous-btn {
 }
 
 #plot-container svg {
-  display: inline-block;
+  /* display: inline-block; */
+  height: fit-content;
 }
 
 #download-container {

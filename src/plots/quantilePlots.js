@@ -19,7 +19,7 @@ export function plotQuantileScatter(container, data, options={}) {
     yStartZero: true,
     facetTickFormat: d => d,
     colorTickFormat: d => d,
-    minHeight: 500,
+    minHeight: 400,
     ...options 
   }
 
@@ -101,8 +101,6 @@ export function plotQuantileScatter(container, data, options={}) {
     marks: marks
   }
 
-  console.log(plotOptions.width, plotOptions.height)
-
   if (options.facet) {
     plotOptions.facet = {data, x: options.facet}
     if (options.facetLabel) {
@@ -117,6 +115,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   addInteractivity(container, plot, data, options.valueField, options.tooltipFields)
 
+  plot.removeAttribute("viewBox")
 
   return {plot}
 }
