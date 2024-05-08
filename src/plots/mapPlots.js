@@ -362,8 +362,17 @@ export function plotMortalityMapGrid(
 
   const legendDiv = document.createElement("div");
   legendDiv.classList.add("legend-wrapper");
+  legendDiv.classList.add("legend-minimized")
   if (sharedColorLegend) {
     legendDiv.appendChild(sharedColorLegend);
+
+    const palette = document.createElement("i")
+    palette.className = "fas fa-palette legend-min-icon"
+    // palette.style.width = "80px"
+    // palette.style.fontSize = "30px"
+    // palette.style.marginLeft = "8px"
+    legendDiv.appendChild(palette)
+
   }
   // document.getElementById("color-legend").style.top = "5px"
 
@@ -372,13 +381,20 @@ export function plotMortalityMapGrid(
   const settingsButton = document.createElement("i");
   settingsButton.className = "fa-solid fa-gear";
   legendButtons.appendChild(settingsButton);
-  const pinButton = document.createElement("i");
-  pinButton.className = "fa-solid fa-thumbtack pin-button";
-  legendButtons.appendChild(pinButton);
+  // const pinButton = document.createElement("i");
+  // pinButton.className = "fa-solid fa-thumbtack pin-button";
+  // legendButtons.appendChild(pinButton);
+  const minimizeButton = document.createElement("i");
+  minimizeButton.className = "fas fa-compress pin-button";
+  legendButtons.appendChild(minimizeButton);
 
-  pinButton.addEventListener("click", () => {
-    legendContainer.classList.toggle("unpinned");
-  });
+  // pinButton.addEventListener("click", () => {
+  //   legendContainer.classList.toggle("unpinned");
+  // });
+
+  minimizeButton.addEventListener("click", () => {
+    legendDiv.classList.toggle("legend-minimized");
+  })
 
   settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
 

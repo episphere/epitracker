@@ -33,7 +33,9 @@ export function plotQuantileScatter(container, data, options={}) {
   const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
+                                                                                           
 
+  
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
@@ -98,6 +100,8 @@ export function plotQuantileScatter(container, data, options={}) {
     marginBottom: 110,
     marks: marks
   }
+
+  console.log(plotOptions.width, plotOptions.height)
 
   if (options.facet) {
     plotOptions.facet = {data, x: options.facet}
