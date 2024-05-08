@@ -596,6 +596,7 @@ export function colorRampLegend(
   }
 
 
+  legendDiv.classList.add("color-scale")
   return legendDiv;
 }
 
@@ -803,10 +804,10 @@ export function createDropdownDownloadButton(
     const downloadText = document.createElement("span");
     button.appendChild(downloadText);
     downloadText.className = "me-1";
-    downloadText.innerHTML = "Download";
+    // downloadText.innerHTML = "Download";
   }
 
-  const downloadIcon = document.createElement("span");
+  const downloadIcon = document.createElement("i");
   button.appendChild(downloadIcon);
   downloadIcon.className = "download-icon";
 

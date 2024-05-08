@@ -19,7 +19,7 @@ export function plotQuantileScatter(container, data, options={}) {
     yStartZero: true,
     facetTickFormat: d => d,
     colorTickFormat: d => d,
-    minHeight: 500,
+    minHeight: 400,
     ...options 
   }
 
@@ -33,7 +33,9 @@ export function plotQuantileScatter(container, data, options={}) {
   const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
+                                                                                           
 
+  
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
@@ -113,6 +115,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   addInteractivity(container, plot, data, options.valueField, options.tooltipFields)
 
+  plot.removeAttribute("viewBox")
 
   return {plot}
 }

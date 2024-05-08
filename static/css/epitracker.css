@@ -23,7 +23,7 @@ li {
   top: 8px;
   right: 8px;
   display: flex;
-  gap: 7px;
+  gap: 4px;
 }
 
 .legend-buttons i {
@@ -39,12 +39,57 @@ li {
   color: lightgrey;
 }
 
+.legend-min-icon {
+  display: none;
+
+  width: 30px;
+  font-size: 30px;
+  color: #333b4d;
+  margin-left: 8px;
+  margin-right: 50px;
+
+  /* background: -webkit-gradient(linear, left top, left bottom, from(#ad0826), to(#74aad0));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent; */
+
+  background: linear-gradient(45deg , #d73027,#ededb9, #4575b4); 
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; 
+}
+
+.legend-minimized .legend-min-icon {
+  display: block  !important;
+}
+
+.legend-minimized .color-scale {
+  display: none !important;
+}
+
+/* .color-scale {
+  display: flex;
+    align-items: end;
+} */
+
+.nav {
+  flex-wrap: nowrap;
+}
+
 #plot-title {
   font-weight: bold;
-  font-size: 0.8em;
+  font-size: 0.7em;
   text-align: center;
-  margin: 20px;
+  margin: 10px;
+  margin-inline: 20px;
   color: #333b4d;
+  overflow-y: auto;
+  display: flex;
+  /* align-items: end; */
+  /* white-space: normal;
+  word-break: break-word; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  max-height: 100%; */
 }
 
 #graph-container {
@@ -2502,9 +2547,18 @@ button.previous-btn {
 
 #plot-quantiles {
   width: 100%;
-  height: 100%;
+  /* height: fit-content; */
   display: flex;
   justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+#plot-quantiles svg {
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  overflow: visible;
+  height: fit-content;
 }
 
 /* #maps-container {
@@ -2512,7 +2566,7 @@ button.previous-btn {
 } */
 
 .legend-wrapper {
-  background: white;
+  /* background: #ad0826; */
   border-radius: 4px;
   box-shadow: 2px 2px 6px 1px lightgrey;
   padding-top: 12px;
@@ -2544,6 +2598,8 @@ button.previous-btn {
   z-index: 6;
   background-color: white;
   justify-self: left;
+  opacity: .3;
+
 }
 
 #color-legend.unpinned {
@@ -2739,6 +2795,8 @@ button.previous-btn {
   padding-right: 30px;
   padding-left: 70px;
   z-index: 1;
+  max-height: 100px;
+
   /* padding-block: 10px; */
 }
 
@@ -2772,9 +2830,10 @@ button.previous-btn {
   flex-grow: 1;
   flex-shrink: 1;
   overflow: auto;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   max-height: 100%;
-  padding: 30px 30px 30px 50px;
+  /* padding: 30px 30px 30px 50px; */
+  padding: 30px;
   /* align-items: center; */
   flex-direction: column;
   max-width: 100%;
@@ -2787,15 +2846,16 @@ button.previous-btn {
 }
 
 #plot-container {
-  height: 100%;
+  /* height: 100%; */
   /* max-height: calc(100% - 40px); */ /* TODO: This is hack-y, fix*/
-  width: 100%;
   justify-content: center;
   max-width: 100%;
   flex-grow: 1;
-  flex-shrink: 1;
+  flex-shrink: 0;
   text-align: center;
   display: flex;
+  /* position: absolute; */
+  width: calc(100% - 30px);
 }
 
 #plot-legend {
@@ -2806,18 +2866,24 @@ button.previous-btn {
 
 #plot-container.fill-height {
   /* height: calc(100% - 10px); */ /* TODO: This is hack-y, fix */
-  height: 100%; 
+  /* height: 100%; */
   max-height: 100%;
 }
 
 #plot-container svg {
-  display: inline-block;
+  /* display: inline-block; */
+  height: fit-content;
 }
 
 #download-container {
   display: flex;
   align-items: center;
 }
+
+#topbar-cnt button {
+  height: 38px
+}
+
 
 .floating-label {
   transform: translateY(-0.8em) translateX(0.6em);
