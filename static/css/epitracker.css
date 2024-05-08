@@ -2846,8 +2846,8 @@ button.previous-btn {
 }
 
 #plot-container {
-  /* height: 100%; */
-  /* max-height: calc(100% - 40px); */ /* TODO: This is hack-y, fix*/
+  height: 100%;
+  
   justify-content: center;
   max-width: 100%;
   flex-grow: 1;
@@ -2865,7 +2865,7 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  /* height: calc(100% - 10px); */ /* TODO: This is hack-y, fix */
+  height: calc(100% - 40px); /* TODO: This is hack-y, fix */
   /* height: 100%; */
   max-height: 100%;
 }
