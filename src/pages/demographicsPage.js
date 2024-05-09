@@ -166,6 +166,7 @@ function initializeState() {
     "sex",
     "year",
     "ageGroup",
+    "measure"
   ]);
   state.defineProperty("legendCheckValues", null, "query");
   state.defineProperty("mortalityData", null, ["query"]);
@@ -269,6 +270,7 @@ function initialDataLoad(mortalityData, nameMappings) {
 }
 
 async function queryUpdated(query) {
+  console.log({query, state});
   if (query.compareBar == "race" || query.compareFacet == "race") {
     choices["#select-select-race"].disable();
   } else {
@@ -279,7 +281,14 @@ async function queryUpdated(query) {
   } else {
     choices["#select-select-sex"].enable();
   }
+
   if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
+    choices["#select-select-age"].disable();
+  } else {
+    choices["#select-select-age"].enable();
+  }
+
+  if ((query.compareBar !== "age_group" && query.compareFacet !== "age_group") && state.measure == "age_adjusted_rate" ) {
     choices["#select-select-age"].disable();
   } else {
     choices["#select-select-age"].enable();
@@ -371,10 +380,14 @@ function plotConfigUpdated() {
 }
 
 function updateURLParam(value, param) {
+  console.log({value, param});
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
   } else {
     url.searchParams.delete(param);
+    if (param === 'measure' && value == INITIAL_STATE["measure"]) {
+      state.ageGroup = 'All'
+    }
   }
 
   if (CAUSE_SEX_MAP[value]) {
@@ -542,9 +555,16 @@ function downloadMortalityData(mortalityData, filename, format) {
 
 function plotTable() {
   // const pin = ["state_fips", "race", "sex", "cause", "age_group"].map(d => ({field: d, frozen: true, formatter: "plaintext", minWidth: 100}))
-  // console.log(state.mortalityData) 
+  const {compareBar, compareFacet} = state.query
+
+  let tableColumns = [...demographicTableColumns]
+
+  if (compareBar == "age_group" || compareFacet == "age_group") {
+    tableColumns = demographicTableColumns.filter(column => column.field !== 'age_adjusted_rate')
+  }
+  
   plotDataTable(state.mortalityData, elements.tableContainer, {
-    columns: demographicTableColumns
+    columns: tableColumns
   })
 }
 

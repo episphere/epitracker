@@ -80,8 +80,8 @@ function plotBar(data, options={}) {
     x: options.compareBar,
     fill: (d) => {
       const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
-      const color = COLORS[selectedCompare]
-      return color[d[selectedCompare]]
+      const color = COLORS[selectedCompare] || {}
+      return color[d[selectedCompare]] || '#777'
     },
     tip: true,                                                                      
   }
@@ -103,7 +103,7 @@ function plotBar(data, options={}) {
     marginRight: labelBox,
     marginLeft: 50,
     marginTop: facetLabelBox,
-    y: {domain: options.yStartZero ? [0, domain[1]] : domain, grid: true}
+    y: {domain: options.yStartZero ? [0, domain[1] + 20] : [domain[0], domain[1] + 20], grid: true}
   }
 
   const rule = options.yStartZero ? 0 : domain[0]
