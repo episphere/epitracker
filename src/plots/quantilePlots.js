@@ -75,7 +75,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   const yDomain = [
     options.yStartZero ? 0 : d3.min(data, d => d[options.intervalFields[0]]),
-    d3.max(data, d => d[options.intervalFields[1]])
+    d3.max(data, d => d[options.intervalFields[1]]) + 20
   ]
 
   let sizePerFacet = container.getBoundingClientRect().width
