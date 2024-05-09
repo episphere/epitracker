@@ -386,7 +386,7 @@ export function plotMortalityMapGrid(
   // pinButton.className = "fa-solid fa-thumbtack pin-button";
   // legendButtons.appendChild(pinButton);
   const minimizeButton = document.createElement("i");
-  minimizeButton.className = "fas fa-compress pin-button";
+  minimizeButton.className = "fas fa-expand pin-button";
   legendButtons.appendChild(minimizeButton);
 
   // pinButton.addEventListener("click", () => {
@@ -395,6 +395,8 @@ export function plotMortalityMapGrid(
 
   minimizeButton.addEventListener("click", () => {
     legendDiv.classList.toggle("legend-minimized");
+    minimizeButton.classList.toggle("fa-compress");
+    minimizeButton.classList.toggle("fa-expand");
   })
 
   settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
