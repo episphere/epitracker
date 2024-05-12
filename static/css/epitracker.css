@@ -76,14 +76,14 @@ li {
 
 #plot-title {
   font-weight: bold;
-  font-size: 0.7em;
+  font-size: 0.75em;
   text-align: center;
   margin: 10px;
   margin-inline: 20px;
   color: #333b4d;
   overflow-y: auto;
   display: flex;
-  /* align-items: end; */
+  align-items: end;
   /* white-space: normal;
   word-break: break-word; 
   overflow: hidden;
