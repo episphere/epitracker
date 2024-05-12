@@ -34,8 +34,8 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex"];
-const DATA_YEARS = ["2018", "2019", "2020"]; //, "2018-2020"] // TODO: Re-add grouped year
-const QUANTILE_NUMBERS = ["8 (octiles)"];
+const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"]; 
+const QUANTILE_NUMBERS = ["4", "5", "10"];
 const NUMERIC_MEASURES = [
   "crude_rate",
   "age_adjusted_rate",
@@ -53,11 +53,11 @@ const INITIAL_STATE = {
   compareFacet: "none",
   sex: "All",
   race: "All",
-  year: "2020",
+  year: "2022",
   measure: "age_adjusted_rate",
   cause: "All",
   quantileField: "adult_smoking",
-  quantileNumber: "8 (octiles)",
+  quantileNumber: "4",
   showLines: true,
   startZero: true,
 };
@@ -100,7 +100,7 @@ export function init() {
   Promise.all([
     d3.json("../data/conceptMappings.json"),
     d3.json("../data/quantile/quantile_details.json"),
-    dataManager.getQuantileMortalityData({ year: "2020" }),
+    dataManager.getQuantileMortalityData({ year: "2022", num_quantiles: 4 }),
   ]).then(([nameMappings, quantileDetails, mortalityData]) => {
     intitialDataLoad(mortalityData, quantileDetails, nameMappings);
   });
@@ -177,6 +177,7 @@ function initializeState() {
     "sex",
     "year",
     "quantileField",
+    "quantileNumber"
   ]);
   state.defineProperty("legendCheckValues", null, "query");
   state.defineProperty("mortalityData", null, ["query"]);
@@ -201,7 +202,7 @@ function initializeState() {
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
     { id: "#select-select-cause", propertyName: "cause", searchable: true },
-    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020" },
+    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-measure", propertyName: "measure" },
     {
       id: "#select-quantile-field",
@@ -212,7 +213,7 @@ function initializeState() {
   ]) {
     const sorter = createOptionSorter(
       ["All", "None"],
-      inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
+      inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
     );
 
     choices[inputSelectConfig.id] = hookSelectChoices(
@@ -239,7 +240,7 @@ function initializeState() {
 
 function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   names = nameMappings;
-  staticData.quantileDetails = quantileDetails;
+  staticData.quantileDetails = d3.index(quantileDetails, d => d.year, d => d.nQuantiles, d => d.field)//quantileDetails;
 
   // Initialise the input state from the data
   state.compareColorOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
@@ -303,6 +304,7 @@ async function queryUpdated(query) {
     cause: query.cause,
     race: query.race,
     quantile_field: query.quantileField,
+    num_quantiles: query.quantileNumber
   };
 
   if (query.compareColor != "none") dataQuery[query.compareColor] = "*";
@@ -313,8 +315,8 @@ async function queryUpdated(query) {
   });
 
   const year = query.year.split("-").at(-1);
-  const quantileDetails =
-    staticData.quantileDetails[year]["8"][query.quantileField];
+  const quantileDetails = staticData.quantileDetails.get(year).get(dataQuery.num_quantiles).get(dataQuery.quantile_field);
+
   const xTicks = quantileDetailsToTicks(quantileDetails);
   state["quantileRanges"] = xTicks;
 

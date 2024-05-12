@@ -5,7 +5,7 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 export class EpiTrackerData {
   constructor(args = {}) {
     this.args = {
-      keepInMemory: "zipped", // "zipped", "unzipped", or "none",
+      keepInMemory: "unzipped", // "zipped", "unzipped", or "none",
       postProcessCountyMortalityData: (table) => table, // Function takes an arquero table
       ...args,
     };
@@ -28,17 +28,20 @@ export class EpiTrackerData {
       cause: "*",
       year: "2020",
       quantile_field: "*",
-      // num_quantiles: "*", // TODO: Support this when needed
+      num_quantiles: "*",
       ...query,
     };
 
     const year = query.year;
     delete query.year;
 
+    const numQuantiles = query.num_quantiles
+    delete query.num_quantiles
+
     let quantileMortalityData = (
-      await this.#loadQuantileMortalityData(year)
+      await this.#loadQuantileMortalityData(year, numQuantiles)
     ).rename({
-      race_ethnicity: "race",
+      //race_ethnicity: "race",
     });
 
     // TODO: Fix this to allow all states
@@ -56,11 +59,13 @@ export class EpiTrackerData {
 
     return this.postProcessCountyMortalityData(
       quantileMortalityData.filter(filterString).derive({
-        deaths: (d) => d.aq.op.parse_float(d.count),
-        population: (d) => d.aq.op.parse_float(d.population),
+        deaths: (d) => d.aq.op.parse_int(d.deaths),
+        population: (d) => d.aq.op.parse_int(d.population),
         crude_rate: (d) => aq.op.parse_float(d.crude_rate),
         age_adjusted_rate: (d) => aq.op.parse_float(d.age_adjusted_rate),
+        quantile: d => aq.op.parse_int(d.quantile)
       })
+      .orderby("quantile")
     ).objects();
   }
 
@@ -218,7 +223,7 @@ export class EpiTrackerData {
     );
   }
 
-  async #loadQuantileMortalityData(year) {
+  async #loadQuantileMortalityData(year, nQuantiles) {
     // Year currently takes "2018", "2019", "2020", and "2018-2020"
 
     // let data
@@ -244,9 +249,12 @@ export class EpiTrackerData {
 
     // return data
 
+    const refYear = year.split("-")[0]
+
+    const filename = `quantile_data_${year}_ref-${refYear}_q${nQuantiles}.csv`
     return this.#smartLoadZipData(
-      `../data/quantile/quantile_data_${year}.csv.zip`,
-      `quantile_data_${year}.csv`
+      `../data/quantile/${filename}.zip`,
+      filename
     );
   }
 

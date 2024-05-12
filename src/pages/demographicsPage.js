@@ -32,7 +32,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex", "age_group"];
-const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"];
+const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2020"];
 const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"];
 
 // The default state, shown if no URL params.
@@ -41,7 +41,7 @@ const INITIAL_STATE = {
   compareFacet: "none",
   sex: "All",
   race: "All",
-  year: "2020",
+  year: "2022",
   ageGroup: "All",
   measure: "age_adjusted_rate",
   cause: "All",
@@ -270,7 +270,6 @@ function initialDataLoad(mortalityData, nameMappings) {
 }
 
 async function queryUpdated(query) {
-  console.log({query, state});
   if (query.compareBar == "race" || query.compareFacet == "race") {
     choices["#select-select-race"].disable();
   } else {
@@ -380,7 +379,6 @@ function plotConfigUpdated() {
 }
 
 function updateURLParam(value, param) {
-  console.log({value, param});
   if (INITIAL_STATE[param] != value) {
     url.searchParams.set(param, value);
   } else {

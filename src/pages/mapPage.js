@@ -34,7 +34,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex"];
-const DATA_YEARS = ["2018", "2019", "2020", "2018-2020"];
+const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"];
 const NUMERIC_MEASURES = [
   "crude_rate",
   "age_adjusted_rate",
@@ -49,7 +49,7 @@ const INITIAL_STATE = {
   compareColumn: "none",
   sex: "All",
   race: "All",
-  year: "2020",
+  year: "2022",
   measure: "age_adjusted_rate",
   cause: "All",
   spatialLevel: "county",
@@ -173,7 +173,7 @@ function initializeState() {
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
     { id: "#select-select-cause", propertyName: "cause", searchable: true },
-    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020" },
+    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-measure", propertyName: "measure" },
     { id: "#select-level", propertyName: "spatialLevel" },
     { id: "#select-select-state", propertyName: "areaState", searchable: true },
@@ -189,7 +189,7 @@ function initializeState() {
       inputSelectConfig.propertyName !== "areaCounty"
         ? createOptionSorter(
             ["All", "None"],
-            inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
+            inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
           )
         : undefined;
 
@@ -472,25 +472,26 @@ async function queryUpdated(query) {
 
   state.mortalityData = mortalityData; //.filter(d => )
 
-  if (elements.selectChoicesListCounty) {
-    // NOTE: This is for changes choices option color
-    const mortalityDataWithCounties = await dataManager.getCountyMortalityData(
-      dataQuery,
-      { includeTotals: false, includeCountyFips: true }
-    );
-    const uniqueCountiesData = [
-      ...new Set(mortalityDataWithCounties.map((d) => d.county_fips)),
-    ];
+  //  TODO: Whatever this is, it probably needs to go. 
+  // if (elements.selectChoicesListCounty) {
+  //   // NOTE: This is for changes choices option color
+  //   const mortalityDataWithCounties = await dataManager.getCountyMortalityData(
+  //     dataQuery,
+  //     { includeTotals: false, includeCountyFips: true }
+  //   );
+  //   const uniqueCountiesData = [
+  //     ...new Set(mortalityDataWithCounties.map((d) => d.county_fips)),
+  //   ];
 
-    uniqueCountiesData.forEach((county) => {
-      const elementCountyItem = elements.selectChoicesListCounty.querySelector(
-        `[data-value='${county}']`
-      );
-      if (elementCountyItem) {
-        elementCountyItem.classList.add("text-dark");
-      }
-    });
-  }
+  //   uniqueCountiesData.forEach((county) => {
+  //     const elementCountyItem = elements.selectChoicesListCounty.querySelector(
+  //       `[data-value='${county}']`
+  //     );
+  //     if (elementCountyItem) {
+  //       elementCountyItem.classList.add("text-dark");
+  //     }
+  //   });
+  // }
 }
 
 function plotConfigUpdated(plotConfig) {
