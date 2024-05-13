@@ -285,7 +285,7 @@ export function plotMortalityMapGrid(
       width: 140,
       height: 60,
       margin: 15,
-      x: { ticks: domain, label: null, tickSize: 0, tickPadding: 4 },
+      x: { ticks: domain, label: null, tickSize: 0, tickPadding: 4, domain, },
       y: { ticks: [], label: null, margin: 0 },
       style: {
         background: "none",
@@ -355,6 +355,7 @@ export function plotMortalityMapGrid(
       {
         featureNameFormat: options.featureNameFormat,
         valueFormat: options.valueFormat,
+        xDomain: domain,
       }
     );
 
@@ -446,6 +447,7 @@ function addChoroplethInteractivity(
   args = {
     featureNameFormat: null,
     valueFormat: null,
+    xDomain: [-3, 3],
     ...args,
   };
 
@@ -477,7 +479,7 @@ function addChoroplethInteractivity(
     //       ? state.selectState
     //       : null;
     // }
-    tooltip.hide();
+    //tooltip.hide();
   });
 
   geoSelect
@@ -524,6 +526,16 @@ function addChoroplethInteractivity(
 
       const histogramOptions = baseHistogramConfig.options;
       histogramOptions.marks = [...baseHistogramConfig.marks];
+
+      // Expand tooltip histogram to show outliers if they are outside standard range
+      let xDomain = args.xDomain
+      if (row?.[measure] < xDomain[0]) {
+        baseHistogramConfig.options.x.domain[0] = row[measure]
+      } else if (row?.[measure] > xDomain[1]) {
+        baseHistogramConfig.options.x.domain[1] = row[measure]
+      } else {
+        baseHistogramConfig.options.x.domain = [...xDomain]
+      }
 
       if (row && Number.isFinite(row[measure])) {
         const otherRows = mapDataGeoMap.get(feature.id).filter((d) => d != row);
