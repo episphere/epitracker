@@ -479,7 +479,7 @@ function addChoroplethInteractivity(
     //       ? state.selectState
     //       : null;
     // }
-    //tooltip.hide();
+    tooltip.hide();
   });
 
   geoSelect
