@@ -108,7 +108,7 @@ export class EpiTrackerData {
     const filterString =
       aqFilter.length > 0 ? `row => ` + aqFilter.join(" && ") : "row => true";
 
-    const data = this.postProcessCountyMortalityData(
+    let data = this.postProcessCountyMortalityData(
       countyMortalityData.filter(filterString).derive({
         deaths: (d) => d.aq.op.parse_float(d.deaths),
         population: (d) => d.aq.op.parse_float(d.population),
@@ -128,11 +128,16 @@ export class EpiTrackerData {
         countiesMap = d3.index(integratedCounties, (d) => d["value"]);
       }
 
-      return data.map((item) => ({
+      data = data.map((item) => ({
         ...item,
         state: statesMap.get(item.state_fips).label,
         county: countiesMap.get(item.county_fips)?.label,
       }));
+    }
+
+    // TODO: Remove after CT bug is fixed!
+    if (year == "2018-2022") {
+      data = data.filter(d => !d.county_fips.startsWith("09"))
     }
 
     return data;
