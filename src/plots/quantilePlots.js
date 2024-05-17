@@ -94,7 +94,10 @@ export function plotQuantileScatter(container, data, options={}) {
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: d => {
       const xTickFormat = options.xTickFormat(undefined, d - 1)
-      return xTickFormat.split('-').map(i => i.trim() * 100).join(' - ')
+      console.log({d, aaa: options.quantileFieldUnit})
+      const {quantileFieldUnit} = options
+      const isPercentOrProportion = quantileFieldUnit.toLowerCase() === 'percent' || quantileFieldUnit.toLowerCase() === 'proportion' 
+      return xTickFormat.split('-').map(i => (i.trim() * (isPercentOrProportion ? 100 : 1)).toFixed(2)).join(' - ')
     }, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
     fx: {tickFormat: options.facetTickFormat},

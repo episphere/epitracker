@@ -40,10 +40,10 @@ const QUANTILE_NUMBERS = ["4", "5", "10"];
 const NUMERIC_MEASURES = [
   "crude_rate",
   "age_adjusted_rate",
-  "Crude_Rate_Ratio (Ref=Q1)",
-  "Crude Rate Ratio (Ref=Q8)",
   "Age Adjusted Rate Ratio (Ref=Q1)",
   "Age Adjusted Rate Ratio (Ref=Q8)",
+  "Crude Rate Ratio (Ref=Q1)",
+  "Crude Rate Ratio (Ref=Q8)",
   // "deaths",
   // "population",
 ];
@@ -265,6 +265,7 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   ].map((field) => ({
     value: field,
     label: nameMappings["quantile_fields"][field].measure,
+    unit: nameMappings["quantile_fields"][field].unit
   }));
   state.quantileNumberOptions = QUANTILE_NUMBERS;
 
@@ -389,6 +390,13 @@ function plotConfigUpdated(plotConfig) {
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
   const xTickFormat = (_, i) => state["quantileRanges"][i];
 
+  const quantileFieldUnit = () => {
+    const quantileField = state["quantileField"]
+    return state['quantileFieldOptions'].find(i => i.value === quantileField).unit ?? ''
+  }
+
+  console.log({state, sss: quantileFieldUnit()})
+
   let data = plotConfig.mortalityData;
   if (plotConfig.query.compareColor != "none") {
     const legendCheckSet = new Set(plotConfig.legendCheckValues);
@@ -446,6 +454,7 @@ function plotConfigUpdated(plotConfig) {
       yLabel: names.measures[plotConfig.measure],
       facetLabel: names.fields[state.compareFacet],
       xTickFormat: xTickFormat,
+      quantileFieldUnit: quantileFieldUnit(),
       tooltipFields: [
         plotConfig.query.compareFacet,
         plotConfig.query.compareColor,
