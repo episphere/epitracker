@@ -36,13 +36,14 @@ window.onload = async () => {
 const COMPARABLE_FIELDS = ["race", "sex"];
 const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"]; 
 const QUANTILE_NUMBERS = ["4", "5", "10"];
+// TODO: here...
 const NUMERIC_MEASURES = [
   "crude_rate",
   "age_adjusted_rate",
+  "Crude_Rate_Ratio (Ref=Q1)",
+  "Crude Rate Ratio (Ref=Q8)",
   "Age Adjusted Rate Ratio (Ref=Q1)",
   "Age Adjusted Rate Ratio (Ref=Q8)",
-  "Crude Rate Ratio (Ref=Q1)",
-  "Crude Rate Ratio (Ref=Q8)",
   // "deaths",
   // "population",
 ];
@@ -211,10 +212,10 @@ function initializeState() {
     },
     { id: "#select-quantile-number", propertyName: "quantileNumber" },
   ]) {
-    const sorter = createOptionSorter(
+    const sorter = inputSelectConfig.propertyName !== "measure"? createOptionSorter(
       ["All", "None"],
       inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
-    );
+    ): undefined;
 
     choices[inputSelectConfig.id] = hookSelectChoices(
       inputSelectConfig.id,

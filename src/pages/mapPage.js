@@ -45,11 +45,11 @@ const SPATIAL_LEVELS = ["county", "state"];
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
-  compareRow: "none",
+  compareRow: "sex",
   compareColumn: "none",
   sex: "All",
   race: "All",
-  year: "2018-2022",
+  year: "2022",
   measure: "age_adjusted_rate",
   cause: "All",
   spatialLevel: "county",

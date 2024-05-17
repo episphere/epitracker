@@ -136,11 +136,11 @@ function initializeState() {
   }
 
   state.defineProperty("measureOptions", null, ["compareBar", "compareFacet"]);
-  for (const compareProperty of ["compareBar", "compareFacet"]) {
+  for (const compareProperty of ["compareBar", "compareFacet", "ageGroup"]) {
     state.subscribe(compareProperty, () => {
       let measureOptions = null;
       let measure = state.measure;
-      if (["compareBar", "compareFacet"].some((d) => state[d] == "age_group")) {
+      if (["compareBar", "compareFacet"].some((d) => state[d] == "age_group" || state["ageGroup"] != 'All')) {
         measureOptions = ["crude_rate"];
         measure = "crude_rate";
       } else {
@@ -281,17 +281,17 @@ async function queryUpdated(query) {
     choices["#select-select-sex"].enable();
   }
 
-  if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
-    choices["#select-select-age"].disable();
-  } else {
-    choices["#select-select-age"].enable();
-  }
+  // if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
+  //   choices["#select-select-age"].disable();
+  // } else {
+  //   choices["#select-select-age"].enable();
+  // }
 
-  if ((query.compareBar !== "age_group" && query.compareFacet !== "age_group") && state.measure == "age_adjusted_rate" ) {
-    choices["#select-select-age"].disable();
-  } else {
-    choices["#select-select-age"].enable();
-  }
+  // if ((query.compareBar !== "age_group" && query.compareFacet !== "age_group") && state.measure == "age_adjusted_rate" ) {
+  //   choices["#select-select-age"].disable();
+  // } else {
+  //   choices["#select-select-age"].enable();
+  // }
 
   const dataQuery = {
     year: query.year,
@@ -553,11 +553,12 @@ function downloadMortalityData(mortalityData, filename, format) {
 
 function plotTable() {
   // const pin = ["state_fips", "race", "sex", "cause", "age_group"].map(d => ({field: d, frozen: true, formatter: "plaintext", minWidth: 100}))
-  const {compareBar, compareFacet} = state.query
+  const {compareBar, compareFacet, ageGroup} = state.query
+  console.log({ageGroup});
 
   let tableColumns = [...demographicTableColumns]
 
-  if (compareBar == "age_group" || compareFacet == "age_group") {
+  if (compareBar == "age_group" || compareFacet == "age_group" || ageGroup !== 'All') {
     tableColumns = demographicTableColumns.filter(column => column.field !== 'age_adjusted_rate')
   }
   

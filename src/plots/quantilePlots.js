@@ -92,7 +92,10 @@ export function plotQuantileScatter(container, data, options={}) {
     height,
     style: {fontSize: "14px"},
     color: colorOpt,
-    x: {type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45},
+    x: {type: "point", label: options.xLabel, tickFormat: d => {
+      const xTickFormat = options.xTickFormat(undefined, d - 1)
+      return xTickFormat.split('-').map(i => i.trim() * 100).join(' - ')
+    }, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
