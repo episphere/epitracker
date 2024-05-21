@@ -38,14 +38,12 @@ const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"];
 const QUANTILE_NUMBERS = ["4", "5", "10"];
 // TODO: here...
 const NUMERIC_MEASURES = [
-  "crude_rate",
   "age_adjusted_rate",
+  "crude_rate",
   "Age Adjusted Rate Ratio (Ref=Q1)",
   "Age Adjusted Rate Ratio (Ref=Q8)",
   "Crude Rate Ratio (Ref=Q1)",
   "Crude Rate Ratio (Ref=Q8)",
-  // "deaths",
-  // "population",
 ];
 
 // The default state, shown if no URL params.
