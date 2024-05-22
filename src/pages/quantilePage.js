@@ -448,7 +448,7 @@ function plotConfigUpdated(plotConfig) {
       color: colorFunction,
       drawLines: state.showLines,
       yStartZero: state.startZero,
-      xLabel: `${measureDetails.measure} (${measureDetails.unit})`,
+      xLabel: `${measureDetails.measure} (${measureDetails.unit==='Proportion'?'Percentage':measureDetails.unit})`,
       yLabel: names.measures[plotConfig.measure],
       facetLabel: names.fields[state.compareFacet],
       xTickFormat: xTickFormat,
