@@ -32,7 +32,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex", "age_group"];
-const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2020"];
+const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"];
 const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"];
 
 // The default state, shown if no URL params.
@@ -190,13 +190,13 @@ function initializeState() {
     { id: "#select-select-sex", propertyName: "sex" },
     { id: "#select-select-state", propertyName: "areaState", searchable: true },
     { id: "#select-select-cause", propertyName: "cause", searchable: true },
-    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2020" },
+    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-select-age", propertyName: "ageGroup" },
     { id: "#select-measure", propertyName: "measure" },
   ]) {
     const sorter = createOptionSorter(
       ["All", "None"],
-      inputSelectConfig.propertyName == "year" ? ["2018-2020"] : []
+      inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
     );
 
     choices[inputSelectConfig.id] = hookSelectChoices(
