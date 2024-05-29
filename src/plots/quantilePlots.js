@@ -75,7 +75,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   const yDomain = [
     options.yStartZero ? 0 : d3.min(data, d => d[options.intervalFields[0]]),
-    d3.max(data, d => d[options.intervalFields[1]]) + 20
+    d3.max(data, d => d[options.intervalFields[1]])
   ]
 
   let sizePerFacet = container.getBoundingClientRect().width
@@ -97,9 +97,9 @@ export function plotQuantileScatter(container, data, options={}) {
       console.log({d, aaa: options.quantileFieldUnit})
       const {quantileFieldUnit} = options
       const isPercentOrProportion = quantileFieldUnit.toLowerCase() === 'percent' || quantileFieldUnit.toLowerCase() === 'proportion' 
-      return xTickFormat.split('-').map(i => (i.trim() * (isPercentOrProportion ? 100 : 1)).toFixed(2)).join(' - ')
+      return xTickFormat.split('-').map(i => (i.trim().replaceAll(',', '') * (isPercentOrProportion ? 100 : 1)).toFixed(2)).join(' - ')
     }, tickRotate: -45},
-    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
+    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain, nice:true},
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
     marginTop: 80,

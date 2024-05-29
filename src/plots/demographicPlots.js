@@ -103,7 +103,7 @@ function plotBar(data, options={}) {
     marginRight: labelBox,
     marginLeft: 50,
     marginTop: facetLabelBox,
-    y: {domain: options.yStartZero ? [0, domain[1] + 20] : [domain[0], domain[1] + 20], grid: true}
+    y: {domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice:true}
   }
 
   const rule = options.yStartZero ? 0 : domain[0]

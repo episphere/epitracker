@@ -1,4 +1,8 @@
-import { Tabulator, FrozenColumnsModule, SortModule} from 'https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm'
+import {
+  Tabulator,
+  FrozenColumnsModule,
+  SortModule,
+} from "https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm";
 import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm";
 import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
@@ -20,10 +24,9 @@ import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import { plotQuantileScatter } from "../plots/quantilePlots.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { quantileTableColumns } from '../utils/tableDefinitions.js';
+import { quantileTableColumns } from "../utils/tableDefinitions.js";
 
-
-Tabulator.registerModule( [FrozenColumnsModule, SortModule])
+Tabulator.registerModule([FrozenColumnsModule, SortModule]);
 
 window.onload = async () => {
   await start();
@@ -34,7 +37,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex"];
-const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"]; 
+const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"];
 const QUANTILE_NUMBERS = ["4", "5", "10"];
 // TODO: here...
 const NUMERIC_MEASURES = [
@@ -176,7 +179,7 @@ function initializeState() {
     "sex",
     "year",
     "quantileField",
-    "quantileNumber"
+    "quantileNumber",
   ]);
   state.defineProperty("legendCheckValues", null, "query");
   state.defineProperty("mortalityData", null, ["query"]);
@@ -210,10 +213,13 @@ function initializeState() {
     },
     { id: "#select-quantile-number", propertyName: "quantileNumber" },
   ]) {
-    const sorter = inputSelectConfig.propertyName !== "measure"? createOptionSorter(
-      ["All", "None"],
-      inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
-    ): undefined;
+    const sorter =
+      inputSelectConfig.propertyName !== "measure"
+        ? createOptionSorter(
+            ["All", "None"],
+            inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
+          )
+        : undefined;
 
     choices[inputSelectConfig.id] = hookSelectChoices(
       inputSelectConfig.id,
@@ -239,7 +245,12 @@ function initializeState() {
 
 function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   names = nameMappings;
-  staticData.quantileDetails = d3.index(quantileDetails, d => d.year, d => d.nQuantiles, d => d.field)//quantileDetails;
+  staticData.quantileDetails = d3.index(
+    quantileDetails,
+    (d) => d.year,
+    (d) => d.nQuantiles,
+    (d) => d.field
+  ); //quantileDetails;
 
   // Initialise the input state from the data
   state.compareColorOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
@@ -263,7 +274,7 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   ].map((field) => ({
     value: field,
     label: nameMappings["quantile_fields"][field].measure,
-    unit: nameMappings["quantile_fields"][field].unit
+    unit: nameMappings["quantile_fields"][field].unit,
   }));
   state.quantileNumberOptions = QUANTILE_NUMBERS;
 
@@ -304,7 +315,7 @@ async function queryUpdated(query) {
     cause: query.cause,
     race: query.race,
     quantile_field: query.quantileField,
-    num_quantiles: query.quantileNumber
+    num_quantiles: query.quantileNumber,
   };
 
   if (query.compareColor != "none") dataQuery[query.compareColor] = "*";
@@ -315,15 +326,23 @@ async function queryUpdated(query) {
   });
 
   const year = query.year.split("-").at(-1);
-  const quantileDetails = staticData.quantileDetails.get(year).get(dataQuery.num_quantiles).get(dataQuery.quantile_field);
+  const quantileDetails = staticData.quantileDetails
+    .get(year)
+    .get(dataQuery.num_quantiles)
+    .get(dataQuery.quantile_field);
 
   const xTicks = quantileDetailsToTicks(quantileDetails);
   state["quantileRanges"] = xTicks;
 
   data = data.map((row) => {
-    row['quantile_range'] = xTicks[row.quantile]
+    row["quantile_range"] = xTicks[row.quantile];
 
-    const key = query.compareFacet !== 'none' ? query.compareFacet : query.compareColor !== 'none' ? query.compareColor : 'sex'
+    const key =
+      query.compareFacet !== "none"
+        ? query.compareFacet
+        : query.compareColor !== "none"
+        ? query.compareColor
+        : "sex";
     if (query.compareColor === "sex") {
       const filteredData =
         query.compareFacet === "race"
@@ -368,7 +387,6 @@ async function queryUpdated(query) {
           .filter((i) => i !== "quantile_range")
           .slice(quantileKeyIndex + 1)
       );
-
     } else {
       temporaryKeys.push(...rowKeys);
     }
@@ -384,16 +402,18 @@ async function queryUpdated(query) {
   updateLegend(data, query);
 }
 function plotConfigUpdated(plotConfig) {
-
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
   const xTickFormat = (_, i) => state["quantileRanges"][i];
 
   const quantileFieldUnit = () => {
-    const quantileField = state["quantileField"]
-    return state['quantileFieldOptions'].find(i => i.value === quantileField).unit ?? ''
-  }
+    const quantileField = state["quantileField"];
+    return (
+      state["quantileFieldOptions"].find((i) => i.value === quantileField)
+        .unit ?? ""
+    );
+  };
 
-  console.log({state, sss: quantileFieldUnit()})
+  console.log({ state, sss: quantileFieldUnit() });
 
   let data = plotConfig.mortalityData;
   if (plotConfig.query.compareColor != "none") {
@@ -422,45 +442,56 @@ function plotConfigUpdated(plotConfig) {
   const colorTickFormat =
     plotConfig.query.compareColor == "race" ? formatRace : (d) => d;
 
-  const isActiveTable = elements.tableNavLink.classList.contains("active");
-
-  if (isActiveTable) {
-    plotTable();
+  if (state.mortalityData.length == 0) {
+    elements.plotContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
+    elements.tableContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
   } else {
-    // console.log("Plot height", elements.plotContainer.getBoundingClientRect().height)
-    // elements.plotContainer.innerHTML = ''
-    // elements.plotContainer.appendChild(Plot.plot({
-    //   height: elements.plotContainer.getBoundingClientRect().height*.95,
-    //   marks: [
-    //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
-    //   ]
-    // }))
-    plotQuantileScatter(elements.plotContainer, data, {
-      valueField: plotConfig.measure,
-      facet:
-        plotConfig.query.compareFacet != "none"
-          ? plotConfig.query.compareFacet
-          : null,
-      intervalFields: [
-        plotConfig.measure + "_low",
-        plotConfig.measure + "_high",
-      ],
-      color: colorFunction,
-      drawLines: state.showLines,
-      yStartZero: state.startZero,
-      xLabel: `${measureDetails.measure} (${measureDetails.unit==='Proportion'?'Percentage':measureDetails.unit})`,
-      yLabel: names.measures[plotConfig.measure],
-      facetLabel: names.fields[state.compareFacet],
-      xTickFormat: xTickFormat,
-      quantileFieldUnit: quantileFieldUnit(),
-      tooltipFields: [
-        plotConfig.query.compareFacet,
-        plotConfig.query.compareColor,
-      ].filter((d) => d != "none"),
-      colorDomain: colorDomainValues,
-      facetTickFormat,
-      colorTickFormat,
-    });
+    const isActiveTable = elements.tableNavLink.classList.contains("active");
+
+    if (isActiveTable) {
+      plotTable();
+    } else {
+      // console.log("Plot height", elements.plotContainer.getBoundingClientRect().height)
+      // elements.plotContainer.innerHTML = ''
+      // elements.plotContainer.appendChild(Plot.plot({
+      //   height: elements.plotContainer.getBoundingClientRect().height*.95,
+      //   marks: [
+      //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
+      //   ]
+      // }))
+      plotQuantileScatter(elements.plotContainer, data, {
+        valueField: plotConfig.measure,
+        facet:
+          plotConfig.query.compareFacet != "none"
+            ? plotConfig.query.compareFacet
+            : null,
+        intervalFields: [
+          plotConfig.measure + "_low",
+          plotConfig.measure + "_high",
+        ],
+        color: colorFunction,
+        drawLines: state.showLines,
+        yStartZero: state.startZero,
+        xLabel: `${measureDetails.measure} (${
+          measureDetails.unit === "Proportion"
+            ? "Percentage"
+            : measureDetails.unit
+        })`,
+        yLabel: names.measures[plotConfig.measure],
+        facetLabel: names.fields[state.compareFacet],
+        xTickFormat: xTickFormat,
+        quantileFieldUnit: quantileFieldUnit(),
+        tooltipFields: [
+          plotConfig.query.compareFacet,
+          plotConfig.query.compareColor,
+        ].filter((d) => d != "none"),
+        colorDomain: colorDomainValues,
+        facetTickFormat,
+        colorTickFormat,
+      });
+    }
   }
 
   updateGraphTitle();
@@ -604,21 +635,23 @@ function quantileDetailsToTicks(quantileDetails) {
 
   // Get ticks for x-axis of quantile plot. Ticks are formatted so that if any number has a string length larger than
   // a fixed number, then all ticks are converted to scientific notation. Precision is set to fixed number.
-
-  let ranges = quantileDetails.quantileRanges.map((range) =>
-    range.map((d) => Number(d.toPrecision(2)).toString())
-  );
-  const exp = d3.merge(ranges).some((d) => d.length > 6);
-  for (let i = 0; i < ranges.length; i++) {
-    if (exp) {
-      ranges[i] = ranges[i].map((d) => parseFloat(d).toExponential());
-    } else {
-      ranges[i] = ranges[i].map((d) =>
-        parseFloat(d).toLocaleString("en-US", { maximumFractionDigits: 8 })
-      );
+  console.log({ quantileDetails });
+  if (quantileDetails) {
+    let ranges = quantileDetails.quantileRanges.map((range) =>
+      range.map((d) => Number(d.toPrecision(2)).toString())
+    );
+    const exp = d3.merge(ranges).some((d) => d.length > 6);
+    for (let i = 0; i < ranges.length; i++) {
+      if (exp) {
+        ranges[i] = ranges[i].map((d) => parseFloat(d).toExponential());
+      } else {
+        ranges[i] = ranges[i].map((d) =>
+          parseFloat(d).toLocaleString("en-US", { maximumFractionDigits: 8 })
+        );
+      }
     }
+    return ranges.map((d) => d.join(" - "));
   }
-  return ranges.map((d) => d.join(" - "));
 }
 
 function updateURLParam(value, param) {
@@ -659,11 +692,18 @@ function setInputsEnabled(enabled) {
 }
 
 function plotTable() {
-  const pin = ["cause", "race", "sex", "quantile_field", "quantile", "quantile_range"].map(d => ({field: d, frozen: true}))
+  const pin = [
+    "cause",
+    "race",
+    "sex",
+    "quantile_field",
+    "quantile",
+    "quantile_range",
+  ].map((d) => ({ field: d, frozen: true }));
   plotDataTable(state.mortalityData, elements.tableContainer, {
     colDefinitions: pin,
-    columns: quantileTableColumns
-  })
+    columns: quantileTableColumns,
+  });
 }
 
 function toggleLoading(loading, soft = false) {
@@ -726,14 +766,17 @@ function getAgeAdjustedRateData(data, row, key) {
   const firstIndex = 0;
 
   if (dataSortedByQuantile.length) {
-    row["Age Adjusted Rate Ratio (Ref=Q1)"] =
-      +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate).toFixed(2);
-    row["Age Adjusted Rate Ratio (Ref=Q8)"] =
-      +parseFloat(row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate).toFixed(2);
-    row["Crude Rate Ratio (Ref=Q1)"] =
-      +parseFloat(row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate).toFixed(2);
-    row["Crude Rate Ratio (Ref=Q8)"] =
-      +parseFloat(row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate).toFixed(2);
+    row["Age Adjusted Rate Ratio (Ref=Q1)"] = +parseFloat(
+      row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate
+    ).toFixed(2);
+    row["Age Adjusted Rate Ratio (Ref=Q8)"] = +parseFloat(
+      row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate
+    ).toFixed(2);
+    row["Crude Rate Ratio (Ref=Q1)"] = +parseFloat(
+      row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate
+    ).toFixed(2);
+    row["Crude Rate Ratio (Ref=Q8)"] = +parseFloat(
+      row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate
+    ).toFixed(2);
   }
-
-}
+  }

@@ -170,7 +170,7 @@ export function addProximityHover(elementsSelect, plotSelect, listener, minDista
     const pointIndex = delauney.find(mousePoint[0], mousePoint[1])
     const point = points[pointIndex] 
 
-    if (minDistance != null) {
+    if (minDistance != null && point) {
       const distance = (mousePoint[0]-point[0])**2 + (mousePoint[1]-point[1])**2
 
       let newHover = distance < distSqr ? pointIndex : null 
