@@ -717,8 +717,15 @@ function downloadMapSVG() {
   if (legendButtonsElement) {
     legendButtonsElement.style.display = "none"
   }
+  const sourceElement = document.getElementById('plot-source')
+  if (sourceElement) {
+    sourceElement.style.display = 'block'
+  }
   return toSvg(plotsElement)
   .then((data) => {
+    if (sourceElement) {
+      sourceElement.style.display = 'none'
+    }
     const link = document.createElement('a')
     link.download = 'map-svg';
     link.href = data;
@@ -764,6 +771,9 @@ function downloadMapGrid() {
   );
   temporaryDiv.appendChild(legend);
   temporaryDiv.appendChild(temporaryGrid);
+  const sourceDiv = document.createElement('div')
+  sourceDiv.innerText = 'the source...'
+  temporaryDiv.appendChild(sourceDiv);
   return downloadElementAsImage(temporaryDiv, "epitracker-map");
 }
 

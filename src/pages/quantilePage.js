@@ -403,7 +403,10 @@ async function queryUpdated(query) {
 }
 function plotConfigUpdated(plotConfig) {
   const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
-  const xTickFormat = (_, i) => state["quantileRanges"][i];
+  console.log({ss:state["quantileRanges"]})
+  const xTickFormat = (_, i) => {
+    console.log({aaaaAA: state.quantileRanges[i]})
+    return state["quantileRanges"][i]};
 
   const quantileFieldUnit = () => {
     const quantileField = state["quantileField"];
@@ -592,7 +595,14 @@ function addDownloadButton() {
 }
 
 function downloadGraphSVG() {
+  const sourceElement = document.getElementById('plot-source')
+  if (sourceElement) {
+    sourceElement.style.display = 'block'
+  }
   return toSvg(document.getElementById("plots")).then((data) => {
+    if (sourceElement) {
+      sourceElement.style.display = 'none'
+    }
     const link = document.createElement("a");
     link.download = "plot-svg";
     link.href = data;
@@ -621,6 +631,9 @@ function downloadGraph() {
   wrapperElement.appendChild(temporaryLegend);
   wrapperElement.appendChild(temporaryTitle);
   wrapperElement.appendChild(temporaryContainer);
+  const sourceDiv = document.createElement('div')
+  sourceDiv.innerText = 'the source...'
+  wrapperElement.appendChild(sourceDiv);
   return downloadElementAsImage(wrapperElement, "epitracker-quantile-plot");
 }
 
@@ -779,4 +792,4 @@ function getAgeAdjustedRateData(data, row, key) {
       row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate
     ).toFixed(2);
   }
-  }
+}

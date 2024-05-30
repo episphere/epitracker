@@ -445,7 +445,14 @@ function addDownloadButton() {
 }
 
 function downloadGraphSVG() {
+  const sourceElement = document.getElementById('plot-source')
+  if (sourceElement) {
+    sourceElement.style.display = 'block'
+  }
   return toSvg(document.getElementById("plots")).then((data) => {
+    if (sourceElement) {
+      sourceElement.style.display = 'none'
+    }
     const link = document.createElement('a')
     link.download = 'plot-svg';
     link.href = data;
@@ -474,6 +481,9 @@ function downloadGraph() {
   // wrapperElement.appendChild(temporaryLegend);
   wrapperElement.appendChild(temporaryTitle);
   wrapperElement.appendChild(temporaryContainer);
+  const sourceDiv = document.createElement('div')
+  sourceDiv.innerText = 'the source...'
+  wrapperElement.appendChild(sourceDiv);
   return downloadElementAsImage(wrapperElement, "demograpic-plot");
 }
 
