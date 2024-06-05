@@ -2589,7 +2589,11 @@ button.previous-btn {
   opacity: 0.4;
 }
 
-#color-legend {
+#color-legend { 
+  opacity: .3;
+}
+
+#color-legend, #setting-legend {
   /* To prevent the legend preventing interaction with DL button...kind of hacky*/
   margin-right: 30px;
   position: sticky;
@@ -2598,8 +2602,20 @@ button.previous-btn {
   z-index: 6;
   background-color: white;
   justify-self: left;
-  opacity: .3;
+}
 
+#setting-legend {
+  box-shadow: 2px 2px 6px 1px lightgrey;
+  padding: 10px;
+}
+
+#setting-legend i {
+  cursor: pointer;
+  color: #828282;
+}
+
+#setting-legend i:hover {
+  color: #9f9f9f;
 }
 
 #color-legend.unpinned {
@@ -2888,14 +2904,23 @@ button.previous-btn {
 .floating-label {
   transform: translateY(-0.8em) translateX(0.6em);
   font-size: 0.9em;
-  /* background: white; */
   border-radius: 2px;
   padding-left: 5px;
   padding-right: 5px;
   color: grey;
   position: relative;
   z-index: 1;
-  text-shadow: 1px 1px white, -1px -1px white;
+}
+
+.floating-label::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: #fff;
+  z-index: -1;
+  left: 0;
+  top: calc(50% + 1px);
 }
 
 .floating-select {
@@ -2938,7 +2963,7 @@ footer {
   border-left: solid 1px var(--bs-border-color); */
 }
 
-#color-settings-dropdown {
+#color-settings-dropdown, #settings-dropdown {
   display: none; 
   flex-direction: column;
   padding: 10px;
@@ -2948,7 +2973,7 @@ footer {
 }
 
 
-#color-settings-dropdown label {
+#color-settings-dropdown label, #settings-dropdown label {
   font-size: 0.9em;
   color: grey;
   margin-bottom: -1px;
@@ -2959,7 +2984,7 @@ footer {
 }
 
 
-#color-settings-dropdown .form-check-label {
+#color-settings-dropdown .form-check-label, #settings-dropdown .form-check-label {
   line-height: 1.7em;
 }
 
@@ -2977,7 +3002,7 @@ footer {
   text-align: right;
 }
 
-#color-settings-close {
+#color-settings-close, #settings-close {
   color: grey;
   margin-right: -8px;
   margin-top: -8px;
@@ -2985,7 +3010,7 @@ footer {
   cursor: pointer;
 }
 
-#color-settings-close:hover {
+#color-settings-close:hover, #settings-close:hover {
   color: lightgrey;
 }
 

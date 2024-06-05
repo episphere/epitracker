@@ -12,18 +12,16 @@ import { downloadElementAsImage } from "../utils/download.js";
 import {
   createDropdownDownloadButton,
   createOptionSorter,
-  dataToTableData,
   downloadMortalityData,
   formatCauseName,
   grayOutSexSelectionBasedOnCause,
   CAUSE_SEX_MAP,
-  initSidebar,
   plotDataTable,
+  addPopperTooltip
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import { plotQuantileScatter } from "../plots/quantilePlots.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
-import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { quantileTableColumns } from "../utils/tableDefinitions.js";
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule]);
@@ -51,7 +49,7 @@ const NUMERIC_MEASURES = [
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
-  compareColor: "sex",
+  compareColor: "none",
   compareFacet: "none",
   sex: "All",
   race: "All",
@@ -416,8 +414,6 @@ function plotConfigUpdated(plotConfig) {
     );
   };
 
-  console.log({ state, sss: quantileFieldUnit() });
-
   let data = plotConfig.mortalityData;
   if (plotConfig.query.compareColor != "none") {
     const legendCheckSet = new Set(plotConfig.legendCheckValues);
@@ -445,6 +441,33 @@ function plotConfigUpdated(plotConfig) {
   const colorTickFormat =
     plotConfig.query.compareColor == "race" ? formatRace : (d) => d;
 
+  const legendContainer = document.getElementById("setting-legend");
+
+  if (!state.onSettingsClick) {
+    const plotsElement = document.getElementById("plots");
+    const settingsTooltip = addPopperTooltip(plotsElement);
+    const settingsElement = document.getElementById(
+      "settings-dropdown"
+    );
+    const settingsClose = document.getElementById("settings-close");
+
+    let tooltipShown = false;
+    state.onSettingsClick = (settingsButton) => {
+      settingsElement.style.display = "flex";
+      if (tooltipShown) {
+        settingsTooltip.hide();
+      } else {
+        settingsTooltip.show(settingsButton, settingsElement);
+      }
+      tooltipShown = !tooltipShown;
+    };
+
+    settingsClose.addEventListener("click", () => {
+      tooltipShown = !tooltipShown;
+      settingsTooltip.hide();
+    });
+  }
+
   if (state.mortalityData.length == 0) {
     elements.plotContainer.innerHTML =
       "<i> There is no data for this selection. </i>";
@@ -464,7 +487,7 @@ function plotConfigUpdated(plotConfig) {
       //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
       //   ]
       // }))
-      plotQuantileScatter(elements.plotContainer, data, {
+      plotQuantileScatter(elements.plotContainer, legendContainer, data, {
         valueField: plotConfig.measure,
         facet:
           plotConfig.query.compareFacet != "none"
@@ -493,6 +516,7 @@ function plotConfigUpdated(plotConfig) {
         colorDomain: colorDomainValues,
         facetTickFormat,
         colorTickFormat,
+        onSettingsClick: state.onSettingsClick
       });
     }
   }

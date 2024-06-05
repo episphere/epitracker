@@ -37,7 +37,7 @@ const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"];
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
-  compareBar: "race",
+  compareBar: "none",
   compareFacet: "none",
   sex: "All",
   race: "All",
