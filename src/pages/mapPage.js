@@ -166,13 +166,16 @@ function initializeState() {
       state.subscribe(param, updateURLParam);
     }
   }
-
+  const causeFormat = (d) => ({ 
+    label: d === 'All' ? 'All cancers (malignant)' : d, 
+    value: d 
+  })
   for (const inputSelectConfig of [
     { id: "#select-compare-row", propertyName: "compareRow" },
     { id: "#select-compare-column", propertyName: "compareColumn" },
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
-    { id: "#select-select-cause", propertyName: "cause", searchable: true },
+    { id: "#select-select-cause", propertyName: "cause", searchable: true ,  format: causeFormat },
     { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-measure", propertyName: "measure" },
     { id: "#select-level", propertyName: "spatialLevel" },
@@ -198,9 +201,9 @@ function initializeState() {
       state,
       inputSelectConfig.propertyName,
       inputSelectConfig.propertyName + "Options",
-      (d) => d,
       inputSelectConfig.searchable,
-      sorter
+      sorter,
+      inputSelectConfig.format
     );
   }
 

@@ -2609,6 +2609,11 @@ button.previous-btn {
   padding: 10px;
 }
 
+#setting-legend-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
 #setting-legend i {
   cursor: pointer;
   color: #828282;
@@ -2810,7 +2815,7 @@ button.previous-btn {
   margin-left: -30px;
   padding-right: 30px;
   padding-left: 70px;
-  z-index: 1;
+  /* z-index: 1; */
   max-height: 100px;
 
   /* padding-block: 10px; */
@@ -2881,7 +2886,7 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  height: calc(100% - 40px); /* TODO: This is hack-y, fix */
+  height: calc(100% - 140px); /* TODO: This is hack-y, fix */
   /* height: 100%; */
   max-height: 100%;
 }

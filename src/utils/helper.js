@@ -902,5 +902,5 @@ export function formatName(names, field, value, mode = "half_short") {
   if (!valueNames) return value;
   let name = valueNames[value];
   if (typeof name == "object") name = name[mode];
-  return name ? name : value;
+  return name ? name : value; 
 }

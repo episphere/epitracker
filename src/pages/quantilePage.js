@@ -196,12 +196,17 @@ function initializeState() {
     }
   }
 
+  const causeFormat = (d) => ({ 
+    label: d === 'All' ? 'All cancers (malignant)' : d, 
+    value: d 
+  })
+
   for (const inputSelectConfig of [
     { id: "#select-compare-color", propertyName: "compareColor" },
     { id: "#select-compare-facet", propertyName: "compareFacet" },
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
-    { id: "#select-select-cause", propertyName: "cause", searchable: true },
+    { id: "#select-select-cause", propertyName: "cause", searchable: true, format: causeFormat },
     { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-measure", propertyName: "measure" },
     {
@@ -224,9 +229,9 @@ function initializeState() {
       state,
       inputSelectConfig.propertyName,
       inputSelectConfig.propertyName + "Options",
-      (d) => d,
       inputSelectConfig.searchable,
-      sorter
+      sorter,
+      inputSelectConfig.format
     );
   }
 
@@ -260,6 +265,7 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
     label: nameMappings.fields[field],
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
+  console.log({aaa: new Set(mortalityData.map((d) => d.cause))});
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.measureOptions = NUMERIC_MEASURES.map((field) => ({
@@ -640,6 +646,8 @@ function downloadGraph() {
   const temporaryContainer = elements.graphContainer.cloneNode(true);
   const temporaryLegend = elements.plotLegend.cloneNode(true);
   const temporaryTitle = elements.graphTitle.cloneNode(true);
+
+  console.log({temporaryTitle, temporaryContainer});
 
   const legendChecks = temporaryLegend.querySelectorAll(".legend-check");
   legendChecks.forEach((check) => {
