@@ -41,10 +41,10 @@ const QUANTILE_NUMBERS = ["4", "5", "10"];
 const NUMERIC_MEASURES = [
   "age_adjusted_rate",
   "crude_rate",
-  "Age Adjusted Rate Ratio (Ref=Q1)",
-  "Age Adjusted Rate Ratio (Ref=Q8)",
-  "Crude Rate Ratio (Ref=Q1)",
-  "Crude Rate Ratio (Ref=Q8)",
+  "age_adjusted_rate_ratio (ref=low)",
+  "age_adjusted_rate_ratio (ref=high)",
+  "crude_rate_ratio(ref=low)",
+  "crude_rate_ratio (ref=high)",
 ];
 
 // The default state, shown if no URL params.
@@ -811,16 +811,16 @@ function getAgeAdjustedRateData(data, row, key) {
   const firstIndex = 0;
 
   if (dataSortedByQuantile.length) {
-    row["Age Adjusted Rate Ratio (Ref=Q1)"] = +parseFloat(
+    row["age_adjusted_rate_ratio (ref=low)"] = +parseFloat(
       row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate
     ).toFixed(2);
-    row["Age Adjusted Rate Ratio (Ref=Q8)"] = +parseFloat(
+    row["age_adjusted_rate_ratio (ref=high)"] = +parseFloat(
       row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate
     ).toFixed(2);
-    row["Crude Rate Ratio (Ref=Q1)"] = +parseFloat(
+    row["crude_rate_ratio(ref=low)"] = +parseFloat(
       row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate
     ).toFixed(2);
-    row["Crude Rate Ratio (Ref=Q8)"] = +parseFloat(
+    row["crude_rate_ratio (ref=high)"] = +parseFloat(
       row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate
     ).toFixed(2);
   }
