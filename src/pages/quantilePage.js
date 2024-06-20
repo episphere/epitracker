@@ -647,7 +647,11 @@ function downloadGraph() {
   const temporaryLegend = elements.plotLegend.cloneNode(true);
   const temporaryTitle = elements.graphTitle.cloneNode(true);
 
-  console.log({temporaryTitle, temporaryContainer});
+  const sourceSvgElement = elements.graphContainer.getElementsByTagName('svg')[0]
+  const sourceSvgElementHeight = sourceSvgElement.getBBox().height
+
+  const svgElement = temporaryContainer.getElementsByTagName('svg')[0]
+  svgElement.style.height = `${sourceSvgElementHeight}px`;
 
   const legendChecks = temporaryLegend.querySelectorAll(".legend-check");
   legendChecks.forEach((check) => {
@@ -798,8 +802,11 @@ function updateGraphTitle() {
   const quantileMeasure = names["quantile_fields"][state.quantileField].measure;
   let measureName = names.measures[state.measure].toLowerCase();
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
+  const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
   const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
-  elements.graphTitle.innerHTML = title;
+  const noneTitle = `!!!${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
+  console.log(isNoneCompares)
+  elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
 }
 
 function getAgeAdjustedRateData(data, row, key) {

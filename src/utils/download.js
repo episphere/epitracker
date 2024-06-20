@@ -21,6 +21,7 @@ export function downloadElementAsImage(element, fileName, removeAfter=true) {
   temporaryDiv.style.left = "-10000px"
   temporaryDiv.style.right = "-10000px"
   temporaryDiv.style.width = "fit-content"
+
   temporaryDiv.appendChild(element)
   document.body.appendChild(temporaryDiv)
 
