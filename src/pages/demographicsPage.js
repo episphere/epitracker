@@ -374,6 +374,11 @@ function plotConfigUpdated() {
           y: { label: formatName(names, "measures", state.measure) },
         },
         yStartZero: state.startZero,
+        valueField: state.measure,
+        tooltipFields: [
+          state.compareFacet,
+          state.compareBar,
+        ].filter((d) => d != "none"),
       });
     }
   }

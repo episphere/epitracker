@@ -339,7 +339,7 @@ async function queryUpdated(query) {
   state["quantileRanges"] = xTicks;
 
   data = data.map((row) => {
-    row["quantile_range"] = xTicks[row.quantile];
+    row["quantile_range"] = xTicks[row.quantile - 1];
 
     const key =
       query.compareFacet !== "none"

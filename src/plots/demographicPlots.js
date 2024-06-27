@@ -1,6 +1,6 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { deepMerge } from "../utils/helper.js";
+import { addPopperTooltip, deepMerge } from "../utils/helper.js";
 import {COLORS} from '../utils/color.js'
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
@@ -14,6 +14,23 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
 
   container.innerHTML = ``
   container.appendChild(plot)
+
+  addChoroplethInteractivity(
+    plot,
+    container,
+    mortalityData,
+    options.measure,
+    options.compareBar
+    // options.measureField,
+    // baseHistogramConfig,
+    // mainFeatureCollection,
+    // {
+    //   featureNameFormat: options.featureNameFormat,
+    //   valueFormat: options.valueFormat,
+    //   xDomain: domain,
+    // }
+  );
+
   return plot
 }
 
@@ -83,7 +100,6 @@ function plotBar(data, options={}) {
       const color = COLORS[selectedCompare] || {}
       return color[d[selectedCompare]] || '#777'
     },
-    tip: true,                                                                      
   }
 
   if (options.compareFacet) {
@@ -94,7 +110,7 @@ function plotBar(data, options={}) {
 
   let plotOptions = {
     style: {
-      fontSize: 15
+      fontSize: 15,
     },
     fx: {tickRotate: 45, domain: facetDomain},
     height: 640,
@@ -103,7 +119,9 @@ function plotBar(data, options={}) {
     marginRight: labelBox,
     marginLeft: 50,
     marginTop: facetLabelBox,
-    y: {domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice:true}
+    y: {
+      domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice:true,
+    }
   }
 
   const rule = options.yStartZero ? 0 : domain[0]
@@ -123,12 +141,59 @@ function plotBar(data, options={}) {
   plot.removeAttribute("viewBox")
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
-  // plot.style.overflowX = `scroll`
-  // plot.style.maxWidth = `100%`
-  // plot.style.boxSizing = "border-box"
-  // plot.style.flex = `0 0 ${estPlotWidth}px`
-
-
   
   return plot
+}
+
+function addChoroplethInteractivity(
+  plot,
+  plotContainer,
+  mortalityData,
+  measure,
+  compareBar
+) {
+  const plotSelect = d3.select(plot);
+
+  const barSelect = d3.select(
+    plotSelect.selectAll("g[aria-label='bar'").nodes()[0]
+  );
+
+  console.log({mortalityData, measure, compareBar});
+
+  const rectSelect = barSelect.selectAll("rect");
+  console.log({plotSelect, barSelect, rectSelect});
+
+  const tooltip = addPopperTooltip(plotContainer);
+  tooltip.tooltipElement.setAttribute("id", "map-tooltip")
+
+  barSelect.on("mouseleave.interact", () => {
+    tooltip.hide();
+  });
+
+  rectSelect
+    .on("mouseover.interact", (e, d) => {
+      d3.select(e.target).raise();
+
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.flexDirection = "column";
+      div.style.justifyContent = "space-between";
+
+      const infoDiv = document.createElement("div");
+      infoDiv.style.display = "flex";
+      infoDiv.style.alignItems = "flex-start";
+      infoDiv.style.flexDirection = "column";
+      infoDiv.style.gap = "10px";
+      infoDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measure}</b>${mortalityData[d][measure]}</div>
+      `;
+
+      if (compareBar)  {
+        infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${compareBar}</b>${mortalityData[d][compareBar]}</div>`
+      }
+
+      div.appendChild(infoDiv);
+
+      tooltip.show(e.target, div);
+    })
 }
