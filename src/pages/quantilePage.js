@@ -197,7 +197,7 @@ function initializeState() {
   }
 
   const causeFormat = (d) => ({ 
-    label: d === 'All' ? 'All cancers (malignant)' : d, 
+    label: d === 'All' ? 'All cancers' : d, 
     value: d 
   })
 
@@ -804,7 +804,7 @@ function updateGraphTitle() {
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
   const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
   const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
-  const noneTitle = `${measureName} of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
+  const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
   console.log(isNoneCompares)
   elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
 }

@@ -167,7 +167,7 @@ function initializeState() {
     }
   }
   const causeFormat = (d) => ({ 
-    label: d === 'All' ? 'All cancers (malignant)' : d, 
+    label: d === 'All' ? 'All cancers' : d, 
     value: d 
   })
   for (const inputSelectConfig of [
