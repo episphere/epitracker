@@ -140,6 +140,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
 function addInteractivity(container, plot, plotData, measure, tooltipFields) {
   
   const tooltip = addPopperTooltip(container)
+  tooltip.tooltipElement.setAttribute("id", "map-tooltip")
 
   const plotSelect = d3.select(plot)
   const dotSelect = plotSelect.selectAll("circle")
@@ -153,8 +154,8 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
       d3.select(element).attr("r", 6)
      
       let text = ``
-      tooltipFields.forEach(field => text += `<b>${row[field]}</b> </br>`)
-      text += `${row[measure]}`
+      tooltipFields.forEach(field => text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${field}</b>${row[field]}</div>`)
+      text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measure}</b>${row[measure]}</div>`
       tooltip.show(element, text)
     }
 

@@ -2894,6 +2894,7 @@ button.previous-btn {
 #plot-container svg {
   /* display: inline-block; */
   height: fit-content;
+  min-width: 350px;
 }
 
 #download-container {

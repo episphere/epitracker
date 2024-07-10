@@ -692,7 +692,7 @@ function quantileDetailsToTicks(quantileDetails) {
     const exp = d3.merge(ranges).some((d) => d.length > 6);
     for (let i = 0; i < ranges.length; i++) {
       if (exp) {
-        ranges[i] = ranges[i].map((d) => parseFloat(d).toExponential());
+        ranges[i] = ranges[i].map((d) => parseFloat(d));
       } else {
         ranges[i] = ranges[i].map((d) =>
           parseFloat(d).toLocaleString("en-US", { maximumFractionDigits: 8 })
@@ -803,8 +803,8 @@ function updateGraphTitle() {
   let measureName = names.measures[state.measure].toLowerCase();
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
   const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
-  const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
-  const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
+  const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
+  const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
   console.log(isNoneCompares)
   elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
 }

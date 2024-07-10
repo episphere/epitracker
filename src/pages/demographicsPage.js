@@ -37,8 +37,8 @@ const NUMERIC_MEASURES = ["crude_rate", "age_adjusted_rate"];
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
-  compareBar: "none",
-  compareFacet: "none",
+  compareBar: "race",
+  compareFacet: "age_group",
   sex: "All",
   race: "All",
   year: "2022",
@@ -500,7 +500,7 @@ function updateTitle() {
     state.spatialLevel == "county" ? "US county-level" : "US state-level";
   let compareString = [state.compareBar, state.compareFacet]
     .filter((d) => d != "none")
-    .map((d) => names.fields[d].toLowerCase())
+    .map((d) => names.fields[d])
     .join(" and ");
 
   if (compareString != "") {
@@ -541,7 +541,7 @@ function updateTitle() {
 
   const title = `${level} ${names.measures[
     state.measure
-  ].toLowerCase()} ${compareString}. </br> ${selectsString}`;
+  ]} ${compareString}. <br /> ${selectsString}`;
   elements.title.innerHTML = title;
 }
 
