@@ -2869,12 +2869,12 @@ button.previous-btn {
 #plot-container {
   height: 100%;
   
-  justify-content: center;
+  /* justify-content: center; */
   max-width: 100%;
   flex-grow: 1;
   flex-shrink: 0;
   text-align: center;
-  display: flex;
+  /* display: flex; */
   /* position: absolute; */
   width: calc(100% - 30px);
 }

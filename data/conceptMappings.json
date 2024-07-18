@@ -789,23 +789,23 @@
   "race": {
     "Hispanic": { "formatted": "Hispanic" },
     "Non-Hispanic American Indian or Alaska Native": {
-      "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
+      "formatted": "American Indian or Alaska Native (Non-Hispanic)",
       "half_short": "American Indian or Alaska Native (NH)"
     },
     "Non-Hispanic Black or African American": {
-      "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
+      "formatted": "Black or African American (Non-Hispanic)",
       "half_short": "Black or African American (NH)"
     },
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
-      "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
+      "formatted": "Native Hawaiian or Other Pacific Islander (Non-Hispanic)",
       "half_short": "Native Hawaiian or Other Pacific Islander (NH)"
     },
     "Non-Hispanic White": {
-      "formatted": "White \n (Non-Hispanic)",
+      "formatted": "White (Non-Hispanic)",
       "half_short": "White (NH)"
     },
     "Non-Hispanic Asian": {
-      "formatted": "Asian \n (Non-Hispanic)",
+      "formatted": "Asian (Non-Hispanic)",
       "half_short": "Asian (NH)"
     }
   }

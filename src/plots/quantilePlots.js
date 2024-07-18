@@ -1,10 +1,9 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { checkableLegend } from "../utils/checkableLegend.js";
 import { addPopperTooltip, addProximityHover } from "../utils/helper.js";
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 
 
-export function plotQuantileScatter(container, settingLegend, data, options={}) {
+export function plotQuantileScatter(container, colorLegend, settingLegend, data, options={}) {
   options = {
     valueField: null,
     intervalFields: null,
@@ -19,7 +18,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
     yStartZero: true,
     facetTickFormat: d => d,
     colorTickFormat: d => d,
-    minHeight: 400,
+    minHeight: 280,
     ...options 
   }
 
@@ -29,13 +28,11 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
-  //const containerWidth = container.getBoundingClientRect().width
+  // const heightColorLegend = colorLegend.getBoundingClientRect().height
+  // console.log({height1: container.getBoundingClientRect().height, height2: options.minHeight,heightColorLegend});
   const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
-                                                                                           
-
-  
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
@@ -100,12 +97,12 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
       
       return xTickFormat.split(' - ').map(i => {
         return (i.trim().replaceAll(',', '') * (isPercentOrProportion ? 100 : 1)).toFixed(2)}).join(' - ')
-    }, tickRotate: -45},
+    }, tickRotate: -30},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain, nice: true},
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
-    marginTop: 80,
-    marginBottom: 110,
+    marginTop: 30,
+    marginBottom: 90,
     marks: marks
   }
 

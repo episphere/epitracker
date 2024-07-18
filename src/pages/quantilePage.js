@@ -96,6 +96,7 @@ export function init() {
     "#group-download-container button"
   );
   elements.graphTitle = document.getElementById("plot-title");
+  elements.legendContainer = document.getElementById("setting-legend");
 
   Promise.all([
     d3.json("../data/conceptMappings.json"),
@@ -447,7 +448,7 @@ function plotConfigUpdated(plotConfig) {
   const colorTickFormat =
     plotConfig.query.compareColor == "race" ? formatRace : (d) => d;
 
-  const legendContainer = document.getElementById("setting-legend");
+  // const legendContainer = document.getElementById("setting-legend");
 
   if (!state.onSettingsClick) {
     const plotsElement = document.getElementById("plots");
@@ -493,7 +494,8 @@ function plotConfigUpdated(plotConfig) {
       //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
       //   ]
       // }))
-      plotQuantileScatter(elements.plotContainer, legendContainer, data, {
+      // elements.plotLegend.style.display = "none";
+      plotQuantileScatter(elements.plotContainer, elements.plotLegend, elements.legendContainer, data, {
         valueField: plotConfig.measure,
         facet:
           plotConfig.query.compareFacet != "none"
@@ -524,6 +526,7 @@ function plotConfigUpdated(plotConfig) {
         colorTickFormat,
         onSettingsClick: state.onSettingsClick
       });
+      // elements.plotLegend.style.display = "block";
     }
   }
 
@@ -549,7 +552,10 @@ function updateLegend(data, query) {
     );
     if (selectedValues.length == 0) selectedValues = colorDomainValues;
 
-    const formatRace = (d) => names.race[d]?.formatted;
+    const formatRace = (d) => {
+      console.log({legend2: d, format: names.race[d]?.formatted, ss: names.race});
+      return names.race[d]?.formatted
+    };
     const colorTickFormat =
       query.compareColor == "race" ? formatRace : (d) => d;
     const legend = checkableLegend(
@@ -565,7 +571,19 @@ function updateLegend(data, query) {
     });
 
     state.legendCheckValues = legend.getValues();
+
+
   }
+  updateSettingsLegend()
+}
+
+function updateSettingsLegend() {
+  console.log({setting: elements.legendContainer, legend: elements.plotLegend.getBoundingClientRect()});
+
+  elements.legendContainer.style.position = 'absolute';
+  elements.legendContainer.style.top = elements.plotLegend.getBoundingClientRect().height + 45 + 'px';
+  elements.legendContainer.style.right = '20px';
+  
 }
 
 function changeView(view) {

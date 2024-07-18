@@ -38,7 +38,7 @@ function plotBar(data, options={}) {
 
   options = {
     targetWidth: 640,
-    minBarWidth: 25,
+    minBarWidth: 20,
     maxBarWidth: 100,
     minBarHeight: 360,
     yStartZero: true, // TODO: Finish implenting.
@@ -115,6 +115,7 @@ function plotBar(data, options={}) {
     fx: {tickRotate: 45, domain: facetDomain},
     height: 640,
     width: plotWidth,
+    minWidth: plotWidth,
     marginBottom: labelBox,
     marginRight: labelBox,
     marginLeft: 50,
@@ -141,6 +142,7 @@ function plotBar(data, options={}) {
   plot.removeAttribute("viewBox")
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
+  // plot.style.minWidth = `fit-content`
   
   return plot
 }
