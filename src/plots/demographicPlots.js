@@ -10,7 +10,10 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
     targetWidth: containerWidth,
     plotOptions: {height,  ...options.plotOptions},
   })
-  const plot = plotBar(mortalityData, options)
+  const mappedMortalityData = mortalityData.map(i => {
+    return {...i, shortRace: options.raceMappings[i['race']]?.short || 'All'}
+  })
+  const plot = plotBar(mappedMortalityData, options)
 
   container.innerHTML = ``
   container.appendChild(plot)
@@ -38,7 +41,7 @@ function plotBar(data, options={}) {
 
   options = {
     targetWidth: 640,
-    minBarWidth: 20,
+    minBarWidth: 25,
     maxBarWidth: 100,
     minBarHeight: 360,
     yStartZero: true, // TODO: Finish implenting.
@@ -48,11 +51,15 @@ function plotBar(data, options={}) {
   const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
 
-  const barDomain = [...new Set(data.map(d => d[options.compareBar]))].sort()
+  const barDomain = [...new Set(data.map(d =>{
+    const shortName = options.raceMappings[d[options.compareBar]]?.short || 'All'
+    return options.compareBar === 'race' ? shortName : d[options.compareBar]}))].sort()
   const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
 
   if (options.compareBar == "age_group") {
-    barDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
+    barDomain.sort((a,b) => {
+      return parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
+    })
   } 
   if (options.compareFacet == "age_group") {
     facetDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
@@ -94,7 +101,7 @@ function plotBar(data, options={}) {
 
   const barOptions = {
     y: options.measure,
-    x: options.compareBar,
+    x: options.compareBar !== 'race' ? options.compareBar : 'shortRace',
     fill: (d) => {
       const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
       const color = COLORS[selectedCompare] || {}
@@ -115,7 +122,6 @@ function plotBar(data, options={}) {
     fx: {tickRotate: 45, domain: facetDomain},
     height: 640,
     width: plotWidth,
-    minWidth: plotWidth,
     marginBottom: labelBox,
     marginRight: labelBox,
     marginLeft: 50,
@@ -142,7 +148,7 @@ function plotBar(data, options={}) {
   plot.removeAttribute("viewBox")
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
-  // plot.style.minWidth = `fit-content`
+  // plot.style.minWidth = `${900}px`
   
   return plot
 }

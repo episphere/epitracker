@@ -7,6 +7,7 @@ import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/
 import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
+import {COLORS} from '../utils/color.js'
 import {
   createDropdownDownloadButton,
   createOptionSorter,
@@ -23,6 +24,7 @@ import { hookCheckbox, hookSelectChoices } from "../utils/input2.js";
 import { plotDemographicPlots } from "../plots/demographicPlots.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import { demographicTableColumns } from "../utils/tableDefinitions.js";
+import { checkableLegend } from "../utils/checkableLegend.js";
 
 window.onload = async () => {
   init();
@@ -59,7 +61,7 @@ export function init() {
   initializeState();
 
   elements = {
-    barContainer: document.getElementById("plot-container"),
+    barContainer: document.getElementById("demographic-container"),
     sidebar: document.getElementById("sidebar"),
     title: document.getElementById("plot-title"),
     tableContainer: document.getElementById("table-container"),
@@ -101,6 +103,7 @@ function initializeState() {
   state.defineProperty("ageGroupOptions", null);
   state.defineProperty("areaState", initialState.areaState);
   state.defineProperty("areaStateOptions", null);
+  state.defineProperty("raceMappings", null);
 
   // The compareBar and compareFacet properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -175,6 +178,7 @@ function initializeState() {
     "query",
     "measure",
     "startZero",
+    "legendCheckValues",
   ]);
 
   for (const param of Object.keys(initialState)) {
@@ -246,6 +250,7 @@ function initialDataLoad(mortalityData, nameMappings) {
     value: stateCode,
     label: nameMappings.states[stateCode]?.name,
   }));
+  state.raceMappings = names['race']
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.ageGroupOptions = [...new Set(mortalityData.map((d) => d.age_group))];
@@ -316,6 +321,8 @@ async function queryUpdated(query) {
 
   state.mortalityData = mortalityData;
   updateTitle();
+
+  updateLegend(mortalityData, query);
 }
 
 function sortAgeGroups(ageGroups) {
@@ -352,6 +359,15 @@ function plotConfigUpdated() {
     // options.domain = ageDomain;
   }
 
+  let data = state.mortalityData;
+  console.log({compareBar: state.query.compareBar, tt: state.legendCheckValues})
+  if (state.query.compareBar === "race") {
+    const legendCheckSet = new Set(state.legendCheckValues);
+    data = state.mortalityData.filter((d) =>
+      legendCheckSet.has(d[state.query.compareBar])
+    );
+  }
+
   if (state.mortalityData.length == 0) {
     elements.barContainer.innerHTML =
       "<i> There is no data for this selection. </i>";
@@ -364,7 +380,8 @@ function plotConfigUpdated() {
       plotTable()
 
     } else {
-      plotDemographicPlots(barContainer, state.mortalityData, {
+      console.log({state});
+      plotDemographicPlots(barContainer, data, {
         compareBar: state.compareBar != "none" ? state.compareBar : null,
         compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
         measure: state.measure,
@@ -379,6 +396,7 @@ function plotConfigUpdated() {
           state.compareFacet,
           state.compareBar,
         ].filter((d) => d != "none"),
+        raceMappings: state.raceMappings
       });
     }
   }
@@ -572,7 +590,6 @@ function downloadMortalityData(mortalityData, filename, format) {
 function plotTable() {
   // const pin = ["state_fips", "race", "sex", "cause", "age_group"].map(d => ({field: d, frozen: true, formatter: "plaintext", minWidth: 100}))
   const {compareBar, compareFacet, ageGroup} = state.query
-  console.log({ageGroup});
 
   let tableColumns = [...demographicTableColumns]
 
@@ -609,4 +626,40 @@ function changeView(view) {
   }
 
   // toggleLoading(false);
+}
+
+function updateLegend(data, query) {
+  const legendContainer = document.getElementById("plot-legend");
+  legendContainer.innerHTML = ``;
+
+  if (query.compareBar === "race") {
+    const colorDomainValues = [
+      ...new Set(data.map((d) => d[query.compareBar])),
+    ].sort();
+    const checkedValueSet = new Set(state.legendCheckValues);
+
+    let selectedValues = colorDomainValues.filter((d) =>
+      checkedValueSet.has(d)
+    );
+    if (selectedValues.length == 0) selectedValues = colorDomainValues;
+
+    const formatRace = (d) => names.race[d]?.short;
+    const colorTickFormat =
+      query.compareColor == "race" ? formatRace : (d) => d;
+
+    const legend = checkableLegend(
+      colorDomainValues,
+      COLORS.race,
+      selectedValues,
+      colorTickFormat,
+      false
+    );
+    legendContainer.appendChild(legend);
+
+    legend.addEventListener("change", () => {
+      state.legendCheckValues = legend.getValues();
+    });
+
+    state.legendCheckValues = legend.getValues();
+  }
 }

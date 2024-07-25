@@ -787,26 +787,31 @@
     }
   },
   "race": {
-    "Hispanic": { "formatted": "Hispanic" },
+    "Hispanic": { "formatted": "Hispanic", "short": "H" },
     "Non-Hispanic American Indian or Alaska Native": {
-      "formatted": "American Indian or Alaska Native (Non-Hispanic)",
-      "half_short": "American Indian or Alaska Native (NH)"
+      "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
+      "half_short": "American Indian or Alaska Native (NH)",
+      "short": "AIoAN"
     },
     "Non-Hispanic Black or African American": {
-      "formatted": "Black or African American (Non-Hispanic)",
-      "half_short": "Black or African American (NH)"
+      "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
+      "half_short": "Black or African American (NH)",
+      "short": "BoAA"
     },
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
-      "formatted": "Native Hawaiian or Other Pacific Islander (Non-Hispanic)",
-      "half_short": "Native Hawaiian or Other Pacific Islander (NH)"
+      "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
+      "half_short": "Native Hawaiian or Other Pacific Islander (NH)",
+      "short": "NHoOPI"
     },
     "Non-Hispanic White": {
-      "formatted": "White (Non-Hispanic)",
-      "half_short": "White (NH)"
+      "formatted": "White \n (Non-Hispanic)",
+      "half_short": "White (NH)",
+      "short": "W"
     },
     "Non-Hispanic Asian": {
-      "formatted": "Asian (Non-Hispanic)",
-      "half_short": "Asian (NH)"
+      "formatted": "Asian \n (Non-Hispanic)",
+      "half_short": "Asian (NH)",
+      "short": "A"
     }
   }
 }

@@ -1,9 +1,10 @@
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+import { checkableLegend } from "../utils/checkableLegend.js";
 import { addPopperTooltip, addProximityHover } from "../utils/helper.js";
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 
 
-export function plotQuantileScatter(container, colorLegend, settingLegend, data, options={}) {
+export function plotQuantileScatter(container, settingLegend, data, options={}) {
   options = {
     valueField: null,
     intervalFields: null,
@@ -18,7 +19,7 @@ export function plotQuantileScatter(container, colorLegend, settingLegend, data,
     yStartZero: true,
     facetTickFormat: d => d,
     colorTickFormat: d => d,
-    minHeight: 280,
+    minHeight: 400,
     ...options 
   }
 
@@ -28,11 +29,13 @@ export function plotQuantileScatter(container, colorLegend, settingLegend, data,
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
-  // const heightColorLegend = colorLegend.getBoundingClientRect().height
-  // console.log({height1: container.getBoundingClientRect().height, height2: options.minHeight,heightColorLegend});
+  //const containerWidth = container.getBoundingClientRect().width
   const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
+                                                                                           
+
+  
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
@@ -83,9 +86,10 @@ export function plotQuantileScatter(container, colorLegend, settingLegend, data,
     sizePerFacet = sizePerFacet / nFacets
   }
   sizePerFacet = Math.min(900, sizePerFacet)
+  console.log({sizePerFacet, nFacets});
 
   const plotOptions = {
-    width: sizePerFacet * nFacets,
+    width: sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets,
     height,
     style: {fontSize: "14px"},
     color: colorOpt,
@@ -97,12 +101,12 @@ export function plotQuantileScatter(container, colorLegend, settingLegend, data,
       
       return xTickFormat.split(' - ').map(i => {
         return (i.trim().replaceAll(',', '') * (isPercentOrProportion ? 100 : 1)).toFixed(2)}).join(' - ')
-    }, tickRotate: -30},
+    }, tickRotate: -45},
     y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain, nice: true},
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
-    marginTop: 30,
-    marginBottom: 90,
+    marginTop: 80,
+    marginBottom: 110,
     marks: marks
   }
 
@@ -114,6 +118,7 @@ export function plotQuantileScatter(container, colorLegend, settingLegend, data,
   }
 
   const plot = Plot.plot(plotOptions)
+  plot.style.minWidth = '900px'
 
   container.innerHTML = `` 
   container.appendChild(plot) 

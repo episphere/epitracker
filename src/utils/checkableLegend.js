@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import { LightenDarkenColor as recolor } from  'https://cdn.skypack.dev/lighten-darken-color@1.0.0?min'
 
-export function checkableLegend(values, colors, checkedList=null, labelFormat=d=>d) {
+export function checkableLegend(values, colors, checkedList=null, labelFormat=d=>d, isQuantile=true) {
   const div = document.createElement("div")
   div.style.display = "flex"
   div.style.gap = "25px"
@@ -23,7 +23,8 @@ export function checkableLegend(values, colors, checkedList=null, labelFormat=d=
 
   const checks = []
   values.forEach((value,i) => {
-    const check = legendCheck(colors[i], labelFormat(value),checkedList.includes(value), 25)
+    const color = colors[isQuantile ? i : value]
+    const check = legendCheck(color, labelFormat(value),checkedList.includes(value), 25)
     check.setAttribute("value", value)
     check.addEventListener("change", e => {
       const checked = []
@@ -61,8 +62,8 @@ function legendCheck(color, label, checked=true, size=25) {
 
   const check = svg.append("path")
     .attr("d", `M78.049,19.015L29.458,67.606c-0.428,0.428-1.121,0.428-1.548,0L0.32,40.015c-0.427-0.426-0.427-1.119,0-1.547l6.704-6.704
-		c0.428-0.427,1.121-0.427,1.548,0l20.113,20.112l41.113-41.113c0.429-0.427,1.12-0.427,1.548,0l6.703,6.704
-		C78.477,17.894,78.477,18.586,78.049,19.015z`)
+    c0.428-0.427,1.121-0.427,1.548,0l20.113,20.112l41.113-41.113c0.429-0.427,1.12-0.427,1.548,0l6.703,6.704
+    C78.477,17.894,78.477,18.586,78.049,19.015z`)
     .attr("fill", "white")
     .attr("transform", `scale(${scale}) translate(${translate} ${translate})`)
     .style("pointer-events", "none")
@@ -93,12 +94,12 @@ function legendCheck(color, label, checked=true, size=25) {
     } else {
       div.removeAttribute("checked")
     }
-   
+    
     check.attr("visibility", checked ? "visible" : "hidden")
     rect.attr("fill", checked ? lighterColor : "white")
     div.dispatchEvent(new Event("change"))
   })
-
+  
   svg.style.userSelect = "none"
 
   div.style.display = "inline-flex"
@@ -112,6 +113,7 @@ function legendCheck(color, label, checked=true, size=25) {
   labelElement.style.userSelect = "none"
   labelElement.style.maxWidth = "100px"
   labelElement.style.textAlign = "center"
+  labelElement.style.flex = "1"
   
   
   div.appendChild(svg.node())
