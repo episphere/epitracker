@@ -129,6 +129,7 @@ function initializeState() {
   state.defineProperty("quantileNumber", initialState.quantileNumber);
   state.defineProperty("quantileNumberOptions", null);
   state.defineProperty("quantileRanges", null);
+  state.defineProperty("nameMappings", null);
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -265,13 +266,13 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
     label: nameMappings.fields[field],
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
-  console.log({aaa: new Set(mortalityData.map((d) => d.cause))});
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.measureOptions = NUMERIC_MEASURES.map((field) => ({
     value: field,
     label: nameMappings.measures[field],
   }));
+  state.nameMappings = names
 
   state.quantileFieldOptions = [
     ...new Set(mortalityData.map((d) => d.quantile_field)),
@@ -524,7 +525,8 @@ function plotConfigUpdated(plotConfig) {
         colorDomain: colorDomainValues,
         facetTickFormat,
         colorTickFormat,
-        onSettingsClick: state.onSettingsClick
+        onSettingsClick: state.onSettingsClick,
+        nameMappings: state.nameMappings
       });
     }
   }

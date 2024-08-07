@@ -11,7 +11,8 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
     plotOptions: {height,  ...options.plotOptions},
   })
   const mappedMortalityData = mortalityData.map(i => {
-    return {...i, shortRace: options.raceMappings[i['race']]?.short || 'All'}
+    const raceMappings = options.nameMappings['race']
+    return {...i, shortRace: raceMappings[i['race']]?.short || 'All'}
   })
   const plot = plotBar(mappedMortalityData, options)
 
@@ -23,7 +24,8 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
     container,
     mortalityData,
     options.measure,
-    options.compareBar
+    options.compareBar,
+    options.nameMappings
     // options.measureField,
     // baseHistogramConfig,
     // mainFeatureCollection,
@@ -52,7 +54,8 @@ function plotBar(data, options={}) {
   const BASE_LABEL_WIDTH = 70
 
   const barDomain = [...new Set(data.map(d =>{
-    const shortName = options.raceMappings[d[options.compareBar]]?.short || 'All'
+    const raceMappings = options.nameMappings['race']
+    const shortName = raceMappings[d[options.compareBar]]?.short || 'All'
     return options.compareBar === 'race' ? shortName : d[options.compareBar]}))].sort()
   const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
 
@@ -105,6 +108,7 @@ function plotBar(data, options={}) {
     fill: (d) => {
       const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
       const color = COLORS[selectedCompare] || {}
+      console.log('query.fill', {selectedCompare, color})
       return color[d[selectedCompare]] || '#777'
     },
   }
@@ -158,7 +162,8 @@ function addChoroplethInteractivity(
   plotContainer,
   mortalityData,
   measure,
-  compareBar
+  compareBar,
+  nameMappings
 ) {
   const plotSelect = d3.select(plot);
 
@@ -192,12 +197,14 @@ function addChoroplethInteractivity(
       infoDiv.style.alignItems = "flex-start";
       infoDiv.style.flexDirection = "column";
       infoDiv.style.gap = "10px";
+      const measureLabel = nameMappings['measures'][measure]
       infoDiv.innerHTML = `
-        <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measure}</b>${mortalityData[d][measure]}</div>
+        <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${mortalityData[d][measure]}</div>
       `;
 
       if (compareBar)  {
-        infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${compareBar}</b>${mortalityData[d][compareBar]}</div>`
+        const fieldLabel = nameMappings['fields'][compareBar]
+        infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${mortalityData[d][compareBar]}</div>`
       }
 
       div.appendChild(infoDiv);

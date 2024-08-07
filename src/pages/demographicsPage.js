@@ -103,7 +103,7 @@ function initializeState() {
   state.defineProperty("ageGroupOptions", null);
   state.defineProperty("areaState", initialState.areaState);
   state.defineProperty("areaStateOptions", null);
-  state.defineProperty("raceMappings", null);
+  state.defineProperty("nameMappings", null);
 
   // The compareBar and compareFacet properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -133,7 +133,8 @@ function initializeState() {
   for (const compareProperty of ["compareBar", "compareFacet"]) {
     state.subscribe(compareProperty, () => {
       if (COMPARABLE_FIELDS.includes(state[compareProperty])) {
-        state[state[compareProperty]] = "All";
+        const compareValue = state[compareProperty] === 'age_group' ? 'ageGroup' : state[compareProperty]
+        state[compareValue] = "All";
       }
     });
   }
@@ -234,6 +235,8 @@ const causeFormat = (d) => ({
 function initialDataLoad(mortalityData, nameMappings) {
   names = nameMappings;
 
+  console.log({nameMappings})
+
   // Initialise the input state from the data
   state.compareBarOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
@@ -250,7 +253,7 @@ function initialDataLoad(mortalityData, nameMappings) {
     value: stateCode,
     label: nameMappings.states[stateCode]?.name,
   }));
-  state.raceMappings = names['race']
+  state.nameMappings = names
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.ageGroupOptions = [...new Set(mortalityData.map((d) => d.age_group))];
@@ -289,11 +292,11 @@ async function queryUpdated(query) {
     choices["#select-select-sex"].enable();
   }
 
-  // if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
-  //   choices["#select-select-age"].disable();
-  // } else {
-  //   choices["#select-select-age"].enable();
-  // }
+  if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
+    choices["#select-select-age"].disable();
+  } else {
+    choices["#select-select-age"].enable();
+  }
 
   // if ((query.compareBar !== "age_group" && query.compareFacet !== "age_group") && state.measure == "age_adjusted_rate" ) {
   //   choices["#select-select-age"].disable();
@@ -361,7 +364,7 @@ function plotConfigUpdated() {
 
   let data = state.mortalityData;
   console.log({compareBar: state.query.compareBar, tt: state.legendCheckValues})
-  if (state.query.compareBar === "race") {
+  if (state.query.compareBar !== "none") {
     const legendCheckSet = new Set(state.legendCheckValues);
     data = state.mortalityData.filter((d) =>
       legendCheckSet.has(d[state.query.compareBar])
@@ -396,7 +399,7 @@ function plotConfigUpdated() {
           state.compareFacet,
           state.compareBar,
         ].filter((d) => d != "none"),
-        raceMappings: state.raceMappings
+        nameMappings: state.nameMappings
       });
     }
   }
@@ -632,10 +635,12 @@ function updateLegend(data, query) {
   const legendContainer = document.getElementById("plot-legend");
   legendContainer.innerHTML = ``;
 
-  if (query.compareBar === "race") {
+  if (query.compareBar !== "none") {
     const colorDomainValues = [
       ...new Set(data.map((d) => d[query.compareBar])),
     ].sort();
+    console.log('query.compareBar', {compareBar: query.compareBar, colorDomainValues})
+
     const checkedValueSet = new Set(state.legendCheckValues);
 
     let selectedValues = colorDomainValues.filter((d) =>
@@ -649,7 +654,7 @@ function updateLegend(data, query) {
 
     const legend = checkableLegend(
       colorDomainValues,
-      COLORS.race,
+      COLORS[query.compareBar],
       selectedValues,
       colorTickFormat,
       false

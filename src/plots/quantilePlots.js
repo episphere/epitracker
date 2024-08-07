@@ -123,7 +123,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   container.innerHTML = `` 
   container.appendChild(plot) 
 
-  addInteractivity(container, plot, data, options.valueField, options.tooltipFields)
+  addInteractivity(container, plot, data, options.valueField, options.tooltipFields, options.nameMappings)
 
   plot.removeAttribute("viewBox")
 
@@ -139,7 +139,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   return {plot}
 }
 
-function addInteractivity(container, plot, plotData, measure, tooltipFields) {
+function addInteractivity(container, plot, plotData, measure, tooltipFields, nameMappings) {
   
   const tooltip = addPopperTooltip(container)
   tooltip.tooltipElement.setAttribute("id", "map-tooltip")
@@ -154,10 +154,15 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
       const row = plotData[index]
 
       d3.select(element).attr("r", 6)
+
      
       let text = ``
-      tooltipFields.forEach(field => text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${field}</b>${row[field]}</div>`)
-      text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measure}</b>${row[measure]}</div>`
+      tooltipFields.forEach(field => {
+        const fieldLabel = nameMappings['fields'][field]
+        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${row[field]}</div>`})
+
+      const measureLabel = nameMappings['measures'][measure]
+      text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`
       tooltip.show(element, text)
     }
 
