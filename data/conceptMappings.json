@@ -806,12 +806,12 @@
     "Non-Hispanic White": {
       "formatted": "White \n (Non-Hispanic)",
       "half_short": "White (NH)",
-      "short": "W"
+      "short": "White"
     },
     "Non-Hispanic Asian": {
       "formatted": "Asian \n (Non-Hispanic)",
       "half_short": "Asian (NH)",
-      "short": "A"
+      "short": "Asian"
     }
   }
 }
