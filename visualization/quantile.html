@@ -100,19 +100,6 @@
               <option hidden >Awaiting data...</option>
             </select>
           </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
-            <label class="form-check-label" for="check-show-lines">
-              Show Lines
-            </label>
-          </div>
-          <div class="form-check">
-            <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
-            <label class="form-check-label" for="check-start-zero">
-              Start Y at 0
-            </label>
-          </div>
-
         </div>
       </div>
     </div>
@@ -138,6 +125,9 @@
       </div>
       <div id="plots">
         <div id="plot-legend"></div>
+        <div id="setting-legend-wrapper">
+          <div id="setting-legend"></div>
+        </div>
         <div id="plot-container" class="fill-height">
           <div id="plot-quantiles"></div>
         </div>
@@ -147,11 +137,31 @@
         <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
           <div class="spinner-border" role="status"></div>
         </div>
+        <div id="plot-source" style="display: none;">The source...</div>
       </div>
       
     </div>
   </div>
 
+  <div id="settings-dropdown">
+    <div class="d-flex justify-content-between">
+      <h5><i class="bi bi-gear-fill me-2"></i>Settings</h5>
+      <i id="settings-close" class="fa-solid fa-xmark"></i>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
+      <label class="form-check-label" for="check-show-lines">
+        Show Lines
+      </label>
+    </div>
+    <div class="form-check">
+      <input checked class="form-check-input" type="checkbox" value="" id="check-start-zero">
+      <label class="form-check-label" for="check-start-zero">
+        Start Y at 0
+      </label>
+    </div>
+  </div>
 
   <footer></footer>
 

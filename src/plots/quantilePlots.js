@@ -4,7 +4,7 @@ import { addPopperTooltip, addProximityHover } from "../utils/helper.js";
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 
 
-export function plotQuantileScatter(container, data, options={}) {
+export function plotQuantileScatter(container, settingLegend, data, options={}) {
   options = {
     valueField: null,
     intervalFields: null,
@@ -75,7 +75,7 @@ export function plotQuantileScatter(container, data, options={}) {
 
   const yDomain = [
     options.yStartZero ? 0 : d3.min(data, d => d[options.intervalFields[0]]),
-    d3.max(data, d => d[options.intervalFields[1]]) + 20
+    d3.max(data, d => d[options.intervalFields[1]])
   ]
 
   let sizePerFacet = container.getBoundingClientRect().width
@@ -86,20 +86,23 @@ export function plotQuantileScatter(container, data, options={}) {
     sizePerFacet = sizePerFacet / nFacets
   }
   sizePerFacet = Math.min(900, sizePerFacet)
+  console.log({sizePerFacet, nFacets});
 
   const plotOptions = {
-    width: sizePerFacet * nFacets,
+    width: sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets,
     height,
     style: {fontSize: "14px"},
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: d => {
       const xTickFormat = options.xTickFormat(undefined, d - 1)
-      console.log({d, aaa: options.quantileFieldUnit})
+      console.log({d, aaa: options.quantileFieldUnit, xTickFormat})
       const {quantileFieldUnit} = options
       const isPercentOrProportion = quantileFieldUnit.toLowerCase() === 'percent' || quantileFieldUnit.toLowerCase() === 'proportion' 
-      return xTickFormat.split('-').map(i => (i.trim() * (isPercentOrProportion ? 100 : 1)).toFixed(2)).join(' - ')
+      
+      return xTickFormat.split(' - ').map(i => {
+        return (i.trim().replaceAll(',', '') * (isPercentOrProportion ? 100 : 1)).toFixed(2)}).join(' - ')
     }, tickRotate: -45},
-    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain},
+    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain, nice: true},
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
     marginTop: 80,
@@ -115,20 +118,31 @@ export function plotQuantileScatter(container, data, options={}) {
   }
 
   const plot = Plot.plot(plotOptions)
+  plot.style.minWidth = '900px'
 
   container.innerHTML = `` 
   container.appendChild(plot) 
 
-  addInteractivity(container, plot, data, options.valueField, options.tooltipFields)
+  addInteractivity(container, plot, data, options.valueField, options.tooltipFields, options.nameMappings)
 
   plot.removeAttribute("viewBox")
+
+  const settingsButton = document.createElement("i");
+  settingsButton.className = "fa-solid fa-gear";
+
+  settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
+
+  settingLegend.innerHTML = ``;
+  settingLegend.appendChild(settingsButton);
+
 
   return {plot}
 }
 
-function addInteractivity(container, plot, plotData, measure, tooltipFields) {
+function addInteractivity(container, plot, plotData, measure, tooltipFields, nameMappings) {
   
   const tooltip = addPopperTooltip(container)
+  tooltip.tooltipElement.setAttribute("id", "map-tooltip")
 
   const plotSelect = d3.select(plot)
   const dotSelect = plotSelect.selectAll("circle")
@@ -140,10 +154,15 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
       const row = plotData[index]
 
       d3.select(element).attr("r", 6)
+
      
       let text = ``
-      tooltipFields.forEach(field => text += `<b>${row[field]}</b> </br>`)
-      text += `${row[measure]}`
+      tooltipFields.forEach(field => {
+        const fieldLabel = nameMappings['fields'][field]
+        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${row[field]}</div>`})
+
+      const measureLabel = nameMappings['measures'][measure]
+      text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`
       tooltip.show(element, text)
     }
 

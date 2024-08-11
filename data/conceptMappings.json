@@ -16,10 +16,10 @@
       "name": "Crude Mortality Rate (per 100,000)",
       "short": "Crude Rate"
     },
-    "Age Adjusted Rate Ratio (Ref=Q1)": "Age Adjusted Mortality Rate Ratio (Ref=Q1)",
-    "Age Adjusted Rate Ratio (Ref=Q8)": "Age Adjusted Rate Ratio (Ref=Q8)",
-    "Crude Rate Ratio (Ref=Q1)": "Crude-Rate Ratio (Ref=Q1)",
-    "Crude Rate Ratio (Ref=Q8)": "Crude-Rate Ratio (Ref=Q8)",
+    "age_adjusted_rate_ratio (ref=low)": "Age-Adjusted Rate Ratio (Ref=Low)",
+    "age_adjusted_rate_ratio (ref=high)": "Age-Adjusted Rate Ratio (Ref=High)",
+    "crude_rate_ratio(ref=low)": "Crude Rate Ratio (Ref=Low)",
+    "crude_rate_ratio (ref=high)": "Crude Rate Ratio (Ref=High)",
     "deaths": "Death",
     "population": "Population"
   },
@@ -814,7 +814,7 @@
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
       "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
       "half_short": "Native Hawaiian or Other Pacific Islander (NH)",
-      "short": "NHOPI (NH)"
+      "short": "NHPI (NH)"
     },
     "Non-Hispanic White": {
       "formatted": "White \n (Non-Hispanic)",

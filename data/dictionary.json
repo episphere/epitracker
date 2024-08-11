@@ -5,11 +5,11 @@
     "age_adjusted_rate": "Age-Adjusted Mortality"
   },
   "short": {
-    "White": "W",
-    "Black or African American": "BoAA",
+    "White": "White",
+    "Black or African American": "Black",
     "American Indian or Alaska Native": "AIoAN",
-    "Asian": "A",
-    "Hispanic": "H",
+    "Asian": "Asian",
+    "Hispanic": "Hispanic",
     "Female": "F",
     "Male": "M"
   },

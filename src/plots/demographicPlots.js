@@ -1,6 +1,6 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-import { deepMerge } from "../utils/helper.js";
+import { addPopperTooltip, deepMerge } from "../utils/helper.js";
 import {COLORS} from '../utils/color.js'
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
@@ -10,10 +10,32 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
     targetWidth: containerWidth,
     plotOptions: {height,  ...options.plotOptions},
   })
-  const plot = plotBar(mortalityData, options)
+  const mappedMortalityData = mortalityData.map(i => {
+    const raceMappings = options.nameMappings['race']
+    return {...i, shortRace: raceMappings[i['race']]?.short || 'All'}
+  })
+  const plot = plotBar(mappedMortalityData, options)
 
   container.innerHTML = ``
   container.appendChild(plot)
+
+  addChoroplethInteractivity(
+    plot,
+    container,
+    mortalityData,
+    options.measure,
+    options.compareBar,
+    options.nameMappings
+    // options.measureField,
+    // baseHistogramConfig,
+    // mainFeatureCollection,
+    // {
+    //   featureNameFormat: options.featureNameFormat,
+    //   valueFormat: options.valueFormat,
+    //   xDomain: domain,
+    // }
+  );
+
   return plot
 }
 
@@ -31,11 +53,16 @@ function plotBar(data, options={}) {
   const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
 
-  const barDomain = [...new Set(data.map(d => d[options.compareBar]))].sort()
+  const barDomain = [...new Set(data.map(d =>{
+    const raceMappings = options.nameMappings['race']
+    const shortName = raceMappings[d[options.compareBar]]?.short || 'All'
+    return options.compareBar === 'race' ? shortName : d[options.compareBar]}))].sort()
   const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
 
   if (options.compareBar == "age_group") {
-    barDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
+    barDomain.sort((a,b) => {
+      return parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
+    })
   } 
   if (options.compareFacet == "age_group") {
     facetDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
@@ -77,13 +104,13 @@ function plotBar(data, options={}) {
 
   const barOptions = {
     y: options.measure,
-    x: options.compareBar,
+    x: options.compareBar !== 'race' ? options.compareBar : 'shortRace',
     fill: (d) => {
       const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
       const color = COLORS[selectedCompare] || {}
+      console.log('query.fill', {selectedCompare, color})
       return color[d[selectedCompare]] || '#777'
     },
-    tip: true,                                                                      
   }
 
   if (options.compareFacet) {
@@ -94,7 +121,7 @@ function plotBar(data, options={}) {
 
   let plotOptions = {
     style: {
-      fontSize: 15
+      fontSize: 15,
     },
     fx: {tickRotate: 45, domain: facetDomain},
     height: 640,
@@ -103,7 +130,9 @@ function plotBar(data, options={}) {
     marginRight: labelBox,
     marginLeft: 50,
     marginTop: facetLabelBox,
-    y: {domain: options.yStartZero ? [0, domain[1] + 20] : [domain[0], domain[1] + 20], grid: true}
+    y: {
+      domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice:true,
+    }
   }
 
   const rule = options.yStartZero ? 0 : domain[0]
@@ -123,12 +152,63 @@ function plotBar(data, options={}) {
   plot.removeAttribute("viewBox")
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
-  // plot.style.overflowX = `scroll`
-  // plot.style.maxWidth = `100%`
-  // plot.style.boxSizing = "border-box"
-  // plot.style.flex = `0 0 ${estPlotWidth}px`
-
-
+  // plot.style.minWidth = `${900}px`
   
   return plot
+}
+
+function addChoroplethInteractivity(
+  plot,
+  plotContainer,
+  mortalityData,
+  measure,
+  compareBar,
+  nameMappings
+) {
+  const plotSelect = d3.select(plot);
+
+  const barSelect = d3.select(
+    plotSelect.selectAll("g[aria-label='bar'").nodes()[0]
+  );
+
+  console.log({mortalityData, measure, compareBar});
+
+  const rectSelect = barSelect.selectAll("rect");
+  console.log({plotSelect, barSelect, rectSelect});
+
+  const tooltip = addPopperTooltip(plotContainer);
+  tooltip.tooltipElement.setAttribute("id", "map-tooltip")
+
+  barSelect.on("mouseleave.interact", () => {
+    tooltip.hide();
+  });
+
+  rectSelect
+    .on("mouseover.interact", (e, d) => {
+      d3.select(e.target).raise();
+
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.flexDirection = "column";
+      div.style.justifyContent = "space-between";
+
+      const infoDiv = document.createElement("div");
+      infoDiv.style.display = "flex";
+      infoDiv.style.alignItems = "flex-start";
+      infoDiv.style.flexDirection = "column";
+      infoDiv.style.gap = "10px";
+      const measureLabel = nameMappings['measures'][measure]
+      infoDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${mortalityData[d][measure]}</div>
+      `;
+
+      if (compareBar)  {
+        const fieldLabel = nameMappings['fields'][compareBar]
+        infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${mortalityData[d][compareBar]}</div>`
+      }
+
+      div.appendChild(infoDiv);
+
+      tooltip.show(e.target, div);
+    })
 }

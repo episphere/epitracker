@@ -62,9 +62,13 @@ export function hookSelectChoices(
   state,
   valueProperty,
   optionsProperty,
-  format = (d) => d,
   searchEnabled = false,
-  sorter = (a, b) => a - b
+  sorter = (a, b) => a - b,
+  format = (d) =>
+    typeof d == "string" ? { 
+      label: d, 
+      value: d 
+    } : d,
 ) {
   const select = document.querySelector(selector);
   if (select == null) {
@@ -79,11 +83,9 @@ export function hookSelectChoices(
   });
 
   function setOptions() {
-    //console.log(selector, state[optionsProperty])
+    console.log(selector, state[optionsProperty])
     if (state[optionsProperty]) {
-      const options = state[optionsProperty].map((d) =>
-        typeof d == "string" ? { label: d, value: d } : d
-      );
+      const options = state[optionsProperty].map(format);
       choices.setChoices(options, "value", "label", true);
       if (state[valueProperty]) {
         choices.setChoiceByValue([state[valueProperty]]);

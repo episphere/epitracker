@@ -206,7 +206,7 @@ export function addProximityHover(elementsSelect, plotSelect, listener, minDista
     const pointIndex = delauney.find(mousePoint[0], mousePoint[1])
     const point = points[pointIndex] 
 
-    if (minDistance != null) {
+    if (minDistance != null && point) {
       const distance = (mousePoint[0]-point[0])**2 + (mousePoint[1]-point[1])**2
 
       let newHover = distance < distSqr ? pointIndex : null 
@@ -321,10 +321,13 @@ export function createOptionSorter(forceStart = [], forceEnd = []) {
       return -1;
     } else if (forceEndSet.has(a.label) || forceStartSet.has(b.label)) {
       return 1;
-    } else {
-      const aLabel = a.label.sort ? a.label.sort : a.label
-      const bLabel = b.label.sort ? b.label.sort : b.label
+    } if (a.label && b.label) {
+      const aLabel = a.label?.sort ? a.label?.sort : a.label
+      const bLabel = b.label?.sort ? b.label?.sort : b.label
       return aLabel.localeCompare(bLabel);
+    } else {
+      return a.localeCompare(b);
+     
     }
   };
 }

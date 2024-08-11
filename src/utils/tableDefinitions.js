@@ -4,6 +4,7 @@ export const quantileTableColumns = [
   { field: "sex", frozen: true},
   { field: "quantile_field", frozen: true},
   { field: "quantile", frozen: true},
+  { field: "quantile_range", frozen: true},
   { field: "deaths"},
   { field: "population"},
   { field: "crude_rate"},

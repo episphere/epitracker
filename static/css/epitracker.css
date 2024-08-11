@@ -49,8 +49,8 @@ li {
   margin-right: 50px;
 
   /* background: -webkit-gradient(linear, left top, left bottom, from(#ad0826), to(#74aad0));
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent; */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; */
 
   background: linear-gradient(45deg , #d73027,#ededb9, #4575b4); 
   -webkit-background-clip: text;
@@ -2568,6 +2568,7 @@ button.previous-btn {
   /* height: fit-content; */
   display: flex;
   justify-content: center;
+  min-width: 900px;
   flex-shrink: 0;
   overflow: visible;
 }
@@ -2607,7 +2608,11 @@ button.previous-btn {
   opacity: 0.4;
 }
 
-#color-legend {
+#color-legend { 
+  opacity: .3;
+}
+
+#color-legend, #setting-legend {
   /* To prevent the legend preventing interaction with DL button...kind of hacky*/
   margin-right: 30px;
   position: sticky;
@@ -2617,7 +2622,27 @@ button.previous-btn {
   background-color: white;
   justify-self: left;
   margin-block: 8px;
+}
 
+#setting-legend {
+  box-shadow: 2px 2px 6px 1px lightgrey;
+  padding: 10px;
+}
+
+#setting-legend-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  position: fixed;
+  right: 20px;
+}
+
+#setting-legend i {
+  cursor: pointer;
+  color: #828282;
+}
+
+#setting-legend i:hover {
+  color: #9f9f9f;
 }
 
 #color-legend.unpinned {
@@ -2840,7 +2865,7 @@ button.previous-btn {
   margin-left: -30px;
   padding-right: 30px;
   padding-left: 70px;
-  z-index: 1;
+  /* z-index: 1; */
   max-height: 100px;
 
   /* padding-block: 10px; */
@@ -2893,15 +2918,40 @@ button.previous-btn {
 
 #plot-container {
   height: 100%;
-  
   justify-content: center;
   max-width: 100%;
+  min-width: 900px;
   flex-grow: 1;
   flex-shrink: 0;
   text-align: center;
   display: flex;
   /* position: absolute; */
   width: calc(100% - 30px);
+}
+
+#demographic-container {
+  height: 100%;
+  
+  justify-content: center;
+  max-width: 100%;
+  flex-grow: 1;
+  flex-shrink: 0;
+  text-align: center;
+  /* display: flex; */
+  /* position: absolute; */
+  width: calc(100% - 30px);
+}
+
+#demographic-container.fill-height {
+  height: calc(100% - 140px); /* TODO: This is hack-y, fix */
+  /* height: 100%; */
+  max-height: 100%;
+}
+
+#demographic-container svg {
+  /* display: inline-block; */
+  height: fit-content;
+  min-width: 350px;
 }
 
 #plot-legend {
@@ -2911,7 +2961,7 @@ button.previous-btn {
 }
 
 #plot-container.fill-height {
-  height: calc(100% - 40px); /* TODO: This is hack-y, fix */
+  height: calc(100% - 140px); /* TODO: This is hack-y, fix */
   /* height: 100%; */
   max-height: 100%;
 }
@@ -2919,6 +2969,7 @@ button.previous-btn {
 #plot-container svg {
   /* display: inline-block; */
   height: fit-content;
+  min-width: 350px;
 }
 
 #download-container {
@@ -2933,15 +2984,29 @@ button.previous-btn {
 
 .floating-label {
   transform: translateY(-0.8em) translateX(0.6em);
+<<<<<<< HEAD
   /* font-size: 0.9em; */
   /* background: white; */
+=======
+  font-size: 0.9em;
+>>>>>>> dev
   border-radius: 2px;
   padding-left: 5px;
   padding-right: 5px;
   color: grey;
   position: relative;
   z-index: 1;
-  text-shadow: 1px 1px white, -1px -1px white;
+}
+
+.floating-label::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: #fff;
+  z-index: -1;
+  left: 0;
+  top: calc(50% + 1px);
 }
 
 .floating-select {
@@ -3023,7 +3088,7 @@ footer {
   text-align: right;
 }
 
-#color-settings-close {
+#color-settings-close, #settings-close {
   color: grey;
   margin-right: -8px;
   margin-top: -8px;
@@ -3031,10 +3096,35 @@ footer {
   cursor: pointer;
 }
 
-#color-settings-close:hover {
+#color-settings-close:hover, #settings-close:hover {
   color: lightgrey;
 }
 
 g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {
   cursor: pointer !important;
+}
+
+.choices__list--dropdown {
+  z-index: 999;
+}
+
+.choices__list--dropdown .choices__list {
+  max-height: 230px;
+}
+
+#sidebar-content {
+  padding-top: 0;
+  overflow-y: auto;
+}
+
+#sidebar-form {
+  overflow-y: visible;
+}
+
+#sidebar h2 {
+  padding-top: 25px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f9fbff;
 }
