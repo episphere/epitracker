@@ -7,21 +7,31 @@
     "state": "State",
     "age_group": "Age Group"
   },
-    "measures": {
-    "age_adjusted_rate": "Age Adjusted-Mortality Rate (per 100,000)",
-    "crude_rate": "Crude-Mortality Rate (per 100,000)",
-    "Age Adjusted Rate Ratio (Ref=Q1)": "Age Adjusted-Rate Ratio (Ref=Q1)",
-    "Age Adjusted Rate Ratio (Ref=Q8)": "Age Adjusted-Rate Ratio (Ref=Q8)",
+  "measures": {
+    "age_adjusted_rate": { 
+      "name": "Age-Adjusted Mortality Rate (per 100,000)",
+      "short": "AA Rate"
+    },
+    "crude_rate": {
+      "name": "Crude Mortality Rate (per 100,000)",
+      "short": "Crude Rate"
+    },
+    "Age Adjusted Rate Ratio (Ref=Q1)": "Age Adjusted Mortality Rate Ratio (Ref=Q1)",
+    "Age Adjusted Rate Ratio (Ref=Q8)": "Age Adjusted Rate Ratio (Ref=Q8)",
     "Crude Rate Ratio (Ref=Q1)": "Crude-Rate Ratio (Ref=Q1)",
     "Crude Rate Ratio (Ref=Q8)": "Crude-Rate Ratio (Ref=Q8)",
     "deaths": "Death",
     "population": "Population"
   },
+  "levels": {
+    "state": "State-level",
+    "county": "County-level"
+  },
   "colorSchemes": {
     "Blues": "Blues (sequential, single-hue)",
     "Greens": "Greens (sequential, single-hue)",
     "Greys": "Greys (sequential, single-hue)",
-    "Purples": "Purples (sequential, singxle-hue)",
+    "Purples": "Purples (sequential, single-hue)",
     "Reds": "Reds (sequential, single-hue)",
     "Oranges": "Oranges (sequential, single-hue)",
     "Turbo": "Turbo (sequential, multi-hue)",
@@ -787,26 +797,34 @@
     }
   },
   "race": {
-    "Hispanic": { "formatted": "Hispanic" },
+    "Hispanic": { 
+      "formatted": "Hispanic",
+      "short": "Hispanic"
+    },
     "Non-Hispanic American Indian or Alaska Native": {
       "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
-      "half_short": "American Indian or Alaska Native (NH)"
+      "half_short": "American Indian or Alaska Native (NH)",
+      "short": "AI/AN (NH)"
     },
     "Non-Hispanic Black or African American": {
       "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
-      "half_short": "Black or African American (NH)"
+      "half_short": "Black or African American (NH)",
+      "short": "Black or AA (NH)"
     },
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
       "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
-      "half_short": "Native Hawaiian or Other Pacific Islander (NH)"
+      "half_short": "Native Hawaiian or Other Pacific Islander (NH)",
+      "short": "NHOPI (NH)"
     },
     "Non-Hispanic White": {
       "formatted": "White \n (Non-Hispanic)",
-      "half_short": "White (NH)"
+      "half_short": "White (NH)",
+      "short": "White (NH)"
     },
     "Non-Hispanic Asian": {
       "formatted": "Asian \n (Non-Hispanic)",
-      "half_short": "Asian (NH)"
+      "half_short": "Asian (NH)",
+      "short": "Asian (NH)"
     }
   }
 }

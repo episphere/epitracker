@@ -15,6 +15,7 @@ import {
   CAUSE_SEX_MAP,
   initSidebar,
   plotDataTable,
+  formatName,
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import { plotQuantileScatter } from "../plots/quantilePlots.js";
@@ -449,7 +450,7 @@ function plotConfigUpdated(plotConfig) {
       drawLines: state.showLines,
       yStartZero: state.startZero,
       xLabel: `${measureDetails.measure} (${measureDetails.unit==='Proportion'?'Percentage':measureDetails.unit})`,
-      yLabel: names.measures[plotConfig.measure],
+      yLabel: formatName(names, "measures", plotConfig.measure),
       facetLabel: names.fields[state.compareFacet],
       xTickFormat: xTickFormat,
       quantileFieldUnit: quantileFieldUnit(),
@@ -711,7 +712,7 @@ function updateGraphTitle() {
 
   //const title = `${names.measures[state.measure]} ${compareString}. </br> ${selectsString}`
   const quantileMeasure = names["quantile_fields"][state.quantileField].measure;
-  let measureName = names.measures[state.measure].toLowerCase();
+  let measureName = formatName(names, "measures", state.measure).toLowerCase();
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
   const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure.toLowerCase()} </br> ${selectsString}`;
   elements.graphTitle.innerHTML = title;
