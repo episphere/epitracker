@@ -2,6 +2,7 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 import { checkableLegend } from "../utils/checkableLegend.js";
 import { addPopperTooltip, addProximityHover } from "../utils/helper.js";
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
+import { formatName } from "../utils/nameFormat.js";
 
 
 export function plotQuantileScatter(container, settingLegend, data, options={}) {
@@ -86,7 +87,6 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
     sizePerFacet = sizePerFacet / nFacets
   }
   sizePerFacet = Math.min(900, sizePerFacet)
-  console.log({sizePerFacet, nFacets});
 
   const plotOptions = {
     width: sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets,
@@ -95,7 +95,6 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
     color: colorOpt,
     x: {type: "point", label: options.xLabel, tickFormat: d => {
       const xTickFormat = options.xTickFormat(undefined, d - 1)
-      console.log({d, aaa: options.quantileFieldUnit, xTickFormat})
       const {quantileFieldUnit} = options
       const isPercentOrProportion = quantileFieldUnit.toLowerCase() === 'percent' || quantileFieldUnit.toLowerCase() === 'proportion' 
       
@@ -139,7 +138,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   return {plot}
 }
 
-function addInteractivity(container, plot, plotData, measure, tooltipFields, nameMappings) {
+function addInteractivity(container, plot, plotData, measure, tooltipFields) {
   
   const tooltip = addPopperTooltip(container)
   tooltip.tooltipElement.setAttribute("id", "map-tooltip")
@@ -158,10 +157,10 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields, nam
      
       let text = ``
       tooltipFields.forEach(field => {
-        const fieldLabel = nameMappings['fields'][field]
+        const fieldLabel = formatName("fields", field)
         return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${row[field]}</div>`})
 
-      const measureLabel = nameMappings['measures'][measure]
+      const measureLabel = formatName("measures", measure)
       text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`
       tooltip.show(element, text)
     }

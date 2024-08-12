@@ -17,13 +17,13 @@ import {
   grayOutSexSelectionBasedOnCause,
   CAUSE_SEX_MAP,
   plotDataTable,
-  formatName,
   addPopperTooltip
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import { plotQuantileScatter } from "../plots/quantilePlots.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import { quantileTableColumns } from "../utils/tableDefinitions.js";
+import { formatName } from "../utils/nameFormat.js";
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule]);
 
@@ -64,7 +64,7 @@ const INITIAL_STATE = {
 };
 
 let state, dataManager;
-let elements, choices, staticData, names;
+let elements, choices, staticData;
 
 export function init() {
   toggleLoading(true);
@@ -99,11 +99,10 @@ export function init() {
   elements.graphTitle = document.getElementById("plot-title");
 
   Promise.all([
-    d3.json("../data/conceptMappings.json"),
     d3.json("../data/quantile/quantile_details.json"),
     dataManager.getQuantileMortalityData({ year: "2022", num_quantiles: 4 }),
-  ]).then(([nameMappings, quantileDetails, mortalityData]) => {
-    intitialDataLoad(mortalityData, quantileDetails, nameMappings);
+  ]).then(([quantileDetails, mortalityData]) => {
+    initialDataLoad(mortalityData, quantileDetails);
   });
 }
 
@@ -130,7 +129,6 @@ function initializeState() {
   state.defineProperty("quantileNumber", initialState.quantileNumber);
   state.defineProperty("quantileNumberOptions", null);
   state.defineProperty("quantileRanges", null);
-  state.defineProperty("nameMappings", null);
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -248,8 +246,7 @@ function initializeState() {
 // Primary state logic handlers
 // =================================
 
-function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
-  names = nameMappings;
+function initialDataLoad(mortalityData, quantileDetails) {
   staticData.quantileDetails = d3.index(
     quantileDetails,
     (d) => d.year,
@@ -260,27 +257,27 @@ function intitialDataLoad(mortalityData, quantileDetails, nameMappings) {
   // Initialise the input state from the data
   state.compareColorOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: nameMappings.fields[field],
+    label: formatName("fields", field)
   }));
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: nameMappings.fields[field],
+    label:  formatName("fields", field)
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
-  state.measureOptions = NUMERIC_MEASURES.map((field) => ({
-    value: field,
-    label: nameMappings.measures[field],
-  }));
-  state.nameMappings = names
+  state.measureOptions = NUMERIC_MEASURES.map((field) => {
+    let label =  formatName("measures", field)
+    if (typeof label == "object") label = label.name
+    return { value: field, label } 
+  });
 
   state.quantileFieldOptions = [
     ...new Set(mortalityData.map((d) => d.quantile_field)),
   ].map((field) => ({
     value: field,
-    label: nameMappings["quantile_fields"][field].measure,
-    unit: nameMappings["quantile_fields"][field].unit,
+    label:  formatName("quantile_fields", field, "measure"),
+    unit: formatName("quantile_fields", field, "unit"),
   }));
   state.quantileNumberOptions = QUANTILE_NUMBERS;
 
@@ -405,12 +402,10 @@ async function queryUpdated(query) {
 
   state.mortalityData = data;
 
-  console.log({data})
-
   updateLegend(data, query);
 }
 function plotConfigUpdated(plotConfig) {
-  const measureDetails = names.quantile_fields[plotConfig.query.quantileField];
+  const measureDetails =  formatName("quantile_fields", plotConfig.query.quantileField, "all");
 
   const xTickFormat = (_, i) => {
     return state["quantileRanges"][i]
@@ -445,7 +440,7 @@ function plotConfigUpdated(plotConfig) {
     colorDomainValues.sort();
   }
 
-  const formatRace = (d) => names.race[d]?.formatted;
+  const formatRace = (d) =>  formatName("race", d, "formatted");
   const facetTickFormat =
     plotConfig.query.compareFacet == "race" ? formatRace : (d) => d;
   const colorTickFormat =
@@ -489,14 +484,6 @@ function plotConfigUpdated(plotConfig) {
     if (isActiveTable) {
       plotTable();
     } else {
-      // console.log("Plot height", elements.plotContainer.getBoundingClientRect().height)
-      // elements.plotContainer.innerHTML = ''
-      // elements.plotContainer.appendChild(Plot.plot({
-      //   height: elements.plotContainer.getBoundingClientRect().height*.95,
-      //   marks: [
-      //     Plot.dot([{x:0, y:0}, {x:1, y:1}], {x: "x", y: "y"})
-      //   ]
-      // }))
       plotQuantileScatter(elements.plotContainer, legendContainer, data, {
         valueField: plotConfig.measure,
         facet:
@@ -515,8 +502,8 @@ function plotConfigUpdated(plotConfig) {
             ? "Percentage"
             : measureDetails.unit
         })`,
-        yLabel: names.measures[plotConfig.measure],
-        facetLabel: names.fields[state.compareFacet],
+        yLabel: formatName("measures", plotConfig.measure),
+        facetLabel:  formatName("fields", state.compareFacet),
         xTickFormat: xTickFormat,
         quantileFieldUnit: quantileFieldUnit(),
         tooltipFields: [
@@ -527,7 +514,6 @@ function plotConfigUpdated(plotConfig) {
         facetTickFormat,
         colorTickFormat,
         onSettingsClick: state.onSettingsClick,
-        nameMappings: state.nameMappings
       });
     }
   }
@@ -554,7 +540,7 @@ function updateLegend(data, query) {
     );
     if (selectedValues.length == 0) selectedValues = colorDomainValues;
 
-    const formatRace = (d) => names.race[d]?.formatted;
+    const formatRace = (d) => formatName("race", d, "formatted");
     const colorTickFormat =
       query.compareColor == "race" ? formatRace : (d) => d;
     const legend = checkableLegend(
@@ -778,7 +764,7 @@ function toggleLoading(loading, soft = false) {
 function updateGraphTitle() {
   let compareString = [state.compareColor, state.compareFacet]
     .filter((d) => d != "none")
-    .map((d) => names.fields[d].toLowerCase())
+    .map((d) => formatName("fields", d).toLowerCase())
     .join(" and ");
   if (compareString != "") {
     //compareString = "</br> Stratified by " + compareString;
@@ -788,12 +774,12 @@ function updateGraphTitle() {
     { name: "Year", value: state.year },
     { name: "Cause of death", value: formatCauseName(state.cause) },
     {
-      name: names.fields.sex,
+      name: formatName("fields", "sex"),
       value: state.sex,
       exclude: compareSet.has("sex"),
     },
     {
-      name: names.fields.race,
+      name: formatName("fields", "race"),
       value: state.race,
       exclude: compareSet.has("race"),
     },
@@ -803,14 +789,12 @@ function updateGraphTitle() {
     .map((d) => `${d.name}: ${d.value}`)
     .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
 
-  //const title = `${names.measures[state.measure]} ${compareString}. </br> ${selectsString}`
-  const quantileMeasure = names["quantile_fields"][state.quantileField].measure;
-  let measureName = formatName(names, "measures", state.measure).toLowerCase();
+  const quantileMeasure = formatName("quantile_fields", state.quantileField); 
+  let measureName = formatName("measures", state.measure).toLowerCase(); 
   measureName = measureName[0].toUpperCase() + measureName.slice(1);
   const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
   const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
   const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
-  console.log(isNoneCompares)
   elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
 }
 

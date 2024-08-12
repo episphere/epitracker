@@ -312,9 +312,13 @@ export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
   return svg.node()
 }
 
-export function createOptionSorter(forceStart = [], forceEnd = []) {
+export function createOptionSorter(forceStart = [], forceEnd = [], compare = null) {
   const forceStartSet = new Set(forceStart);
   const forceEndSet = new Set(forceEnd);
+
+  if (!compare) {
+    compare = (a,b) => a.localeCompare(b);
+  }
 
   return (a, b) => {
     if (forceStartSet.has(a.label) || forceEndSet.has(b.label)) {
@@ -324,9 +328,9 @@ export function createOptionSorter(forceStart = [], forceEnd = []) {
     } if (a.label && b.label) {
       const aLabel = a.label?.sort ? a.label?.sort : a.label
       const bLabel = b.label?.sort ? b.label?.sort : b.label
-      return aLabel.localeCompare(bLabel);
+      return compare(aLabel, bLabel);
     } else {
-      return a.localeCompare(b);
+      return compare(a, b);
      
     }
   };
@@ -967,20 +971,22 @@ const nameMappings = new Map([
   ["measureField", "measures"]
 ])
 
-export function formatName(names, field, value, mode = "name") {
-  if (nameMappings.has(field)) {
-    field = nameMappings.get(field);
-  }
-  const valueNames = names[field];
-  if (!valueNames) return value;
-  let name = valueNames[value];
-  if (typeof name == "object") {
-    let nameStr = name[mode];
-    if (!nameStr) nameStr = name["name"];
-    name = nameStr
-  } 
-  return name ? name : value;
-}
+// !Deprecated. Use formatName in nameFormat.js instead
+// export function formatName(names, field, value, mode = "name") {
+//   if (nameMappings.has(field)) {
+//     field = nameMappings.get(field);
+//   }
+//   const valueNames = names[field];
+//   if (!valueNames) return value;
+//   let name = valueNames[value];
+//   if (typeof name == "object") {
+//     let nameStr = name[mode];
+//     if (!nameStr) nameStr = name["name"];
+//     name = nameStr
+//   } 
+//   return name ? name : value;
+// }
+
 
 export function createNestedDropdown(buttonElement, items) {
   buttonElement.setAttribute("data-bs-toggle", "dropdown")

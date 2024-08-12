@@ -4,10 +4,11 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, formatName, scaleGradient } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
+import { formatName } from '../utils/nameFormat.js';
 
 const CONSTANTS = {
   DEFAULT_STATE: {
@@ -95,6 +96,14 @@ class MapApplication {
       nameMappings: await d3.json("../data/conceptMappings.json"),
     };
 
+    // Set the county names after the GeoJSON is loaded.
+    const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
+    const countyOptions =  this.state.areaCountyOptions.map(d => {
+      let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0,2), "short");
+      return { value: d, label: name}
+    })
+    this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+
     this.addColorSettingsPopup(); 
 
     // Initialize the grid, and updagte it with the starting state.
@@ -138,13 +147,20 @@ class MapApplication {
     this.state.defineProperty("cause", initialState.cause);
     this.state.defineProperty("causeOptions", optionValues.cause);
     this.state.defineProperty("measure", initialState.measure);
-    this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES);
+    this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES.map(d => ({
+      value: d, label: formatName("measures", d)
+    })));
     this.state.defineProperty("areaState", initialState.areaState);
-    this.state.defineProperty("areaStateOptions", optionValues.state_fips);
+    this.state.defineProperty("areaStateOptions", optionValues.state_fips.map(d => ({
+      value: d, label: formatName("states", d)
+    })));
+    // this.state.defineProperty("areaStateOptions", optionValues.state_fips);
     this.state.defineProperty("areaCounty", initialState.areaCounty, ["areaState"]);
     this.state.defineProperty("areaCountyOptions", optionValues.county_fips, ["areaState"]);
     this.state.defineProperty("spatialLevel", initialState.spatialLevel);
-    this.state.defineProperty("spatialLevelOptions", CONSTANTS.SPATIAL_LEVELS);
+    this.state.defineProperty("spatialLevelOptions", CONSTANTS.SPATIAL_LEVELS.map(d => ({
+      value: d, label: formatName("levels", d)
+    })));
     this.state.defineProperty("scheme", initialState.scheme);
     this.state.defineProperty("schemeOptions");
     this.state.defineProperty("colorReverse", initialState.colorReverse);
@@ -190,7 +206,7 @@ class MapApplication {
     })
 
     // Add color scheme gradients
-    this.state.schemeOptions = Object.entries(this.sData.nameMappings.colorSchemes).map(
+    this.state.schemeOptions = Object.entries(formatName("colorSchemes")).map(
       ([k, name]) => {
         const colorScale = d3.scaleSequential(d3["interpolate" + k]);
         const div = document.createElement("div");
@@ -276,10 +292,31 @@ class MapApplication {
       { id: "#select-color-scheme", propertyName: "scheme", searchable: true },
     ]) {
 
-      const sorter = createOptionSorter(
-        ["All", "None"],
-        inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
-      )
+      let sorter = d => d 
+      if (inputSelectConfig.propertyName == "areaCounty") {
+        sorter = createOptionSorter(
+          ["All", "None"],
+          inputSelectConfig.propertyName == "year" ? ["2018-2022"] : [],
+          (a,b) => {
+            const [aCounty, aState] = a.split(",");
+            const [bCounty, bState] = b.split(",");
+            
+            if (!aState || !bState) return 0;
+
+            const stateComparison = aState.localeCompare(bState);
+            if (stateComparison != 0) {
+              return stateComparison;
+            } else {
+              return aCounty.localeCompare(bCounty);
+            }
+          }
+        )
+      } else {
+        sorter = createOptionSorter(
+          ["All", "None"],
+          inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
+        )
+      }
   
       hookSelectChoices(
         inputSelectConfig.id,
@@ -288,7 +325,7 @@ class MapApplication {
         inputSelectConfig.propertyName + "Options",
         (d) => d,
         inputSelectConfig.searchable,
-        sorter
+        sorter,
       );
     }
 
@@ -302,7 +339,7 @@ class MapApplication {
     const data = await this.dataManager.getCountyMortalityData({year: "2018-2022"})
     const valueObj = {} 
     for (const field of ["race", "sex", "cause", "county_fips", "state_fips"]) {
-      valueObj[field] = [...new Set(data.map(d => d[field]))]
+      valueObj[field] = [...new Set(data.map(d => d[field]))].map(d => d)//({value: d, label: d}))
     }
     return valueObj
   }
@@ -497,7 +534,7 @@ class MapApplication {
       this.colorConfig.domain = domain
     }
 
-    const measureName = this.sharedState.measure ? formatName(this.sData.nameMappings, "measures", this.sharedState.measure) : "Measure"
+    const measureName = this.sharedState.measure ? formatName( "measures", this.sharedState.measure) : "Measure"
     const sharedColorLegend = colorRampLegendPivot(await this.getColorConfig(), {label: measureName});
 
     this.elems.colorLegend.innerHTML = '';
@@ -548,7 +585,7 @@ class MapApplication {
     const state = this.sharedState
 
     const baseElements = [ 
-      state.measure ? formatName(this.sData.nameMappings, "measures", state.measure) : "Data" 
+      state.measure ? formatName( "measures", state.measure) : "Data" 
     ]
     let filterElements = [
       state.year,
