@@ -791,17 +791,17 @@
     "Non-Hispanic American Indian or Alaska Native": {
       "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
       "half_short": "American Indian or Alaska Native (NH)",
-      "short": "AIoAN"
+      "short": "AIAN"
     },
     "Non-Hispanic Black or African American": {
       "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
       "half_short": "Black or African American (NH)",
-      "short": "BoAA"
+      "short": "BAA"
     },
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
       "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
       "half_short": "Native Hawaiian or Other Pacific Islander (NH)",
-      "short": "NHoOPI"
+      "short": "NHPI"
     },
     "Non-Hispanic White": {
       "formatted": "White \n (Non-Hispanic)",
