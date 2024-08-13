@@ -2984,12 +2984,7 @@ button.previous-btn {
 
 .floating-label {
   transform: translateY(-0.8em) translateX(0.6em);
-<<<<<<< HEAD
-  /* font-size: 0.9em; */
-  /* background: white; */
-=======
   font-size: 0.9em;
->>>>>>> dev
   border-radius: 2px;
   padding-left: 5px;
   padding-right: 5px;
