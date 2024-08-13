@@ -93,7 +93,6 @@ class MapApplication {
     this.sData = {
       stateGeoJSON: await d3.json("../data/states.json"),
       countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
-      nameMappings: await d3.json("../data/conceptMappings.json"),
     };
 
     // Set the county names after the GeoJSON is loaded.
@@ -253,7 +252,7 @@ class MapApplication {
       
       let name = feature.properties.name;
       if (feature.id.length == 5) {
-        name += ", " + this.sData.nameMappings.states[feature.id.slice(0,2)].short;
+        name += ", " + formatName("states",feature.id.slice(0,2), "short")
       }
       this.elems.mapTooltipName.innerText = name; 
       
@@ -605,7 +604,7 @@ class MapApplication {
       sex: d => d == "All" ? "All sexes" : d,
       race: d => d == "All" ? "All races" : d,
       cause: d => d == "All" ? "All cancers" : d,
-      areaState: d => d == "All" ? "US" : this.sData.nameMappings.states[d].name
+      areaState: d => d == "All" ? "US" : formatName("states", d)
     }
 
     for (const card of this.plotGrid.getCards()) {
