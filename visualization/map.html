@@ -14,6 +14,9 @@
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
     <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
     <link href="../static/css/epitracker.css" rel="stylesheet" defer  />
+    <link href="../static/css/epitracker-map.css" rel="stylesheet" defer  />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack-extra.min.css" />
 
 
 </head>
@@ -21,139 +24,101 @@
 <body>
   <header></header>
   
-  <div id="dashboard">
-    <div id="sidebar" >
-      <div id="sidebar-toggle">
-        <i class="bi bi-caret-left-fill"></i>
+  <div id="dashboard-container">
+    <div id="dashboard" class="loading">
+      <div class="spinner-border text-primary loading-spinner" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
 
-      <div id="sidebar-content" >
-        <h2><i class="bi bi-gear-fill me-2"></i>Configure</h2>
-
-        <div id="sidebar-form"> 
-          <h4 class="mt-2">Compare</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute">Row</label>
-            <select class="form-select" disabled id="select-compare-row" aria-label="Compare row">
-              <option hidden >Awaiting data...</option>
-            </select>
+      <div id="ex-dashboard">
+ 
+  
+        <div id="grid-container">
+        </div>
+  
+        <div id="ex-infobar">
+          <div id="color-legend" >
+          </div>
+  
+          <div id="title" >
+            US county-level age adjusted-mortality rate (per 100,000), 2022, US, All Cancers, All Races, All Sexes
           </div>
 
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-compare-column">Column</label>
-            <select id="select-compare-column" class="form-select disabled" disabled aria-label="Compare column">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <h4 class="mt-2">Filter</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-year">Year</label>
-            <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-      
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-cause">Cause</label>
-            <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-          
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-sex">Sex</label>
-            <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-race">Race</label>
-            <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-              <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-state">US State</label>
-            <select id="select-select-state" class="form-select mb-2" disabled aria-label="US State select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-county">US County</label>
-            <select id="select-select-county" class="form-select mb-2" disabled aria-label="US County select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <h4>Other</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-measure">Measure</label>
-            <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-level">Spatial Level</label>
-            <select id="select-level" class="form-select mb-2" disabled aria-label="Spatial level select">
-              <option hidden >Awaiting data...</option>
-            </select>
+          <!-- <div id="loading-test">
+            ...
+          </div> -->
+  
+          <div id="ex-settings-card">
+            <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i>
+            <i id="button-color-settings" class="settings-button fas fa-palette" tip="Color settings"></i>
+            <i id="button-table" class="settings-button fa-solid fa-table" tip="Table [WIP]"></i>
+            <i id="button-download" class="settings-button fa-solid fa-download" tip="Download"></i>
+            <!-- <i id="button-settings" class="settings-button fa-solid fa-gear"></i> -->
+            <!-- <i class="settings-button fas fa-angle-up"></i> -->
           </div>
         </div>
-      </div>
+     </div>
     </div>
-
-    <div id="content">
-      <div id="topbar">
-        <div id="display-mode-control">
-            <ul class="nav nav-tabs">
-              <li class="nav-item">
-                <a id="map-nav-link" class="nav-link active"><i class="bi bi-map"></i></a>
-              </li>
-              <li class="nav-item">
-                <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
-              </li>
-            </ul>
-        </div>
-        <div id="plot-title"></div>
-        <div id="topbar-cnt">
-          <button id="reset-query" class="btn btn-outline-secondary" disabled><i class="fas fa-sync-alt"></i></button>
-          <div id="download-container"></div>
-        </div>
-       
-      </div>
-      <div id="plots">
-        <div id="color-legend"></div>
-        
-        <div id="plot-container" class="d-flex flex-column" style="position:absolute">
-          <div id="map-grid"></div>
-          <div id="plot-source" style="display: none;">The source...</div>
-
-        </div>
-
-        <div id="table-container"></div>
-
-        <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
-          <div class="spinner-border" role="status"></div>
-        </div>
-      </div>
-      
-    </div>
-<!-- 
-    <div id="right-margin"></div> -->
   </div>
 
+  <div id="plot-card-config">
+    <div id="plot-card-select-container">
+      <div class="plot-card-select">
+        <label for="select-select-year">Year</label>
+        <select id="select-select-year" class="form-select mb-2"  aria-label="Year select">
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-select-cause">Cause</label>
+        <select id="select-select-cause" class="form-select mb-2" aria-label="Cause select">
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-select-sex">Sex</label>
+        <select id="select-select-sex" class="form-select mb-2" aria-label="Sex select">
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-select-race">Race</label>
+        <select id="select-select-race" class="form-select mb-2"  aria-label="Race select">
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-select-state">US State</label>
+        <select id="select-select-state" class="form-select mb-2"  aria-label="US State select">
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-select-county">US County</label>
+        <select id="select-select-county" class="form-select mb-2"  aria-label="US County select">
+        </select>
+      </div>
+          
+      <div class="plot-card-select">
+        <label for="select-measure">Measure</label>
+        <select id="select-measure" class="form-select mb-2" aria-label="Measure select" >
+        </select>
+      </div>
+      
+      <div class="plot-card-select">
+        <label for="select-level">Spatial Level</label>
+        <select id="select-level" class="form-select mb-2"  aria-label="Spatial level select">
+        </select>
+      </div>
+    </div>
+
+
+    <button id="card-submit-button" class="btn btn-primary">Submit</button>
+    
+  </div>
 
   <!-- The color settings element dropdown, initially hidden -->
-  <div id="color-settings-dropdown">
+  <div id="color-settings">
     <div class="d-flex justify-content-between">
       <h5><i class="bi bi-gear-fill me-2"></i>Color Scheme Settings</h5>
       <i id="color-settings-close" class="fa-solid fa-xmark"></i>
@@ -161,7 +126,7 @@
 
     <div class="mb-2">
       <label for="select-color-scheme">Color scheme</label>
-      <select id="select-color-scheme" class="form-select mb-2" aria-label="Color scheme select" disabled>
+      <select id="select-color-scheme" class="form-select mb-2" aria-label="Color scheme select" >
       </select>
     </div>
 
@@ -181,15 +146,22 @@
     </div>
 
     <div >
-      <label for="outlier-cutoff-range" class="form-label">Extreme values threshold</label>
+      <label for="outlier-cutoff-range" class="form-label">Extreme threshold</label>
       <div id="outlier-cutoff-element" class="range-with-text">
         <input type="range" class="form-range" id="outlier-cutoff-range" min="1" max="5" step="0.5">
         <span id="outlier-cutoff-range-text"></span>
       </div>
     </div>
-
   </div>
 
+  <!-- The map tooltip element, initially hidden -->
+  <div id="map-tooltip">
+    <div id="map-tooltip-topbar">
+      <div id="map-tooltip-name"></div>
+      <div id="map-tooltip-value"></div>
+    </div>
+    <div id="map-tooltip-plot"></div>
+  </div>
 
   <footer></footer>
 
@@ -199,16 +171,23 @@
 
     loadHeaderTemplate()
     loadFooterTemplate()
-    initSidebar()
+    // initSidebar()
   </script>
 
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/tippy.js@6/animations/scale.css"
+/>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
       integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
       crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
       integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
       crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
   
+  <!-- <script type="module" src="../src/pages/mapPage3.js"></script> -->
   <script type="module" src="../src/pages/mapPage.js"></script>
 </body>

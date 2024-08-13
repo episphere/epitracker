@@ -1,7 +1,6 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import {
-  colorRampLegendMeanDiverge,
   createDropdownDownloadButton,
 } from "../utils/helper.js";
 import {
@@ -23,6 +22,7 @@ export function createChoroplethPlot(
 
   options = {
     drawBorders: true,
+    overlayColor: "silver",
     outlierColor: "#3d3d3d",
     onSettingsClick: d => d,
     ...restOptions,
@@ -35,11 +35,10 @@ export function createChoroplethPlot(
   const spatialDataMap = d3.index(spatialData, (d) => d[options.indexField]);
 
   let values = spatialData.map(d => d[options.measureField])
-  // if (options.outlierThreshold) {
+  // if (options.color.outlierThreshold) {
   //   const mean = d3.mean(values)
   //   const std = d3.deviation(values)
-  //   //console.log(" > ", values.filter(d => ((d-mean)/std) > options.outlierThreshold))
-  //   values = values.filter(d => ((d-mean)/std) <= options.outlierThreshold)
+  //   values = values.filter(d => ((d-mean)/std) <= options.color.outlierThreshold)
   // }
 
   let color = options.color;
@@ -101,7 +100,7 @@ export function createChoroplethPlot(
   if (options.overlayFeatureCollection) {
     marks.push(
       Plot.geo(options.overlayFeatureCollection, {
-        stroke: "grey",
+        stroke: options.overlayColor,
         fill: "none",
         strokeWidth: 1,
         pointerEvents: "none",
@@ -261,45 +260,41 @@ export function plotMortalityMapGrid(
   let mapWidth = (0.9 * bbox.width) / nColumns;
   let mapHeight = Math.max(0.87 * bbox.height / nColumns, options.minMapHeight);
 
-  
-  // const aspectRatio = 1.72 
-  // console.log(bbox.width, mapWidth, mapHeight)
-  //mapWidth = mapHeight * aspectRatio
-  // container.style.width = "fit-content"
-
   let values = mortalityData.map((d) => d[options.measureField])
   const mean = d3.mean(values);
   let domain = d3.extent(values);
 
-  if (options.outlierThreshold && values.length > 1) {
-    const std = d3.deviation(values)
-    const clipDomain = [-options.outlierThreshold, options.outlierThreshold].map(d => d*std+mean)
-    domain = [
-      Math.max(domain[0], clipDomain[0]),
-      Math.min(domain[1], clipDomain[1]),
-    ]
-  }
+  // if (options.color.outlierThreshold && values.length > 1) {
+  //   const std = d3.deviation(values)
+  //   const clipDomain = [-options.color.outlierThreshold, options.color.outlierThreshold].map(d => d*std+mean)
+  //   domain = [
+  //     Math.max(domain[0], clipDomain[0]),
+  //     Math.min(domain[1], clipDomain[1]),
+  //   ]
+  // }
 
   const baseHistogramConfig = {
     options: {
-      width: 140,
-      height: 60,
-      margin: 15,
-      x: { ticks: domain, label: null, tickSize: 0, tickPadding: 4, domain, },
-      y: { ticks: [], label: null, margin: 0 },
-      style: {
-        background: "none",
-        color: "black",
-      },
+      width: 300,
+      height: 100, 
+      // width: 140,
+      // height: 60,
+      // margin: 15,
+      // x: { ticks: domain, label: null, tickSize: 0, tickPadding: 4, domain, },
+      // y: { ticks: [], label: null, margin: 0 },
+      // style: {
+      //   background: "none",
+      //   color: "black",
+      // },
     },
     marks: [
-      Plot.rectY(
-        mortalityData,
-        Plot.binX(
-          { y: "count" },
-          { x: options.measureField, thresholds: 16, fill: "#c3d1c0" }
-        )
-      ),
+      // Plot.rectY(
+      //   mortalityData,
+      //   Plot.binX(
+      //     { y: "count" },
+      //     { x: options.measureField, thresholds: 16, fill: "#c3d1c0" }
+      //   )
+      // ),
     ],
   };
 
@@ -433,7 +428,20 @@ function zoomOnMap(featureCollection, state) {
   });
 }
 
-function addChoroplethInteractivity(
+// export function addChoroplethTooltip(args) {
+//   const {
+//     plot, 
+//     plotContainer, 
+//     plotData,
+//     fullData,
+//     featureCollection,
+//   } = args; 
+
+//   const tooltip = addPopperTooltip(plotContainer);
+//   tooltip.tooltipElement.setAttribute("id", "map-tooltip");
+// }
+
+export function addChoroplethInteractivity(
   plot,
   plotContainer,
   mapData,
@@ -482,6 +490,7 @@ function addChoroplethInteractivity(
     tooltip.hide();
   });
 
+
   geoSelect
     .on("mouseover.interact", (e, d) => {
       const feature = featureCollection.features[d];
@@ -529,13 +538,13 @@ function addChoroplethInteractivity(
 
       // Expand tooltip histogram to show outliers if they are outside standard range
       let xDomain = args.xDomain
-      if (row?.[measure] < xDomain[0]) {
-        baseHistogramConfig.options.x.domain[0] = row[measure]
-      } else if (row?.[measure] > xDomain[1]) {
-        baseHistogramConfig.options.x.domain[1] = row[measure]
-      } else {
-        baseHistogramConfig.options.x.domain = [...xDomain]
-      }
+      // if (row?.[measure] < xDomain[0]) {
+      //   baseHistogramConfig.options.x.domain[0] = row[measure]
+      // } else if (row?.[measure] > xDomain[1]) {
+      //   baseHistogramConfig.options.x.domain[1] = row[measure]
+      // } else {
+      //   baseHistogramConfig.options.x.domain = [...xDomain]
+      // }
 
       if (row && Number.isFinite(row[measure])) {
         const otherRows = mapDataGeoMap.get(feature.id).filter((d) => d != row);
@@ -552,8 +561,16 @@ function addChoroplethInteractivity(
           Plot.ruleX([row[measure]], { stroke: "red", strokeWidth: 1.5 })
         );
       }
-
+      // div.appendChild(Plot.plot({...baseHistogramConfig.options, marks: baseHistogramConfig.marks}))
       div.appendChild(Plot.plot(histogramOptions));
+      // const testPlot = Plot.plot({
+      //   height: 100,
+      //   width: 300,
+      //   marks: [
+      //     Plot.dot([0,1], {x: d => d, y: d => d})
+      //   ]
+      // })
+      // div.appendChild(testPlot);
 
       tooltip.show(e.target, div);
     })

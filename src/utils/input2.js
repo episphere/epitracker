@@ -62,13 +62,9 @@ export function hookSelectChoices(
   state,
   valueProperty,
   optionsProperty,
+  format = (d) => d,
   searchEnabled = false,
-  sorter = (a, b) => a - b,
-  format = (d) =>
-    typeof d == "string" ? { 
-      label: d, 
-      value: d 
-    } : d,
+  sorter = (a, b) => a - b
 ) {
   const select = document.querySelector(selector);
   if (select == null) {
@@ -83,9 +79,10 @@ export function hookSelectChoices(
   });
 
   function setOptions() {
-    console.log(selector, state[optionsProperty])
     if (state[optionsProperty]) {
-      const options = state[optionsProperty].map(format);
+      const options = state[optionsProperty].map((d) =>
+        typeof d == "string" ? { label: d, value: d } : d
+      );
       choices.setChoices(options, "value", "label", true);
       if (state[valueProperty]) {
         choices.setChoiceByValue([state[valueProperty]]);
@@ -109,6 +106,58 @@ export function hookSelectChoices(
 
   return choices;
 }
+// export function hookSelectChoices(
+//   selector,
+//   state,
+//   valueProperty,
+//   optionsProperty,
+//   searchEnabled = false,
+//   sorter = (a, b) => a - b,
+//   format = (d) =>
+//     typeof d == "string" ? { 
+//       label: d, 
+//       value: d 
+//     } : d,
+// ) {
+//   const select = document.querySelector(selector);
+//   if (select == null) {
+//     throw new Error(`No element found for ${selector}`);
+//   }
+
+//   const choices = new Choices(select, {
+//     allowHTML: true,
+//     itemSelectText: "",
+//     searchEnabled,
+//     sorter,
+//   });
+
+//   function setOptions() {
+//     console.log(selector, state[optionsProperty])
+//     if (state[optionsProperty]) {
+//       const options = state[optionsProperty].map(format);
+//       choices.setChoices(options, "value", "label", true);
+//       if (state[valueProperty]) {
+//         choices.setChoiceByValue([state[valueProperty]]);
+//       }
+//     }
+//   }
+
+//   state.subscribe(optionsProperty, () => {
+//     setOptions();
+//   });
+
+//   state.subscribe(valueProperty, () => {
+//     choices.setChoiceByValue([state[valueProperty]]);
+//   });
+
+//   select.addEventListener("change", () => {
+//     state[valueProperty] = select.value;
+//   });
+
+//   setOptions();
+
+//   return choices;
+// }
 
 export function hookSelect(
   selector,

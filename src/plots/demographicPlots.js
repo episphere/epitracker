@@ -2,6 +2,7 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { addPopperTooltip, deepMerge } from "../utils/helper.js";
 import {COLORS} from '../utils/color.js'
+import { formatName } from "../utils/nameFormat.js";
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
   const containerWidth = container.getBoundingClientRect().width
@@ -10,9 +11,8 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
     targetWidth: containerWidth,
     plotOptions: {height,  ...options.plotOptions},
   })
-  const mappedMortalityData = mortalityData.map(i => {
-    const raceMappings = options.nameMappings['race']
-    return {...i, shortRace: raceMappings[i['race']]?.short || 'All'}
+  const mappedMortalityData = mortalityData.map(row => {
+    return {...row, shortRace: formatName("race", row.race) || 'All'}
   })
   const plot = plotBar(mappedMortalityData, options)
 
@@ -53,10 +53,7 @@ function plotBar(data, options={}) {
   const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
 
-  const barDomain = [...new Set(data.map(d =>{
-    const raceMappings = options.nameMappings['race']
-    const shortName = raceMappings[d[options.compareBar]]?.short || 'All'
-    return options.compareBar === 'race' ? shortName : d[options.compareBar]}))].sort()
+  const barDomain = [...new Set(data.map(d => d[options.compareBar]))].sort()
   const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
 
   if (options.compareBar == "age_group") {
@@ -108,7 +105,6 @@ function plotBar(data, options={}) {
     fill: (d) => {
       const selectedCompare = (options.compareBar ? options.compareBar : options.compareFacet) || 'race'
       const color = COLORS[selectedCompare] || {}
-      console.log('query.fill', {selectedCompare, color})
       return color[d[selectedCompare]] || '#777'
     },
   }
@@ -171,10 +167,7 @@ function addChoroplethInteractivity(
     plotSelect.selectAll("g[aria-label='bar'").nodes()[0]
   );
 
-  console.log({mortalityData, measure, compareBar});
-
   const rectSelect = barSelect.selectAll("rect");
-  console.log({plotSelect, barSelect, rectSelect});
 
   const tooltip = addPopperTooltip(plotContainer);
   tooltip.tooltipElement.setAttribute("id", "map-tooltip")
@@ -197,13 +190,13 @@ function addChoroplethInteractivity(
       infoDiv.style.alignItems = "flex-start";
       infoDiv.style.flexDirection = "column";
       infoDiv.style.gap = "10px";
-      const measureLabel = nameMappings['measures'][measure]
+      const measureLabel =  formatName("measures", measure)
       infoDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${mortalityData[d][measure]}</div>
       `;
 
       if (compareBar)  {
-        const fieldLabel = nameMappings['fields'][compareBar]
+        const fieldLabel =  formatName("fields", compareBar)
         infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${mortalityData[d][compareBar]}</div>`
       }
 

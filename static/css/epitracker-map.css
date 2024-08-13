@@ -1,0 +1,341 @@
+footer {
+  z-index: 1000;
+}
+
+#ex-dashboard {
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f9fbff;
+  width: 100%;
+  position: relative;
+}
+
+#ex-infobar {
+  display: flex;
+  width: 100%;
+  height: fit-content;
+  gap: 10px; 
+  background: white; 
+  box-shadow: 2px -2px 6px 1px rgb(234, 232, 232);
+}
+
+#grid-container {
+  height: 100%;
+  padding: 10px;
+  padding-bottom: 0px;
+}
+
+#grid-stack {
+  height: 100%;
+}
+
+.grid-card.grid-stack-item {
+  height: 100%;
+}
+
+.grid-card-topbar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.grid-card-topbar-buttons {
+  display: flex;
+  gap: 8px;
+  color: #848484;
+  opacity: .4;
+  /* align-items: center; */
+  justify-content: flex-start;
+  flex-direction: row-reverse;
+  padding: 8px;
+}
+
+.grid-card-topbar-title {
+  font-size: .8em;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-left: 12px;
+}
+
+.grid-card-data-edit {
+  margin-left: 12px;
+  margin-top: 8px;
+  font-size: 24px;
+  color: #848484;
+  opacity: .4;
+}
+
+.grid-card-content-container {
+  height: 100%;
+  padding: 2%;
+  overflow: auto;
+  /* display: flex;
+  flex-direction: column; */
+}
+
+.grid-card-content {
+  /* margin: 10px; */
+  height: 100%;
+}
+
+.tippy-box[data-theme~='dark'] {
+  background-color: #333b4d;
+}
+.tippy-box[data-theme~='dark'][data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: #333b4d;
+}
+.tippy-box[data-theme~='dark'][data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: #333b4d;
+}
+.tippy-box[data-theme~='dark'][data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: #333b4d;
+}
+.tippy-box[data-theme~='dark'][data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: #333b4d;
+}
+
+.grid-card-topbar i {
+  cursor: pointer;
+}
+
+.highlightable-button {
+  cursor: pointer;
+  color: grey;
+}
+
+.highlightable-button:hover {
+  filter: brightness(130%);
+}
+
+.grid-card-topbar .card-handle {
+  cursor: grab;
+}
+
+.plot-grid-item {
+  /* height: 100px; */
+  padding: 5px !important;
+}
+
+.grid-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 2px 2px 6px 1px rgb(234, 232, 232);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* inset: 10px; */
+}
+
+.plot-grid-add {
+  position: absolute;
+  font-size: 25px;
+  color: grey;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  z-index: 100;
+}
+
+.plot-grid-add.show {
+  opacity: .5;
+}
+
+.add-visible-row .plot-grid-add-row {
+  opacity: .5;
+}
+
+.add-visible-col .plot-grid-add-col {
+  opacity: .5;
+}
+
+.plot-grid-add:hover {
+  filter: brightness(130%);
+}
+
+.plot-grid-add-col {
+  top: calc(50% - 12px);
+  right: -7px;
+}
+
+.plot-grid-add-col {
+  opacity: 0.1;
+}
+
+.plot-grid-add-row {
+  left: calc(50% - 12px);
+  bottom: -7px;
+}
+
+.plot-grid-add-row {
+  opacity: 0.1;
+}
+
+.plot-grid-add .dropdown-menu {
+  opacity: 1;
+}
+
+.map-card {
+  width: 100%;
+  height: 100%;
+}
+
+.plot-grid-add-button-hoz {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  font-size: 26px;
+}
+
+.plot-grid-blank-item {
+  background-color: #f9fbff;
+  border: 2px dashed lightgrey;
+  height: 100%;
+  font-size: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(0, 0%, 83%);
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.plot-grid-blank-item:hover {
+  color: rgb(233, 233, 233);
+}
+
+#title {
+  height: fit-content;
+  width: 100%;
+  height: 100%;
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  padding-inline: 10px;
+  gap: 20px;
+  font-size: .85em;
+  font-weight: bold;
+  text-align: center;
+}
+
+#ex-settings-card {
+  width: fit-content;
+  display: flex; 
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  padding-inline: 10px;
+}
+
+#ex-color-legend {
+ /* height: 77px; 
+ width: 370px; */
+ flex-shrink: 0;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ margin-inline: 5px;
+ margin-left: 16px;
+ margin-block: 5px;
+}
+
+.settings-button {
+  cursor: pointer;
+  color: #7e828a;
+  font-size: 23px;
+}
+
+.settings-button:hover {
+  filter: brightness(120%);
+}
+
+.popup {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: fit-content;
+  height: fit-content;
+  background-color: white;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  box-shadow: 0px 1px 6px 1px rgb(211, 211, 211);
+  transform: translate(-50%, -45%);
+  filter: blur(0px);
+  z-index: 1000;
+}
+
+.popup-topbar {
+  display: flex; 
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-title {
+  font-weight: bold;
+  margin-left:  10px;
+}
+
+.popup-content {
+  height: 100%;
+}
+
+#plot-card-config {
+  display: none;
+  flex-direction: column;
+  padding: 10px;
+  min-height: 150px;
+  height: fit-content;
+  /* min-height: 0; */
+  /* max-height: 400px; */
+}
+
+/* TODO: Fix popup column wrap overflowing width issue. May be a browser bug */
+#plot-card-select-container {
+  width: fit-content;
+  display: flex;
+  max-height: 50vh;
+  flex-shrink: 1;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.plot-card-select {
+  width: 300px;
+  margin-inline: 10px;
+}
+
+#card-submit-button {
+  margin-top: 20px;
+}
+
+g[aria-label="geo"] path:hover {
+  stroke: green;
+  stroke-width: 2;
+}
+
+@media(max-width: 1000px) {
+  #ex-color-card {
+    width: 80x;
+  }
+}
+/* 
+.attention-element {
+  animation: brightness-loop .9s infinite;
+}
+
+@keyframes brightness-loop {
+  0% {
+    filter: brightness(1); 
+  }
+  50% {
+    filter: brightness(1.6); 
+  }
+  100% {
+    filter: brightness(1);
+  }
+} */

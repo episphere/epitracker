@@ -15,6 +15,45 @@ export class EpiTrackerData {
       this.args.postProcessCountyMortalityData;
   }
 
+  async getPopulationData(query, args={}) {
+    query = {
+      sex: "*",
+      race: "*",
+      year: "2020",
+      state_fips: "*",
+      county_fips: "*",
+      ...query
+    };
+
+    args = {
+      includeTotals: true,
+      ...args,
+    };
+
+    const year = query.year;
+    delete query.year;
+
+    const data = await this.#smartLoadZipData(
+      `../data/population/population_data_${year}.csv.zip`,
+      `population_data_${year}.csv`
+    );
+
+
+    const aqFilter = [];
+    for (const [k, v] of Object.entries(query)) {
+      if (v != "*") {
+        aqFilter.push(`row.${k} == "${v}"`);
+      } else if (!args.includeTotals) {
+        aqFilter.push(`row.${k} != "All"`);
+      }
+    }
+
+    const filterString = aqFilter.length > 0 ? `row => ` + aqFilter.join(" && ") : "row => true";
+    return data.filter(filterString).derive({
+      population: (d) => d.aq.op.parse_int(d.population),
+    }).objects();
+  }
+
   async getQuantileMortalityData(query, args) {
     args = {
       includeTotals: true,

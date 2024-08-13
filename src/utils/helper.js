@@ -10,6 +10,42 @@ export const CAUSE_SEX_MAP = {
   // 'Colon and Rectum': 'female'
 };
 
+const tippyMap = new Map();
+export function addTippys(parentElement) {
+
+  let elements = []
+  if (parentElement) {
+    elements = parentElement.querySelectorAll('[tip]');
+  } else {
+    elements = document.querySelectorAll('[tip]');
+  }
+
+
+  for (const element of elements) {
+    if (!element.hasAttribute("tippy")) {
+      const instance = tippy(element, {
+        content: element.getAttribute("tip"),
+        animation: "scale",
+        theme: "dark",
+        placement: "left",
+      })
+      element.setAttribute("tippy", "");
+      let id = element.getAttribute("id");
+      tippyMap.set(id, instance);
+      for (const className of element.classList) {
+        let arr = tippyMap.get(className);
+        if (!arr) {
+          arr = [];
+          tippyMap.set(className, arr);
+        }
+        arr.push(instance);
+      }
+    }
+  }
+
+  return tippyMap;
+}
+
 export function plotDataTable(data, container, options={}) {
   const {
     order = [],
@@ -276,19 +312,26 @@ export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
   return svg.node()
 }
 
-export function createOptionSorter(forceStart = [], forceEnd = []) {
+export function createOptionSorter(forceStart = [], forceEnd = [], compare = null) {
   const forceStartSet = new Set(forceStart);
   const forceEndSet = new Set(forceEnd);
+
+  if (!compare) {
+    compare = (a,b) => a.localeCompare(b);
+  }
 
   return (a, b) => {
     if (forceStartSet.has(a.label) || forceEndSet.has(b.label)) {
       return -1;
     } else if (forceEndSet.has(a.label) || forceStartSet.has(b.label)) {
       return 1;
+    } if (a.label && b.label) {
+      const aLabel = a.label?.sort ? a.label?.sort : a.label
+      const bLabel = b.label?.sort ? b.label?.sort : b.label
+      return compare(aLabel, bLabel);
     } else {
-      const aLabel = a.label.value ? a.label.value : a.label
-      const bLabel = b.label.value ? b.label.value : b.label
-      return aLabel.localeCompare(bLabel);
+      return compare(a, b);
+     
     }
   };
 }
@@ -324,7 +367,7 @@ export function addPopperTooltip(element) {
   function show(targetElement, html) {
     if (popper) popper.destroy();
     popper = Popper.createPopper(targetElement, tooltipElement, {
-      placement: "top-start",
+      placement: "bottom-end",
       modifiers: [
         {
           name: "offset",
@@ -471,13 +514,13 @@ export function colorRampLegend(
   label = "",
   tickValues = null,
   size = null,
-  outlierColors = null,
+  outlierColors = [],
 ) {
   const nGrad = 16;
   const margin = 20;
 
   if (size == null) {
-    size = label ? [370 - (outlierColors ? outlierColors.length : 0)*45, 60] : [370 - outlierColors.length*45, 40];
+    size = label ? [370 - (outlierColors ? outlierColors.length : 0)*45, 50] : [370 - outlierColors.length*45, 30];
   }
   const startY = label ? 20 : 0;
 
@@ -521,7 +564,7 @@ export function colorRampLegend(
     .attr("x", margin)
     .attr("y", startY)
     .attr("width", size[0] - margin * 2)
-    .attr("height", size[1] - 23 - startY)
+    .attr("height", size[1] - 19 - startY)
     .attr("fill", `url(#${gradientId})`)
 
  // Ticks
@@ -600,7 +643,7 @@ export function colorRampLegend(
   return legendDiv;
 }
 
-export function colorRampLegendMeanDiverge(
+export function colorRampLegendMeanDivergeOld(
   values,
   schemeName,
   label = null,
@@ -643,20 +686,46 @@ export function colorRampLegendMeanDiverge(
   );
 }
 
+export function colorRampLegendPivot(colorConfig, options = {}) {
+  const { scheme, domain, pivot, reverse } = colorConfig;
+  const { label = null, size, outlierColors } = options;
+
+  const colorScale = d3
+    .scaleSequential(d3["interpolate" + scheme])
+    .domain(reverse ? [domain[1], domain[0]] : domain);
+
+  let colorDomain = [...domain];
+  if (pivot) {
+    const maxSide = Math.max(pivot - colorDomain[0], colorDomain[1] - pivot);
+    colorDomain = [pivot - maxSide, pivot + maxSide];
+  }
+
+  const ticks = pivot ? [colorDomain[0], pivot, colorDomain[1]] : colorDomain;
+
+  return colorRampLegend(
+    colorScale,
+    colorDomain,
+    label,
+    ticks,
+    size,
+    outlierColors
+  );
+}
+
 function outlierLabel(color) {
   const svg = d3.create("svg") 
     .attr("width", 45)
     .attr("height", 40)
 
   var rectWidth = 16
-  var rectHeight = 18
+  var rectHeight = 12
   var rectColor = color
   
-  var textLabel = "Outliers";
+  var textLabel = "Extreme";
   
   svg.append("rect")
      .attr("x", 22-rectWidth/2) 
-     .attr("y", 0)           
+     .attr("y", 10)           
      .attr("width", rectWidth)
      .attr("height", rectHeight)
      .attr("fill", rectColor)
@@ -897,10 +966,67 @@ export function deepMerge(obj1, obj2) {
   return result;
 }
 
-export function formatName(names, field, value, mode = "half_short") {
-  const valueNames = names[field];
-  if (!valueNames) return value;
-  let name = valueNames[value];
-  if (typeof name == "object") name = name[mode];
-  return name ? name : value; 
+const nameMappings = new Map([
+  ["state_fips", "states"],
+  ["measureField", "measures"]
+])
+
+// !Deprecated. Use formatName in nameFormat.js instead
+// export function formatName(names, field, value, mode = "name") {
+//   if (nameMappings.has(field)) {
+//     field = nameMappings.get(field);
+//   }
+//   const valueNames = names[field];
+//   if (!valueNames) return value;
+//   let name = valueNames[value];
+//   if (typeof name == "object") {
+//     let nameStr = name[mode];
+//     if (!nameStr) nameStr = name["name"];
+//     name = nameStr
+//   } 
+//   return name ? name : value;
+// }
+
+
+export function createNestedDropdown(buttonElement, items) {
+  buttonElement.setAttribute("data-bs-toggle", "dropdown")
+  buttonElement.setAttribute("data-bs-auto-close", "outside")
+
+  const dropdownList = document.createElement("ul")
+  dropdownList.classList.add("dropdown-menu")
+
+  for (const item of items) {
+    if (item.items) {
+      const subDropdown = document.createElement("div")
+      subDropdown.classList.add("dropend")
+      dropdownList.appendChild(subDropdown) 
+
+      const subDropdownItem = document.createElement("li")
+      subDropdownItem.className = "dropdown-item dropdown-toggle"
+      subDropdownItem.setAttribute("data-bs-toggle", "dropdown")
+      subDropdownItem.innerText = item.text
+      subDropdown.appendChild(subDropdownItem)
+
+      const subDropdownMenu = document.createElement("ul")
+      subDropdownMenu.classList.add("dropdown-menu")
+      subDropdownItem.appendChild(subDropdownMenu)
+
+      for (const subItem of item.items) {
+        const dropdownItem = document.createElement("li")
+        dropdownItem.classList.add("dropdown-item")
+        dropdownItem.innerText = subItem.text
+        subDropdownMenu.appendChild(dropdownItem)
+      }
+      
+    } else {
+      const dropdownItem = document.createElement("li")
+      dropdownItem.classList.add("dropdown-item")
+      dropdownItem.innerText = item.text
+      dropdownList.appendChild(dropdownItem)
+    }
+  }
+
+  buttonElement.parentElement.appendChild(dropdownList)
+  return dropdownList
+
 }

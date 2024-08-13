@@ -12,7 +12,6 @@ import {
   createDropdownDownloadButton,
   createOptionSorter,
   formatCauseName,
-  formatName,
   dataToTableData,
   CAUSE_SEX_MAP,
   grayOutSexSelectionBasedOnCause,
@@ -25,6 +24,7 @@ import { plotDemographicPlots } from "../plots/demographicPlots.js";
 import { downloadElementAsImage } from "../utils/download.js";
 import { demographicTableColumns } from "../utils/tableDefinitions.js";
 import { checkableLegend } from "../utils/checkableLegend.js";
+import { formatName } from '../utils/nameFormat.js';
 
 window.onload = async () => {
   init();
@@ -152,7 +152,7 @@ function initializeState() {
       }
       state.measureOptions = measureOptions.map((field) => ({
         value: field,
-        label: names.measures[field],
+        label: formatName("measures", field),
       }));
       state.measure = measure;
     });
@@ -225,33 +225,29 @@ const causeFormat = (d) => ({
 
   // Load the data
   Promise.all([
-    d3.json("../data/conceptMappings.json"),
     dataManager.getDemographicMortalityData({ year: state.year }),
-  ]).then(([nameMappings, mortalityData]) => {
-    initialDataLoad(mortalityData, nameMappings);
+  ]).then(([mortalityData]) => {
+    initialDataLoad(mortalityData);
   });
 }
 
-function initialDataLoad(mortalityData, nameMappings) {
-  names = nameMappings;
-
-  console.log({nameMappings})
+function initialDataLoad(mortalityData) {
 
   // Initialise the input state from the data
   state.compareBarOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: names.fields[field],
+    label: formatName("fields", field)
   }));
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: names.fields[field],
+    label: formatName("fields", field)
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
   state.areaStateOptions = [
     ...new Set(mortalityData.map((d) => d.state_fips)),
   ].map((stateCode) => ({
     value: stateCode,
-    label: nameMappings.states[stateCode]?.name,
+    label: formatName("states", stateCode) //nameMappings.states[stateCode]?.name,
   }));
   state.nameMappings = names
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
@@ -259,7 +255,7 @@ function initialDataLoad(mortalityData, nameMappings) {
   state.ageGroupOptions = [...new Set(mortalityData.map((d) => d.age_group))];
   state.measureOptions = NUMERIC_MEASURES.map((field) => ({
     value: field,
-    label: nameMappings.measures[field],
+    label: formatName("measures", field)
   }));
 
   setInputsEnabled();
@@ -342,8 +338,8 @@ function plotConfigUpdated() {
     return;
   }
 
-  const xFormat = (d) => formatName(names, state.compareBar, d);
-  const tickFormat = (d) => formatName(names, state.compareFacet, d);
+  const xFormat = (d) => formatName(state.compareBar, d, "short");
+  const tickFormat = (d) => formatName(state.compareFacet, d, "short");
 
   const xOptions = {
     tickFormat: xFormat,
@@ -363,7 +359,6 @@ function plotConfigUpdated() {
   }
 
   let data = state.mortalityData;
-  console.log({compareBar: state.query.compareBar, tt: state.legendCheckValues})
   if (state.query.compareBar !== "none") {
     const legendCheckSet = new Set(state.legendCheckValues);
     data = state.mortalityData.filter((d) =>
@@ -383,7 +378,6 @@ function plotConfigUpdated() {
       plotTable()
 
     } else {
-      console.log({state});
       plotDemographicPlots(barContainer, data, {
         compareBar: state.compareBar != "none" ? state.compareBar : null,
         compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
@@ -391,7 +385,7 @@ function plotConfigUpdated() {
         plotOptions: {
           x: xOptions,
           fx: fxOptions,
-          y: { label: formatName(names, "measures", state.measure) },
+          y: { label: formatName("measures", state.measure) },
         },
         yStartZero: state.startZero,
         valueField: state.measure,
@@ -521,7 +515,7 @@ function updateTitle() {
     state.spatialLevel == "county" ? "US county-level" : "US state-level";
   let compareString = [state.compareBar, state.compareFacet]
     .filter((d) => d != "none")
-    .map((d) => names.fields[d])
+    .map((d) => formatName("fields", d))
     .join(" and ");
 
   if (compareString != "") {
@@ -535,22 +529,22 @@ function updateTitle() {
       value: (() => {
         return state.areaState == "All"
           ? "US"
-          : names.states[state.areaState].name;
+          : formatName("states", state.areaState)
       })(),
     },
     { name: "Cause of death", value: formatCauseName(state.cause) },
     {
-      name: names.fields.sex,
+      name: formatName("fields", "sex"),
       value: state.sex,
       exclude: compareSet.has("sex"),
     },
     {
-      name: names.fields.race,
+      name: formatName("fields", "race"),
       value: state.race,
       exclude: compareSet.has("race"),
     },
     {
-      name: names.fields.age_group,
+      name: formatName("fields", "age_group"),
       value: state.ageGroup,
       exclude: compareSet.has("age_group"),
     },
@@ -560,9 +554,7 @@ function updateTitle() {
     .map((d) => `${d.name}: ${d.value}`)
     .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
 
-  const title = `${level} ${names.measures[
-    state.measure
-  ]} ${compareString}. <br /> ${selectsString}`;
+  const title = `${level} ${formatName("measures", state.measure)} ${compareString}. <br /> ${selectsString}`;
   elements.title.innerHTML = title;
 }
 
@@ -639,7 +631,6 @@ function updateLegend(data, query) {
     const colorDomainValues = [
       ...new Set(data.map((d) => d[query.compareBar])),
     ].sort();
-    console.log('query.compareBar', {compareBar: query.compareBar, colorDomainValues})
 
     const checkedValueSet = new Set(state.legendCheckValues);
 
@@ -648,7 +639,7 @@ function updateLegend(data, query) {
     );
     if (selectedValues.length == 0) selectedValues = colorDomainValues;
 
-    const formatRace = (d) => names.race[d]?.short;
+    const formatRace = (d) => formatName("race", d);
     const colorTickFormat =
       query.compareColor == "race" ? formatRace : (d) => d;
 
