@@ -112,12 +112,24 @@ function initializeState() {
   ]) {
     state.linkProperties(childProperty, parentProperty);
     state.subscribe(parentProperty, () => {
-      if (
-        state[parentProperty] == state[childProperty] &&
-        state[childProperty] != "none"
-      ) {
-        state[childProperty] = "none";
-      }
+      // if (
+      //   state[parentProperty] == state[childProperty] &&
+      //   state[childProperty] != "none"
+      // ) {
+      //   state[childProperty] = "none";
+      // }
+
+      state.compareBarOptions = state.compareBarOptions.map((field) => {
+        console.log('sssss: 1', field)
+        return {
+          ...field,
+          disabled: field.value === 'none' || state['compareFacet'] === field.value
+        }
+      });
+      state.compareFacetOptions = state.compareFacetOptions.map((field) => ({
+        ...field,
+        disabled: state['compareBar'] === field.value
+      }));
     });
   }
 
@@ -236,11 +248,13 @@ function initialDataLoad(mortalityData) {
   // Initialise the input state from the data
   state.compareBarOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: formatName("fields", field)
+    label: formatName("fields", field),
+    disabled: field === 'none' || state['compareFacet'] === field
   }));
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label: formatName("fields", field)
+    label: formatName("fields", field),
+    disabled: state['compareBar'] === field
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
   state.areaStateOptions = [
