@@ -3085,10 +3085,17 @@ footer {
 
 #color-settings-close, #settings-close {
   color: grey;
-  margin-right: -8px;
-  margin-top: -8px;
+  margin-right: -4px;
+  margin-top: -4px;
   font-weight: bold;
   cursor: pointer;
+}
+
+#settings-dropdown {
+  display: none;
+  flex-direction: column;
+  padding: 5px;
+  pointer-events: all;
 }
 
 #color-settings-close:hover, #settings-close:hover {
