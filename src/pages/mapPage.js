@@ -1107,6 +1107,31 @@ class PlotGrid {
   }
 }
 
+function openFullscreen(elem) {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
+
+
+function closeFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { /* IE/Edge */
+    document.msExitFullscreen();
+  }
+}
+
 class PlotCard {
   constructor(content, options) {
     options = {
@@ -1118,7 +1143,7 @@ class PlotCard {
       content = () => this.content 
     }
     this.content = content 
-    this.#createElement() 
+    this.#createElement(options) 
 
     this.listeners = {
       editClicked: d => d, 
@@ -1164,10 +1189,10 @@ class PlotCard {
     this.listeners[type] = listener
   }
 
-  #createElement() {
+  #createElement(options) {
     const gridCard = document.createElement("div")
     gridCard.className = "grid-card" 
-
+    console.log({options: options});
     gridCard.innerHTML = /*html*/`
       <div class="grid-card-topbar">
         <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit card"></i>
@@ -1183,7 +1208,7 @@ class PlotCard {
     `
 
     gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit())
-    gridCard.querySelector(".fas.fa-expand").addEventListener("click", () => this.#buttonClickedExpand())
+    gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options))
     gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose())
 
     this.cardElement = gridCard
@@ -1195,8 +1220,26 @@ class PlotCard {
     this.listeners.editClicked(this);
   }
 
-  #buttonClickedExpand() {
-    console.log("Clicked expand button")
+  #buttonClickedExpand(e, options) {
+    const elements = document.querySelectorAll(`div[gs-x="${options.x}"]`)
+    if (!elements.length) return;
+
+    const source = [...elements].find(elm => elm.gridstackNode.y == options.y)
+    if (!source) return;
+
+    const isExpand = e.target.classList.contains('fa-expand')
+
+    if (isExpand) {
+      openFullscreen(source)
+      e.target.classList.remove('fa-expand')
+      e.target.classList.add('fa-compress')
+    } else {
+      closeFullscreen()
+      e.target.classList.add('fa-expand')
+      e.target.classList.remove('fa-compress')
+    }
+
+    console.log("Clicked expand button", {e,options,elements, source})
   }
 
   #buttonClickedClose() {
