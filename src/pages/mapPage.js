@@ -4,7 +4,7 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
@@ -671,6 +671,7 @@ class MapApplication {
         data = this.dataManager.getCountyMortalityData(query, {includeTotals: false});
       }
 
+      // NOTE: DRAW
       const drawMap = async (width, height) => {
         // TODO: Add spinner or something to show loading.
 
@@ -703,6 +704,7 @@ class MapApplication {
     
           // this.plot = plot 
           // this.postRender(this)
+          console.log({plot})
           return plot 
         })
       }
@@ -1107,31 +1109,6 @@ class PlotGrid {
   }
 }
 
-function openFullscreen(elem) {
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) { /* Firefox */
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) { /* IE/Edge */
-    elem.msRequestFullscreen();
-  }
-}
-
-
-function closeFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.mozCancelFullScreen) { /* Firefox */
-    document.mozCancelFullScreen();
-  } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) { /* IE/Edge */
-    document.msExitFullscreen();
-  }
-}
-
 class PlotCard {
   constructor(content, options) {
     options = {
@@ -1221,25 +1198,17 @@ class PlotCard {
   }
 
   #buttonClickedExpand(e, options) {
-    const elements = document.querySelectorAll(`div[gs-x="${options.x}"]`)
-    if (!elements.length) return;
+    // const elements = document.querySelectorAll(div[gs-x="${options.x}"])
+    // if (!elements.length) return;
 
-    const source = [...elements].find(elm => elm.gridstackNode.y == options.y)
-    if (!source) return;
+    // const source = [...elements].find(elm => elm.gridstackNode.y == options.y)
+    // if (!source) return;
 
-    const isExpand = e.target.classList.contains('fa-expand')
+    const isExpand = e.target.classList.contains("fa-expand");
 
     if (isExpand) {
-      openFullscreen(source)
-      e.target.classList.remove('fa-expand')
-      e.target.classList.add('fa-compress')
-    } else {
-      closeFullscreen()
-      e.target.classList.add('fa-expand')
-      e.target.classList.remove('fa-compress')
-    }
-
-    console.log("Clicked expand button", {e,options,elements, source})
+      openFullscreen(this.content);
+    } 
   }
 
   #buttonClickedClose() {
@@ -1247,73 +1216,43 @@ class PlotCard {
   }
 }
 
-// TODO: Move to helper.
-function popup(container, content, options) {
+async function openFullscreen(content) {
+  const {clientHeight: height, clientWidth: width} = document.body
+  document.body.style.overflow = 'hidden'
+  const mapElement = await content(width * .9, height * .8)
 
-  options = {
-    stopEvents: true,
-    ...options
-  }
+  popup(document.body, mapElement, {
+    title: "Configure map card",
+    backdrop: true,
+    stopEvents: false,
+  });
 
-  const popupTemplate = /*html*/`
-    <div class="popup-topbar">
-      <div class="popup-title">${options.title}</div>
-      <div class="popup-buttons">
-        <i class="fas fa-times highlightable-button"></i>
-      </div>
-    </div>
-    <div class="popup-content">
-  `
-
-  if (typeof content == "string") {
-    const contentDiv = document.createElement("div")
-    contentDiv.innerText = content
-    content = contentDiv
-  }
-
-
-  let popup = document.querySelector(".popup")
-  if (!popup) {
-    popup = document.createElement("div")
-    popup.className = "popup"
-    popup.innerHTML = popupTemplate
-  } else {
-    popup.style.display = "flex"
-  }
-  const popupContent = popup.querySelector(".popup-content")
-  popupContent.innerHTML = ''
-  popupContent.appendChild(content)
-
-  if (options.blur) {
-    options.blur.style.filter = "blur(10px)"
-  }
-  if (options.stopEvents) {
-    options.blur.style.pointerEvents = "none"
-  }
-  container.appendChild(popup)
-
-
-  const resizeObserver = new ResizeObserver(() => {
-    content.style.maxHeight = (container.getBoundingClientRect().height-100) + "px"
-  })
-  resizeObserver.observe(container)
-
-  function close() {
-    popup.style.display = "none"
-    if (options.blur) {
-      options.blur.style.filter = ""
-    }
-    if (options.stopEvents) {
-      options.blur.style.pointerEvents = "auto"
-    }
-  }
-
-  popup.querySelector(".fa-times").addEventListener("click", () => {
-    close() 
-  })
-
-  return { close }
+  zoomMap()
 }
 
+function zoomMap() {
+  let zoom = d3.zoom()
+	.scaleExtent([0.25, 10])
+	.on('zoom', handleZoom);
+
+  function handleZoom(e) {
+    d3.select('.popup svg')
+      .attr('transform', e.transform);
+  }
+
+
+  function initZoom() {
+    d3.select('.popup svg')
+      .call(zoom);
+  }
+
+  function handleZoom(e) {
+    d3.selectAll('.popup svg g')
+      .attr('transform', e.transform);
+  }
+
+
+  initZoom();
+}
 
 new MapApplication();

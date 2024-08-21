@@ -251,7 +251,7 @@ footer {
 }
 
 .popup {
-  position: absolute;
+  position: fixed;
   left: 50%;
   top: 50%;
   width: fit-content;
@@ -262,7 +262,7 @@ footer {
   flex-direction: column;
   padding: 8px;
   box-shadow: 0px 1px 6px 1px rgb(211, 211, 211);
-  transform: translate(-50%, -45%);
+  transform: translate(-50%, -50%);
   filter: blur(0px);
   z-index: 1000;
 }
@@ -281,6 +281,7 @@ footer {
 
 .popup-content {
   height: 100%;
+  overflow: hidden;
 }
 
 #plot-card-config {

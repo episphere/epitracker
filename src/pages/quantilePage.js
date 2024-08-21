@@ -449,8 +449,8 @@ function plotConfigUpdated(plotConfig) {
   const legendContainer = document.getElementById("setting-legend");
 
   if (!state.onSettingsClick) {
-    const plotsElement = document.getElementById("plots");
-    const settingsTooltip = addPopperTooltip(plotsElement);
+    const topbarElement = document.getElementById("topbar-cnt");
+    const settingsTooltip = addPopperTooltip(topbarElement);
     const settingsElement = document.getElementById(
       "settings-dropdown"
     );

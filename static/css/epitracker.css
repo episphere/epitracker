@@ -2235,6 +2235,16 @@ p {
   animation: fadeIn 1s;
 }
 
+.popup-container .backdrop  {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
 /* Add animation (fade in the popup) */
 @-webkit-keyframes fadeIn {
   from {
@@ -2614,26 +2624,25 @@ button.previous-btn {
 
 #color-legend, #setting-legend {
   /* To prevent the legend preventing interaction with DL button...kind of hacky*/
-  margin-right: 30px;
-  position: sticky;
-  top: 0px;
-  width: fit-content;
-  z-index: 6;
-  background-color: white;
-  justify-self: left;
-  margin-block: 8px;
+  /* margin-right: 30px; */
+  /* position: sticky; */
+  /* top: 0px; */
+  /* width: fit-content; */
+  /* z-index: 6; */
+  /* background-color: white; */
+  /* justify-self: left; */
+  /* margin-block: 8px; */
 }
 
 #setting-legend {
-  box-shadow: 2px 2px 6px 1px lightgrey;
   padding: 10px;
 }
 
 #setting-legend-wrapper {
   display: flex;
   justify-content: flex-end;
-  position: fixed;
-  right: 20px;
+  /* position: absolute; */
+  /* right: 20px; */
 }
 
 #setting-legend i {

@@ -1030,3 +1030,76 @@ export function createNestedDropdown(buttonElement, items) {
   return dropdownList
 
 }
+
+export function popup(container, content, options) {
+  options = {
+    stopEvents: true,
+    ...options,
+  };
+
+  const popupTemplate = /*html*/ `
+    <div class="popup-topbar">
+      <div class="popup-title">${options.title}</div>
+      <div class="popup-buttons">
+        <i class="fas fa-times highlightable-button"></i>
+      </div>
+    </div>
+    <div class="popup-content">
+  `;
+
+  if (typeof content == "string") {
+    const contentDiv = document.createElement("div");
+    contentDiv.innerText = content;
+    content = contentDiv;
+  }
+
+  let popupContainer = document.createElement("div");
+  popupContainer.className = "popup-container";
+  if (options.backdrop) {
+    options.backdrop = backdrop();
+    popupContainer.appendChild(options.backdrop)
+  }
+
+  let popup = document.createElement("div");
+  popup.className = "popup";
+  popup.innerHTML = popupTemplate;
+  popupContainer.appendChild(popup);
+
+  const popupContent = popup.querySelector(".popup-content");
+  popupContent.innerHTML = "";
+  popupContent.appendChild(content);
+
+  if (options.stopEvents && options.backdrop) {
+    options.backdrop.style.pointerEvents = "none";
+  }
+  container.appendChild(popupContainer);
+
+  const resizeObserver = new ResizeObserver(() => {
+    content.style.maxHeight =
+      container.getBoundingClientRect().height - 100 + "px";
+  });
+  resizeObserver.observe(container);
+
+  function close() {
+    if (options.backdrop) {
+      options.backdrop.remove()
+      options.backdrop = true
+    }
+    if (options.stopEvents && options.backdrop) {
+      options.backdrop.style.pointerEvents = "auto";
+    }
+    popupContainer.remove();
+  }
+
+  function backdrop() {
+    const element = document.createElement('div')
+    element.classList.add('backdrop');
+    return element
+  }
+
+  popup.querySelector(".fa-times").addEventListener("click", () => {
+    close();
+  });
+
+  return { close };
+}

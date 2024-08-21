@@ -804,27 +804,27 @@ const names = {
     "Non-Hispanic American Indian or Alaska Native": {
       "formatted": "American Indian \n or Alaska Native \n (Non-Hispanic)",
       "half_short": "American Indian or Alaska Native (NH)",
-      "short": "AI/AN (NH)"
+      "short": "AI/AN"
     },
     "Non-Hispanic Black or African American": {
       "formatted": "Black or \nAfrican American \n (Non-Hispanic)",
       "half_short": "Black or African American (NH)",
-      "short": "Black or AA (NH)"
+      "short": "Black or AA"
     },
     "Non-Hispanic Native Hawaiian or Other Pacific Islander": {
       "formatted": "Native Hawaiian or \n Other Pacific Islander \n (Non-Hispanic)",
       "half_short": "Native Hawaiian or Other Pacific Islander (NH)",
-      "short": "NHPI (NH)"
+      "short": "NHPI"
     },
     "Non-Hispanic White": {
       "formatted": "White \n (Non-Hispanic)",
       "half_short": "White (NH)",
-      "short": "White (NH)"
+      "short": "White"
     },
     "Non-Hispanic Asian": {
       "formatted": "Asian \n (Non-Hispanic)",
       "half_short": "Asian (NH)",
-      "short": "Asian (NH)"
+      "short": "Asian"
     }
   }
 }
