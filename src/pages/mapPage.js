@@ -4,11 +4,12 @@ import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm"
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
 import { formatName } from '../utils/nameFormat.js';
+import { mapTableColumns } from '../utils/tableDefinitions.js';
 
 const CONSTANTS = {
   DEFAULT_STATE: {
@@ -68,6 +69,7 @@ class MapApplication {
       grid: document.getElementById("grid-stack"),
       buttonUndo: document.getElementById("button-undo"),
       buttonColorSettings: document.getElementById("button-color-settings"),
+      buttonTable: document.getElementById("button-table"),
       title: document.getElementById("title"),
      
       // Color settings popup
@@ -113,6 +115,7 @@ class MapApplication {
 
     this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
     this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
+    this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
 
     this.createMapTooltip();
 
@@ -816,6 +819,61 @@ class MapApplication {
    * Called when the user clicks the the color settings button.
    */
   eventButtonColorSettingsClicked() {}
+
+  eventButtonTableClicked() {
+    const {clientHeight: height} = document.body
+    const cardState = this.cardStates[0]
+
+    const query = {
+      sex: cardState.sex,
+      race: cardState.race,
+      cause: cardState.cause,
+      year: cardState.year
+    }
+    if (cardState.areaCounty && cardState.areaCounty != "All") {
+      query.county_fips = cardState.areaCounty
+    }
+    if (cardState.areaState && cardState.areaState  != "All") {
+      query.state_fips = cardState.areaState
+    }
+    if (cardState.spatialLevel == "state") {
+      query.county_fips = "All";
+    }
+
+    
+    let data = null;
+    if (cardState.measure == "population") {
+      const populationQuery = {...query};
+      delete populationQuery.cause;
+      data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
+    } else {
+      data = this.dataManager.getCountyMortalityData(query, {includeTotals: false});
+    }
+
+      const content = document.createElement("div");
+      content.style.height = (height * .9) + 'px' ;
+      content.style.overflowY = 'auto';
+
+
+      popup(document.body, content , {
+        title: "Configure table card",
+        backdrop: true,
+        stopEvents: false,
+      });
+
+
+      data.then((response) => {
+        let tableColumns = [...mapTableColumns]
+        plotDataTable(response, content, {
+          columns: tableColumns
+        })
+        console.log({response})
+
+      })
+
+
+    
+  }
 
   #calcSharedState() {
     const cardStates = this.plotGrid.getCards().filter(d => d).map(d => d.cardState);
