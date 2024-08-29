@@ -1,6 +1,7 @@
 import { GridStack } from 'https://cdn.jsdelivr.net/npm/gridstack@10.1.2/+esm'
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm'
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
@@ -70,6 +71,7 @@ class MapApplication {
       buttonUndo: document.getElementById("button-undo"),
       buttonColorSettings: document.getElementById("button-color-settings"),
       buttonTable: document.getElementById("button-table"),
+      buttonDownload: document.getElementById("button-download"),
       title: document.getElementById("title"),
      
       // Color settings popup
@@ -99,6 +101,8 @@ class MapApplication {
 
     // Set the county names after the GeoJSON is loaded.
     const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
+
+    console.log({countyNameMap})
     const countyOptions =  this.state.areaCountyOptions.map(d => {
       let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0,2), "short");
       return { value: d, label: name}
@@ -116,6 +120,7 @@ class MapApplication {
     this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
     this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
     this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
+    this.elems.buttonDownload.addEventListener("click", () => this.eventButtonDownloadClicked());
 
     this.createMapTooltip();
 
@@ -346,6 +351,37 @@ class MapApplication {
     return valueObj
   }
 
+  getCardStates(url) {
+    const cardStates = []
+    const dFieldsString = url.searchParams.get("dFields")
+    console.log('getQuery 0', {url, a: dFieldsString})
+    if (dFieldsString) {
+      const dFields = dFieldsString.split(",");
+      const dCardString = url.searchParams.get("dCards");
+      const dCards = dCardString.split("|");
+      console.log('getQuery 1', {dFields, dCards})
+
+      for (const dValueString of dCards) {
+        if (dValueString) {
+          const cardState = {};
+          CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field])
+          const dFieldValues = dValueString.split(",");
+          dFields.forEach((field,i) => cardState[field] = dFieldValues[i])
+          cardStates.push(cardState);
+        } else {
+          cardStates.push(null);
+        }
+      }
+    } else {
+      const cardState = {};
+      CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field]);
+      cardStates.push(cardState);
+    }
+    console.log('ssss: ', {cardStates})
+
+    return cardStates
+  }
+
 
   /**
    * Parse the URL params and put the information into the state object.
@@ -371,32 +407,10 @@ class MapApplication {
       }
     }
 
-    this.cardStates = [];
-    if (this.url.searchParams.get("dFields")) {
-      const dFields = this.url.searchParams.get("dFields").split(",");
-      const dCardString = this.url.searchParams.get("dCards");
-      const dCards = dCardString.split("|");
+    this.cardStates = this.getCardStates(this.url)
 
-      for (const dValueString of dCards) {
-        if (dValueString) {
-          const cardState = {};
-          CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field])
-          const dFieldValues = dValueString.split(",");
-          dFields.forEach((field,i) => cardState[field] = dFieldValues[i])
-          this.cardStates.push(cardState);
-        } else {
-          this.cardStates.push(null);
-        }
-
-        
-      }
-    } else {
-      const cardState = {};
-      CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field]);
-      this.cardStates.push(cardState);
-    }
+    console.log('parsed url....', {cardState: this.cardStates})
   }
-
 
   /**
    * Fully reset / update the plot grid, usually in response to a page load or undo operation.
@@ -674,6 +688,8 @@ class MapApplication {
         data = this.dataManager.getCountyMortalityData(query, {includeTotals: false});
       }
 
+      console.log('map: ', {data, cardState})
+
       // NOTE: DRAW
       const drawMap = async (width, height) => {
         // TODO: Add spinner or something to show loading.
@@ -813,6 +829,97 @@ class MapApplication {
 
   }
 
+eventButtonDownloadClicked() {
+  console.log("Download button clicked");
+
+  // Create and show loading message
+  const loadingMessage = document.createElement("div");
+  loadingMessage.innerText = "Generating image...";
+  loadingMessage.style.position = 'fixed';
+  loadingMessage.style.top = '50%';
+  loadingMessage.style.left = '50%';
+  loadingMessage.style.transform = 'translate(-50%, -50%)';
+  loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+  loadingMessage.style.color = 'white';
+  loadingMessage.style.padding = '20px';
+  loadingMessage.style.borderRadius = '5px';
+  loadingMessage.style.zIndex = '10000';
+  document.body.appendChild(loadingMessage);
+
+  // Create the Virtual DOM container
+  const virtualContainer = document.createElement('div');
+  virtualContainer.id = 'virtual-dashboard';
+  virtualContainer.style.position = 'absolute';
+  virtualContainer.style.top = '-9999px'; // Hide it offscreen
+  virtualContainer.style.left = '-9999px';
+  virtualContainer.style.width = '100%'; // Ensure it captures full width
+  virtualContainer.style.height = 'auto'; // Ensure it captures full height
+  virtualContainer.style.overflow = 'hidden'; // Hide overflow
+
+  const originalDashboard = document.getElementById('ex-dashboard');
+  const gridContainer = originalDashboard.querySelector('#grid-container');
+  const legend = originalDashboard.querySelector('#color-legend');    
+  const mapElements = document.querySelectorAll('.grid-card');
+  const title = originalDashboard.querySelector('#title');
+ 
+  
+
+  // Clone mapElement element
+  if (mapElements) {
+    [...mapElements].forEach(mapElement => {
+      console.log("mapElement found and cloning");
+      const clonedMap = mapElement.cloneNode(true);
+      clonedMap.querySelector('.grid-card-topbar-buttons')?.remove()
+      clonedMap.querySelector('.grid-card-data-edit')?.remove()
+      virtualContainer.appendChild(clonedMap);
+    })
+  } else {
+    console.warn("Legend element not found");
+  }
+
+  // Clone title element
+  if (title) {
+    const clonedTitle = title.cloneNode(true);
+    virtualContainer.appendChild(clonedTitle);
+  } else {
+      console.warn("Title element not found");
+  }
+
+  // Clone legend element
+  if (legend) {
+      console.log("Legend found and cloning");
+      const clonedLegend = legend.cloneNode(true);
+      virtualContainer.appendChild(clonedLegend);
+  } else {
+      console.warn("Legend element not found");
+  }
+
+  // Append the virtual container to the body
+  document.body.appendChild(virtualContainer);
+
+  // Log the content of virtualContainer for debugging
+  console.log("Virtual container content:", virtualContainer.innerHTML);
+
+  // Render Virtual DOM to Canvas
+  html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+      console.log("Canvas generated");
+      
+
+      const dataURL = canvas.toDataURL("image/png");
+
+      // Trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataURL;
+      downloadLink.download = 'dashboard-maps.png';
+      downloadLink.click();
+      document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+      document.body.removeChild(loadingMessage);    // Remove the loading message
+  }).catch(error => {
+      console.error("Error generating canvas:", error);
+      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+  });
+}
+
 
   /**
    * DIRECT EVENT HANDLER.
@@ -821,58 +928,65 @@ class MapApplication {
   eventButtonColorSettingsClicked() {}
 
   eventButtonTableClicked() {
-    const {clientHeight: height} = document.body
-    const cardState = this.cardStates[0]
+    (async () => {
+      const {clientHeight: height} = document.body
+      const cardStates = this.getCardStates(this.url)
 
-    const query = {
-      sex: cardState.sex,
-      race: cardState.race,
-      cause: cardState.cause,
-      year: cardState.year
-    }
-    if (cardState.areaCounty && cardState.areaCounty != "All") {
-      query.county_fips = cardState.areaCounty
-    }
-    if (cardState.areaState && cardState.areaState  != "All") {
-      query.state_fips = cardState.areaState
-    }
-    if (cardState.spatialLevel == "state") {
-      query.county_fips = "All";
-    }
+      const data = [];
 
+      for (const cardState of cardStates) {
+        const query = {
+          sex: cardState.sex,
+          race: cardState.race,
+          cause: cardState.cause,
+          year: cardState.year
+        }
+        if (cardState.areaCounty && cardState.areaCounty != "All") {
+          query.county_fips = cardState.areaCounty
+        }
+        if (cardState.areaState && cardState.areaState  != "All") {
+          query.state_fips = cardState.areaState
+        }
+        if (cardState.spatialLevel == "state") {
+          query.county_fips = "All";
+        }
+  
+        if (cardState.measure == "population") {
+          const populationQuery = {...query};
+          delete populationQuery.cause;
+          const filteredData = await this.dataManager.getPopulationData(populationQuery, {includeTotals: false})
+          data.push(...filteredData);
+        } else {
+          const filteredData = await this.dataManager.getCountyMortalityData(query, {
+            includeTotals: false, 
+            states: this.state.areaStateOptions, 
+            counties: this.state.areaCountyOptions
+          });
+          data.push(...filteredData);
+        }
+  
+      }
     
-    let data = null;
-    if (cardState.measure == "population") {
-      const populationQuery = {...query};
-      delete populationQuery.cause;
-      data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
-    } else {
-      data = this.dataManager.getCountyMortalityData(query, {includeTotals: false});
-    }
+      console.log({data, this: this, measure: cardStates, state: this.state.areaStateOptions      })
 
       const content = document.createElement("div");
       content.style.height = (height * .9) + 'px' ;
       content.style.overflowY = 'auto';
+      content.style.overflowX = 'auto'; 
+      content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
 
 
       popup(document.body, content , {
-        title: "Configure table card",
+        title: "Data Table",
         backdrop: true,
         stopEvents: false,
       });
 
-
-      data.then((response) => {
-        let tableColumns = [...mapTableColumns]
-        plotDataTable(response, content, {
-          columns: tableColumns
-        })
-        console.log({response})
-
+      let tableColumns = [...mapTableColumns]
+      plotDataTable(data, content, {
+        columns: tableColumns
       })
-
-
-    
+    })()
   }
 
   #calcSharedState() {

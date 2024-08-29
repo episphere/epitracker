@@ -117,6 +117,8 @@ export class EpiTrackerData {
       ...args,
     };
 
+    console.log('getCountyMortalityData: ', {query, args})
+
     query = {
       sex: "*",
       race: "*",
@@ -160,12 +162,15 @@ export class EpiTrackerData {
       const statesMap = d3.index(args.states, (d) => d["value"]);
       let countiesMap = d3.index(args.counties, (d) => d["value"]);
 
-      if (query.state_fips === "*") {
-        const integratedCounties = args.counties.reduce((pv, cv) => {
-          return [...pv, ...cv.choices];
-        }, []);
-        countiesMap = d3.index(integratedCounties, (d) => d["value"]);
-      }
+      // TODO: Please explain about this
+      // if (query.state_fips === "*") {
+      //   const integratedCounties = args.counties.reduce((pv, cv) => {
+      //     return [...pv, ...cv.choices];
+      //   }, []);
+      //   countiesMap = d3.index(integratedCounties, (d) => d["value"]);
+      // }
+
+      console.log({statesMap, countiesMap});
 
       return data.map((item) => ({
         ...item,
