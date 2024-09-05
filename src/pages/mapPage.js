@@ -927,67 +927,76 @@ eventButtonDownloadClicked() {
    */
   eventButtonColorSettingsClicked() {}
 
-  eventButtonTableClicked() {
-    (async () => {
-      const {clientHeight: height} = document.body
-      const cardStates = this.getCardStates(this.url)
+eventButtonTableClicked() {
+  (async () => {
+    const { clientHeight: height } = document.body;
+    const cardStates = this.getCardStates(this.url);
 
-      const data = [];
+    const data = [];
 
-      for (const cardState of cardStates) {
-        const query = {
-          sex: cardState.sex,
-          race: cardState.race,
-          cause: cardState.cause,
-          year: cardState.year
-        }
-        if (cardState.areaCounty && cardState.areaCounty != "All") {
-          query.county_fips = cardState.areaCounty
-        }
-        if (cardState.areaState && cardState.areaState  != "All") {
-          query.state_fips = cardState.areaState
-        }
-        if (cardState.spatialLevel == "state") {
-          query.county_fips = "All";
-        }
-  
-        if (cardState.measure == "population") {
-          const populationQuery = {...query};
-          delete populationQuery.cause;
-          const filteredData = await this.dataManager.getPopulationData(populationQuery, {includeTotals: false})
-          data.push(...filteredData);
-        } else {
-          const filteredData = await this.dataManager.getCountyMortalityData(query, {
-            includeTotals: false, 
-            states: this.state.areaStateOptions, 
-            counties: this.state.areaCountyOptions
-          });
-          data.push(...filteredData);
-        }
-  
+    for (const cardState of cardStates) {
+      const query = {
+        sex: cardState.sex,
+        race: cardState.race,
+        cause: cardState.cause,
+        year: cardState.year
+      };
+      if (cardState.areaCounty && cardState.areaCounty != "All") {
+        query.county_fips = cardState.areaCounty;
       }
-    
-      console.log({data, this: this, measure: cardStates, state: this.state.areaStateOptions      })
+      if (cardState.areaState && cardState.areaState != "All") {
+        query.state_fips = cardState.areaState;
+      }
+      if (cardState.spatialLevel == "state") {
+        query.county_fips = "All";
+      }
 
+      if (cardState.measure == "population") {
+        const populationQuery = { ...query };
+        delete populationQuery.cause;
+        const filteredData = await this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+        data.push({ cardState, filteredData });
+      } else {
+        const filteredData = await this.dataManager.getCountyMortalityData(query, {
+          includeTotals: false,
+          states: this.state.areaStateOptions,
+          counties: this.state.areaCountyOptions
+        });
+        data.push({ cardState, filteredData });
+      }
+    }
+
+    console.log({ data, this: this, measure: cardStates, state: this.state.areaStateOptions });
+
+    data.forEach(({ cardState, filteredData }) => {
       const content = document.createElement("div");
-      content.style.height = (height * .9) + 'px' ;
+      content.style.height = (height * 0.9) + 'px';
       content.style.overflowY = 'auto';
-      content.style.overflowX = 'auto'; 
+      content.style.overflowX = 'auto';
       content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
 
+      const tableContainer = document.createElement("div");
+      tableContainer.classList.add("card-table-container");
+      tableContainer.dataset.cardId = cardState.id; // Assuming each cardState has a unique id
 
-      popup(document.body, content , {
-        title: "Data Table",
-        backdrop: true,
-        stopEvents: false,
+      const tableColumns = [...mapTableColumns];
+      plotDataTable(filteredData, tableContainer, {
+        columns: tableColumns
       });
 
-      let tableColumns = [...mapTableColumns]
-      plotDataTable(data, content, {
-        columns: tableColumns
-      })
-    })()
-  }
+      tableContainer.addEventListener("click", () => {
+        popup(document.body, content, {
+          title: `Data Table for Card ${cardState.id}`,
+          backdrop: true,
+          stopEvents: false,
+        });
+        content.appendChild(tableContainer);
+      });
+
+      document.body.appendChild(tableContainer); // Append the table container to the body or any other container
+    });
+  })();
+}
 
   #calcSharedState() {
     const cardStates = this.plotGrid.getCards().filter(d => d).map(d => d.cardState);
@@ -1079,6 +1088,23 @@ class PlotGrid {
       editCardClicked: d => d,
       blankCardClicked: d => d,
       closeCardClicked: d => d,
+      downloadCardClicked: (card) => {
+        // Download logic here
+        console.log('Downloading card:', card);
+        
+        // // Example download content logic:
+        // const contentToDownload = card.content();
+        // const blob = new Blob([contentToDownload], { type: 'text/plain' });
+        // const link = document.createElement('a');
+        // link.href = window.URL.createObjectURL(blob);
+        // link.download = 'card-content.txt';  // File name
+        // link.click();
+      },
+      tableClicked: (card) => {
+        console.log("Table button clicked for card:", card);
+        // Define what happens when the table button is clicked
+        // For example, open a modal, render a table, etc.
+      },
     }
 
     this.gridContainerElement.innerHTML = '';
@@ -1159,15 +1185,25 @@ class PlotGrid {
     })
   }
   
-  addCard(content, options) {
+    addCard(content, options) {
     this.grid.batchUpdate(true);
     if (this.nodeMatrix[options.x]?.[options.y]) {
       this.grid.removeWidget(this.nodeMatrix[options.x][options.y].element);
     }
 
     const card = new PlotCard(content, options);
-    card.addListener("editClicked", card => this.listeners.editCardClicked(card));
-    card.addListener("closeClicked", card => this.listeners.closeCardClicked(card));
+    card.addListener("editClicked", (card) =>
+      this.listeners.editCardClicked(card)
+    );
+    card.addListener("closeClicked", (card) =>
+      this.listeners.closeCardClicked(card)
+    );
+    card.addListener("downloadClicked", (card) =>
+      this.listeners.downloadCardClicked(card)
+    );
+    card.addListener("tableClicked", (card) =>
+      this.listeners.tableClicked(card)
+    );
 
     const gridItem = document.createElement("div")
     gridItem.classList.add("plot-grid-item")
@@ -1280,34 +1316,38 @@ class PlotGrid {
     return gridItem
   }
 }
-
 class PlotCard {
   constructor(content, options) {
     options = {
-      ...options 
+      ...options,
     };
-    Object.assign(this, options)
+    Object.assign(this, options);
 
-    if (typeof content != "function") {
-      content = () => this.content 
+    if (typeof content !== "function") {
+      content = () => this.content;
     }
-    this.content = content 
-    this.#createElement(options) 
+    this.content = content;
+    this.#createElement(options);
 
     this.listeners = {
-      editClicked: d => d, 
-      closeClicked: d => d, 
-    }
-
-    let timeout = null
+      editClicked: (d) => d,
+      closeClicked: (d) => d,
+      tableClicked: (d) => d,
+    };
+  // Define default behavior for tableClicked if needed
+    this.eventButtonTableClicked = (d) => {
+      console.log("Table button clicked, but no specific action defined");
+    };
+    
+    let timeout = null;
     const resizeObserver = new ResizeObserver(() => {
-      this.contentElement.innerHTML = ''
-      clearTimeout(timeout)
+      this.contentElement.innerHTML = "";
+      clearTimeout(timeout);
       timeout = setTimeout(() => {
-        this.render()
-      }, 200)
-    })
-    resizeObserver.observe(this.cardElement)
+        this.render();
+      }, 200);
+    });
+    resizeObserver.observe(this.cardElement);
   }
 
   render() {
@@ -1320,28 +1360,111 @@ class PlotCard {
       renderedContent.then((content) => {
         this.contentElement.innerHTML = '';
         this.contentElement.appendChild(content);
-      })
+      });
     } else if (renderedContent instanceof Element) {
       this.contentElement.appendChild(renderedContent);
     }
   }
 
   getElement() {
-    return this.cardElement
+    return this.cardElement;
   }
 
   setTitle(title) {
-    this.titleElement.innerText = title
+    this.titleElement.innerText = title;
   }
 
   addListener(type, listener) {
-    this.listeners[type] = listener
+    this.listeners[type] = listener;
+  }
+
+  eventButtonDownloadClicked() {
+    console.log("Download button clicked");
+
+    // Create and show loading message
+    const loadingMessage = document.createElement("div");
+    loadingMessage.innerText = "Generating image...";
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '50%';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translate(-50%, -50%)';
+    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '10000';
+    document.body.appendChild(loadingMessage);
+
+    // Create the Virtual DOM container
+    const virtualContainer = document.createElement('div');
+    virtualContainer.id = 'virtual-dashboard';
+    virtualContainer.style.position = 'absolute';
+    virtualContainer.style.top = '-9999px'; // Hide it offscreen
+    virtualContainer.style.left = '-9999px';
+    virtualContainer.style.width = '100%'; // Ensure it captures full width
+    virtualContainer.style.height = 'auto'; // Ensure it captures full height
+    virtualContainer.style.overflow = 'hidden'; // Hide overflow
+
+    // Get the current card's content
+    const cardContent = this.getElement().cloneNode(true);
+    cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
+    cardContent.querySelector('.grid-card-data-edit')?.remove();
+    virtualContainer.appendChild(cardContent);
+
+    // Append the virtual container to the body
+    document.body.appendChild(virtualContainer);
+
+    // Render Virtual DOM to Canvas
+    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+      console.log("Canvas generated");
+
+      const dataURL = canvas.toDataURL("image/png");
+
+      // Trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataURL;
+      downloadLink.download = 'card-map.png';
+      downloadLink.click();
+
+      // Clean up
+      document.body.removeChild(virtualContainer);
+      document.body.removeChild(loadingMessage);
+    }).catch(error => {
+      console.error("Error generating canvas:", error);
+      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+    });
+  }
+
+  #buttonClickedEdit() {
+    this.listeners.editClicked(this);
+  }
+
+  #buttonClickedExpand(e, options) {
+    const isExpand = e.target.classList.contains("fa-expand");
+
+    if (isExpand) {
+      openFullscreen(this.content);
+    }
+  }
+
+  #buttonClickedClose() {
+    this.listeners.closeClicked(this);
+  }
+
+  #buttonClickedDownload() {
+    this.eventButtonDownloadClicked();
+  }
+  #buttonClickedTable(e) {
+    if (typeof this.eventButtonTableClicked === 'function') {
+      this.eventButtonTableClicked(e);
+    } else {
+      console.error('eventButtonTableClicked is not a function');
+    }
   }
 
   #createElement(options) {
-    const gridCard = document.createElement("div")
-    gridCard.className = "grid-card" 
-    console.log({options: options});
+    const gridCard = document.createElement("div");
+    gridCard.className = "grid-card";
     gridCard.innerHTML = /*html*/`
       <div class="grid-card-topbar">
         <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit card"></i>
@@ -1350,41 +1473,22 @@ class PlotCard {
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
           <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
+          <i class="fa-solid fa-download settings-button"></i>
+          <i class="fa-solid fa-table settings-button"></i>
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
-      <!--<div class="grid-card-content"></div>-->
-    `
+    `;
 
-    gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit())
-    gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options))
-    gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose())
+    gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit());
+    gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options));
+    gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose());
+    gridCard.querySelector(".fa-solid.fa-download").addEventListener("click", () => this.#buttonClickedDownload());
+    gridCard.querySelector(".fa-solid.fa-table").addEventListener("click", () => this.#buttonClickedTable());
 
-    this.cardElement = gridCard
-    this.contentElement = gridCard.querySelector(".grid-card-content")
-    this.titleElement = gridCard.querySelector(".grid-card-topbar-title")
-  }
-
-  #buttonClickedEdit() {
-    this.listeners.editClicked(this);
-  }
-
-  #buttonClickedExpand(e, options) {
-    // const elements = document.querySelectorAll(div[gs-x="${options.x}"])
-    // if (!elements.length) return;
-
-    // const source = [...elements].find(elm => elm.gridstackNode.y == options.y)
-    // if (!source) return;
-
-    const isExpand = e.target.classList.contains("fa-expand");
-
-    if (isExpand) {
-      openFullscreen(this.content);
-    } 
-  }
-
-  #buttonClickedClose() {
-    this.listeners.closeClicked(this);
+    this.cardElement = gridCard;
+    this.contentElement = gridCard.querySelector(".grid-card-content");
+    this.titleElement = gridCard.querySelector(".grid-card-topbar-title");
   }
 }
 
