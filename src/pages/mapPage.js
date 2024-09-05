@@ -424,7 +424,8 @@ class MapApplication {
     this.plotGrid = new PlotGrid({
       gridContainerElement: this.elems.gridContainer,
       // gridElement: this.elems.grid,
-      nRows: this.state.nRows, nCols: this.state.nCols,
+      nRows: this.state.nRows, 
+      nCols: this.state.nCols,
     });
 
 
@@ -685,10 +686,12 @@ class MapApplication {
         delete populationQuery.cause;
         data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
       } else {
-        data = this.dataManager.getCountyMortalityData(query, {includeTotals: false});
+        data = this.dataManager.getCountyMortalityData(query, {
+          includeTotals: false, 
+          states: this.state.areaStateOptions, 
+          counties: this.state.areaCountyOptions
+          });
       }
-
-      console.log('map: ', {data, cardState})
 
       // NOTE: DRAW
       const drawMap = async (width, height) => {
@@ -747,7 +750,7 @@ class MapApplication {
         }
       }
 
-      this.plotGrid.addCard(drawMap, {x, y, cardState, data});
+      this.plotGrid.addCard(drawMap, {x, y, cardState, data, url: this.url, state: this.state});
     } else {
       this.plotGrid.addBlank({x, y});
     }
@@ -829,6 +832,7 @@ class MapApplication {
 
   }
 
+  // TODO: Remove redundant codes
 eventButtonDownloadClicked() {
   console.log("Download button clicked");
 
@@ -858,23 +862,40 @@ eventButtonDownloadClicked() {
 
   const originalDashboard = document.getElementById('ex-dashboard');
   const gridContainer = originalDashboard.querySelector('#grid-container');
-  const legend = originalDashboard.querySelector('#color-legend');    
-  const mapElements = document.querySelectorAll('.grid-card');
+  const legend = originalDashboard.querySelector('#color-legend');
   const title = originalDashboard.querySelector('#title');
- 
-  
 
-  // Clone mapElement element
-  if (mapElements) {
-    [...mapElements].forEach(mapElement => {
-      console.log("mapElement found and cloning");
-      const clonedMap = mapElement.cloneNode(true);
-      clonedMap.querySelector('.grid-card-topbar-buttons')?.remove()
-      clonedMap.querySelector('.grid-card-data-edit')?.remove()
-      virtualContainer.appendChild(clonedMap);
-    })
+  // Clone the grid container (preserves the layout of maps)
+  if (gridContainer) {
+    console.log("Grid container found and cloning");
+
+    // Clone grid container and remove unwanted elements
+    const clonedGridContainer = gridContainer.cloneNode(true);
+
+    // Remove specific unwanted elements (edit, add, plus icons, etc.)
+    const unwantedElements = clonedGridContainer.querySelectorAll(
+      '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
+    );
+    unwantedElements.forEach(el => el.remove());
+
+    // Make sure the maps fit inside their containers (adjust sizing)
+    const maps = clonedGridContainer.querySelectorAll('.grid-card');
+    maps.forEach(map => {
+      // Adjust the map and card sizes
+      map.style.width = '100%'; // Ensure the card takes the full width
+      map.style.height = 'auto'; // Let height adjust automatically
+
+      const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
+      if (mapContent) {
+        mapContent.style.width = '100%';
+        mapContent.style.height = '100%'; // Ensure it fits within the card
+        mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+      }
+    });
+
+    virtualContainer.appendChild(clonedGridContainer);
   } else {
-    console.warn("Legend element not found");
+    console.warn("Grid container not found");
   }
 
   // Clone title element
@@ -882,16 +903,16 @@ eventButtonDownloadClicked() {
     const clonedTitle = title.cloneNode(true);
     virtualContainer.appendChild(clonedTitle);
   } else {
-      console.warn("Title element not found");
+    console.warn("Title element not found");
   }
 
   // Clone legend element
   if (legend) {
-      console.log("Legend found and cloning");
-      const clonedLegend = legend.cloneNode(true);
-      virtualContainer.appendChild(clonedLegend);
+    console.log("Legend found and cloning");
+    const clonedLegend = legend.cloneNode(true);
+    virtualContainer.appendChild(clonedLegend);
   } else {
-      console.warn("Legend element not found");
+    console.warn("Legend element not found");
   }
 
   // Append the virtual container to the body
@@ -902,21 +923,21 @@ eventButtonDownloadClicked() {
 
   // Render Virtual DOM to Canvas
   html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-      console.log("Canvas generated");
-      
+    console.log("Canvas generated");
 
-      const dataURL = canvas.toDataURL("image/png");
+    const dataURL = canvas.toDataURL("image/png");
 
-      // Trigger the download
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataURL;
-      downloadLink.download = 'dashboard-maps.png';
-      downloadLink.click();
-      document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-      document.body.removeChild(loadingMessage);    // Remove the loading message
+    // Trigger the download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataURL;
+    downloadLink.download = 'dashboard-maps.png';
+    downloadLink.click();
+
+    document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+    document.body.removeChild(loadingMessage);    // Remove the loading message
   }).catch(error => {
-      console.error("Error generating canvas:", error);
-      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+    console.error("Error generating canvas:", error);
+    document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
   });
 }
 
@@ -931,60 +952,60 @@ eventButtonDownloadClicked() {
     (async () => {
       const {clientHeight: height} = document.body
       const cardStates = this.getCardStates(this.url)
-
+  
       const data = [];
-
+  
       for (const cardState of cardStates) {
-        const query = {
-          sex: cardState.sex,
-          race: cardState.race,
-          cause: cardState.cause,
-          year: cardState.year
-        }
-        if (cardState.areaCounty && cardState.areaCounty != "All") {
-          query.county_fips = cardState.areaCounty
-        }
-        if (cardState.areaState && cardState.areaState  != "All") {
-          query.state_fips = cardState.areaState
-        }
-        if (cardState.spatialLevel == "state") {
-          query.county_fips = "All";
-        }
-  
-        if (cardState.measure == "population") {
-          const populationQuery = {...query};
-          delete populationQuery.cause;
-          const filteredData = await this.dataManager.getPopulationData(populationQuery, {includeTotals: false})
-          data.push(...filteredData);
-        } else {
-          const filteredData = await this.dataManager.getCountyMortalityData(query, {
-            includeTotals: false, 
-            states: this.state.areaStateOptions, 
-            counties: this.state.areaCountyOptions
-          });
-          data.push(...filteredData);
-        }
-  
+      const query = {
+        sex: cardState.sex,
+        race: cardState.race,
+        cause: cardState.cause,
+        year: cardState.year
+      }
+      if (cardState.areaCounty && cardState.areaCounty != "All") {
+        query.county_fips = cardState.areaCounty
+      }
+      if (cardState.areaState && cardState.areaState != "All") {
+        query.state_fips = cardState.areaState
+      }
+      if (cardState.spatialLevel == "state") {
+        query.county_fips = "All";
       }
     
-      console.log({data, this: this, measure: cardStates, state: this.state.areaStateOptions      })
-
+      if (cardState.measure == "population") {
+        const populationQuery = {...query};
+        delete populationQuery.cause;
+        const filteredData = await this.dataManager.getPopulationData(populationQuery, {includeTotals: false})
+        data.push(...filteredData);
+      } else {
+        const filteredData = await this.dataManager.getCountyMortalityData(query, {
+        includeTotals: false, 
+        states: this.state.areaStateOptions, 
+        counties: this.state.areaCountyOptions
+        });
+        data.push(...filteredData);
+      }
+    
+      }
+    
+      console.log({data, this: this, measure: cardStates, state: this.state.areaStateOptions   })
+  
       const content = document.createElement("div");
       content.style.height = (height * .9) + 'px' ;
       content.style.overflowY = 'auto';
       content.style.overflowX = 'auto'; 
       content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
-
-
+  
+  
       popup(document.body, content , {
-        title: "Data Table",
-        backdrop: true,
-        stopEvents: false,
+      title: "Data Table",
+      backdrop: true,
+      stopEvents: false,
       });
-
+  
       let tableColumns = [...mapTableColumns]
       plotDataTable(data, content, {
-        columns: tableColumns
+      columns: tableColumns
       })
     })()
   }
@@ -1079,6 +1100,23 @@ class PlotGrid {
       editCardClicked: d => d,
       blankCardClicked: d => d,
       closeCardClicked: d => d,
+      downloadCardClicked: (card) => {
+        // Download logic here
+        console.log('Downloading card:', card);
+        
+        // // Example download content logic:
+        // const contentToDownload = card.content();
+        // const blob = new Blob([contentToDownload], { type: 'text/plain' });
+        // const link = document.createElement('a');
+        // link.href = window.URL.createObjectURL(blob);
+        // link.download = 'card-content.txt';  // File name
+        // link.click();
+      },
+      tableClicked: (card) => {
+        console.log("Table button clicked for card:", card);
+        // Define what happens when the table button is clicked
+        // For example, open a modal, render a table, etc.
+      },
     }
 
     this.gridContainerElement.innerHTML = '';
@@ -1166,8 +1204,18 @@ class PlotGrid {
     }
 
     const card = new PlotCard(content, options);
-    card.addListener("editClicked", card => this.listeners.editCardClicked(card));
-    card.addListener("closeClicked", card => this.listeners.closeCardClicked(card));
+    card.addListener("editClicked", (card) =>
+      this.listeners.editCardClicked(card)
+    );
+    card.addListener("closeClicked", (card) =>
+      this.listeners.closeCardClicked(card)
+    );
+    card.addListener("downloadClicked", (card) =>
+      this.listeners.downloadCardClicked(card)
+    );
+    card.addListener("tableClicked", (card) =>
+      this.listeners.tableClicked(card)
+    );
 
     const gridItem = document.createElement("div")
     gridItem.classList.add("plot-grid-item")
@@ -1280,34 +1328,34 @@ class PlotGrid {
     return gridItem
   }
 }
-
 class PlotCard {
   constructor(content, options) {
     options = {
-      ...options 
+      ...options,
     };
-    Object.assign(this, options)
+    Object.assign(this, options);
 
-    if (typeof content != "function") {
-      content = () => this.content 
+    if (typeof content !== "function") {
+      content = () => this.content;
     }
-    this.content = content 
-    this.#createElement(options) 
+    this.content = content;
+    this.#createElement(options);
 
     this.listeners = {
-      editClicked: d => d, 
-      closeClicked: d => d, 
-    }
-
-    let timeout = null
+      editClicked: (d) => d,
+      closeClicked: (d) => d,
+      tableClicked: (d) => d,
+    };
+    
+    let timeout = null;
     const resizeObserver = new ResizeObserver(() => {
-      this.contentElement.innerHTML = ''
-      clearTimeout(timeout)
+      this.contentElement.innerHTML = "";
+      clearTimeout(timeout);
       timeout = setTimeout(() => {
-        this.render()
-      }, 200)
-    })
-    resizeObserver.observe(this.cardElement)
+        this.render();
+      }, 200);
+    });
+    resizeObserver.observe(this.cardElement);
   }
 
   render() {
@@ -1320,28 +1368,130 @@ class PlotCard {
       renderedContent.then((content) => {
         this.contentElement.innerHTML = '';
         this.contentElement.appendChild(content);
-      })
+      });
     } else if (renderedContent instanceof Element) {
       this.contentElement.appendChild(renderedContent);
     }
   }
 
   getElement() {
-    return this.cardElement
+    return this.cardElement;
   }
 
   setTitle(title) {
-    this.titleElement.innerText = title
+    this.titleElement.innerText = title;
   }
 
   addListener(type, listener) {
-    this.listeners[type] = listener
+    this.listeners[type] = listener;
+  }
+// TODO: Remove redundant codes
+  eventButtonDownloadClicked() {
+    console.log("Download button clicked");
+
+    // Create and show loading message
+    const loadingMessage = document.createElement("div");
+    loadingMessage.innerText = "Generating image...";
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '50%';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translate(-50%, -50%)';
+    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '10000';
+    document.body.appendChild(loadingMessage);
+
+    // Create the Virtual DOM container
+    const virtualContainer = document.createElement('div');
+    virtualContainer.id = 'virtual-dashboard';
+    virtualContainer.style.position = 'absolute';
+    virtualContainer.style.top = '-9999px'; // Hide it offscreen
+    virtualContainer.style.left = '-9999px';
+    virtualContainer.style.width = '100%'; // Ensure it captures full width
+    virtualContainer.style.height = 'auto'; // Ensure it captures full height
+    virtualContainer.style.overflow = 'hidden'; // Hide overflow
+
+    // Get the current card's content
+    const cardContent = this.getElement().cloneNode(true);
+    cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
+    cardContent.querySelector('.grid-card-data-edit')?.remove();
+    virtualContainer.appendChild(cardContent);
+
+    // Append the virtual container to the body
+    document.body.appendChild(virtualContainer);
+
+    // Render Virtual DOM to Canvas
+    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+      console.log("Canvas generated");
+
+      const dataURL = canvas.toDataURL("image/png");
+
+      // Trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataURL;
+      downloadLink.download = 'card-map.png';
+      downloadLink.click();
+
+      // Clean up
+      document.body.removeChild(virtualContainer);
+      document.body.removeChild(loadingMessage);
+    }).catch(error => {
+      console.error("Error generating canvas:", error);
+      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+    });
+  }
+
+  eventButtonTableClicked(options) {
+     const {clientHeight: height} = document.body
+     const content = document.createElement("div");
+     content.style.height = (height * .9) + 'px' ;
+     content.style.overflowY = 'auto';
+     content.style.overflowX = 'auto'; 
+     content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
+  
+  
+     popup(document.body, content , {
+      title: "Data Table",
+      backdrop: true,
+      stopEvents: false,
+     });
+  
+     let tableColumns = [...mapTableColumns]
+     options.data.then(data => {
+      plotDataTable(data, content, {
+        columns: tableColumns
+       })
+     })
+   }
+
+  #buttonClickedEdit() {
+    this.listeners.editClicked(this);
+  }
+
+  #buttonClickedExpand(e) {
+    const isExpand = e.target.classList.contains("fa-expand");
+
+    if (isExpand) {
+      openFullscreen(this.content);
+    }
+  }
+
+  #buttonClickedClose() {
+    this.listeners.closeClicked(this);
+  }
+
+  #buttonClickedDownload() {
+    this.eventButtonDownloadClicked();
+  }
+  #buttonClickedTable(options) {
+    this.eventButtonTableClicked(options);
   }
 
   #createElement(options) {
-    const gridCard = document.createElement("div")
-    gridCard.className = "grid-card" 
-    console.log({options: options});
+    const gridCard = document.createElement("div");
+    gridCard.className = "grid-card";
     gridCard.innerHTML = /*html*/`
       <div class="grid-card-topbar">
         <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit card"></i>
@@ -1350,41 +1500,22 @@ class PlotCard {
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
           <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
+          <i class="fa-solid fa-download settings-button"></i>
+          <i class="fa-solid fa-table settings-button"></i>
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
-      <!--<div class="grid-card-content"></div>-->
-    `
+    `;
 
-    gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit())
-    gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options))
-    gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose())
+    gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit());
+    gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options));
+    gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose());
+    gridCard.querySelector(".fa-solid.fa-download").addEventListener("click", () => this.#buttonClickedDownload());
+    gridCard.querySelector(".fa-solid.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
 
-    this.cardElement = gridCard
-    this.contentElement = gridCard.querySelector(".grid-card-content")
-    this.titleElement = gridCard.querySelector(".grid-card-topbar-title")
-  }
-
-  #buttonClickedEdit() {
-    this.listeners.editClicked(this);
-  }
-
-  #buttonClickedExpand(e, options) {
-    // const elements = document.querySelectorAll(div[gs-x="${options.x}"])
-    // if (!elements.length) return;
-
-    // const source = [...elements].find(elm => elm.gridstackNode.y == options.y)
-    // if (!source) return;
-
-    const isExpand = e.target.classList.contains("fa-expand");
-
-    if (isExpand) {
-      openFullscreen(this.content);
-    } 
-  }
-
-  #buttonClickedClose() {
-    this.listeners.closeClicked(this);
+    this.cardElement = gridCard;
+    this.contentElement = gridCard.querySelector(".grid-card-content");
+    this.titleElement = gridCard.querySelector(".grid-card-topbar-title");
   }
 }
 
