@@ -5,7 +5,7 @@ import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm'
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
@@ -72,6 +72,7 @@ class MapApplication {
       buttonColorSettings: document.getElementById("button-color-settings"),
       buttonTable: document.getElementById("button-table"),
       buttonDownload: document.getElementById("button-download"),
+      buttonEditGrid: document.getElementById("button-edit-grid"),
       title: document.getElementById("title"),
      
       // Color settings popup
@@ -102,7 +103,6 @@ class MapApplication {
     // Set the county names after the GeoJSON is loaded.
     const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
 
-    console.log({countyNameMap})
     const countyOptions =  this.state.areaCountyOptions.map(d => {
       let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0,2), "short");
       return { value: d, label: name}
@@ -120,7 +120,16 @@ class MapApplication {
     this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
     this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
     this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
-    this.elems.buttonDownload.addEventListener("click", () => this.eventButtonDownloadClicked());
+
+    createDropdownButton(this.elems.buttonDownload, [
+      {text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON")},
+      {text: "Download data (CSV)", callback: () =>this.eventButtonDownloadData("CSV")}
+    ]);
+
+    createDropdownButton(this.elems.buttonEditGrid, [
+      {text: "Add map row", callback: () => this.plotGrid.addRow()},
+      {text: "Add map column", callback: () => this.plotGrid.addColumn()}
+    ]);
 
     this.createMapTooltip();
 
@@ -408,8 +417,6 @@ class MapApplication {
     }
 
     this.cardStates = this.getCardStates(this.url)
-
-    console.log('parsed url....', {cardState: this.cardStates})
   }
 
   /**
@@ -726,7 +733,6 @@ class MapApplication {
     
           // this.plot = plot 
           // this.postRender(this)
-          console.log({plot})
           return plot 
         })
       }
@@ -833,113 +839,113 @@ class MapApplication {
   }
 
   // TODO: Remove redundant codes
-eventButtonDownloadClicked() {
-  console.log("Download button clicked");
+  eventButtonDownloadClicked() {
+    console.log("Download button clicked");
 
-  // Create and show loading message
-  const loadingMessage = document.createElement("div");
-  loadingMessage.innerText = "Generating image...";
-  loadingMessage.style.position = 'fixed';
-  loadingMessage.style.top = '50%';
-  loadingMessage.style.left = '50%';
-  loadingMessage.style.transform = 'translate(-50%, -50%)';
-  loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
-  loadingMessage.style.color = 'white';
-  loadingMessage.style.padding = '20px';
-  loadingMessage.style.borderRadius = '5px';
-  loadingMessage.style.zIndex = '10000';
-  document.body.appendChild(loadingMessage);
+    // Create and show loading message
+    const loadingMessage = document.createElement("div");
+    loadingMessage.innerText = "Generating image...";
+    loadingMessage.style.position = 'fixed';
+    loadingMessage.style.top = '50%';
+    loadingMessage.style.left = '50%';
+    loadingMessage.style.transform = 'translate(-50%, -50%)';
+    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '20px';
+    loadingMessage.style.borderRadius = '5px';
+    loadingMessage.style.zIndex = '10000';
+    document.body.appendChild(loadingMessage);
 
-  // Create the Virtual DOM container
-  const virtualContainer = document.createElement('div');
-  virtualContainer.id = 'virtual-dashboard';
-  virtualContainer.style.position = 'absolute';
-  virtualContainer.style.top = '-9999px'; // Hide it offscreen
-  virtualContainer.style.left = '-9999px';
-  virtualContainer.style.width = '100%'; // Ensure it captures full width
-  virtualContainer.style.height = 'auto'; // Ensure it captures full height
-  virtualContainer.style.overflow = 'hidden'; // Hide overflow
+    // Create the Virtual DOM container
+    const virtualContainer = document.createElement('div');
+    virtualContainer.id = 'virtual-dashboard';
+    virtualContainer.style.position = 'absolute';
+    virtualContainer.style.top = '-9999px'; // Hide it offscreen
+    virtualContainer.style.left = '-9999px';
+    virtualContainer.style.width = '100%'; // Ensure it captures full width
+    virtualContainer.style.height = 'auto'; // Ensure it captures full height
+    virtualContainer.style.overflow = 'hidden'; // Hide overflow
 
-  const originalDashboard = document.getElementById('ex-dashboard');
-  const gridContainer = originalDashboard.querySelector('#grid-container');
-  const legend = originalDashboard.querySelector('#color-legend');
-  const title = originalDashboard.querySelector('#title');
+    const originalDashboard = document.getElementById('ex-dashboard');
+    const gridContainer = originalDashboard.querySelector('#grid-container');
+    const legend = originalDashboard.querySelector('#color-legend');
+    const title = originalDashboard.querySelector('#title');
 
-  // Clone the grid container (preserves the layout of maps)
-  if (gridContainer) {
-    console.log("Grid container found and cloning");
+    // Clone the grid container (preserves the layout of maps)
+    if (gridContainer) {
+      console.log("Grid container found and cloning");
 
-    // Clone grid container and remove unwanted elements
-    const clonedGridContainer = gridContainer.cloneNode(true);
+      // Clone grid container and remove unwanted elements
+      const clonedGridContainer = gridContainer.cloneNode(true);
 
-    // Remove specific unwanted elements (edit, add, plus icons, etc.)
-    const unwantedElements = clonedGridContainer.querySelectorAll(
-      '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
-    );
-    unwantedElements.forEach(el => el.remove());
+      // Remove specific unwanted elements (edit, add, plus icons, etc.)
+      const unwantedElements = clonedGridContainer.querySelectorAll(
+        '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
+      );
+      unwantedElements.forEach(el => el.remove());
 
-    // Make sure the maps fit inside their containers (adjust sizing)
-    const maps = clonedGridContainer.querySelectorAll('.grid-card');
-    maps.forEach(map => {
-      // Adjust the map and card sizes
-      map.style.width = '100%'; // Ensure the card takes the full width
-      map.style.height = 'auto'; // Let height adjust automatically
+      // Make sure the maps fit inside their containers (adjust sizing)
+      const maps = clonedGridContainer.querySelectorAll('.grid-card');
+      maps.forEach(map => {
+        // Adjust the map and card sizes
+        map.style.width = '100%'; // Ensure the card takes the full width
+        map.style.height = 'auto'; // Let height adjust automatically
 
-      const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
-      if (mapContent) {
-        mapContent.style.width = '100%';
-        mapContent.style.height = '100%'; // Ensure it fits within the card
-        mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
-      }
+        const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
+        if (mapContent) {
+          mapContent.style.width = '100%';
+          mapContent.style.height = '100%'; // Ensure it fits within the card
+          mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+        }
+      });
+
+      virtualContainer.appendChild(clonedGridContainer);
+    } else {
+      console.warn("Grid container not found");
+    }
+
+    // Clone title element
+    if (title) {
+      const clonedTitle = title.cloneNode(true);
+      virtualContainer.appendChild(clonedTitle);
+    } else {
+      console.warn("Title element not found");
+    }
+
+    // Clone legend element
+    if (legend) {
+      console.log("Legend found and cloning");
+      const clonedLegend = legend.cloneNode(true);
+      virtualContainer.appendChild(clonedLegend);
+    } else {
+      console.warn("Legend element not found");
+    }
+
+    // Append the virtual container to the body
+    document.body.appendChild(virtualContainer);
+
+    // Log the content of virtualContainer for debugging
+    console.log("Virtual container content:", virtualContainer.innerHTML);
+
+    // Render Virtual DOM to Canvas
+    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+      console.log("Canvas generated");
+
+      const dataURL = canvas.toDataURL("image/png");
+
+      // Trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataURL;
+      downloadLink.download = 'dashboard-maps.png';
+      downloadLink.click();
+
+      document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+      document.body.removeChild(loadingMessage);    // Remove the loading message
+    }).catch(error => {
+      console.error("Error generating canvas:", error);
+      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
     });
-
-    virtualContainer.appendChild(clonedGridContainer);
-  } else {
-    console.warn("Grid container not found");
   }
-
-  // Clone title element
-  if (title) {
-    const clonedTitle = title.cloneNode(true);
-    virtualContainer.appendChild(clonedTitle);
-  } else {
-    console.warn("Title element not found");
-  }
-
-  // Clone legend element
-  if (legend) {
-    console.log("Legend found and cloning");
-    const clonedLegend = legend.cloneNode(true);
-    virtualContainer.appendChild(clonedLegend);
-  } else {
-    console.warn("Legend element not found");
-  }
-
-  // Append the virtual container to the body
-  document.body.appendChild(virtualContainer);
-
-  // Log the content of virtualContainer for debugging
-  console.log("Virtual container content:", virtualContainer.innerHTML);
-
-  // Render Virtual DOM to Canvas
-  html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-    console.log("Canvas generated");
-
-    const dataURL = canvas.toDataURL("image/png");
-
-    // Trigger the download
-    const downloadLink = document.createElement('a');
-    downloadLink.href = dataURL;
-    downloadLink.download = 'dashboard-maps.png';
-    downloadLink.click();
-
-    document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-    document.body.removeChild(loadingMessage);    // Remove the loading message
-  }).catch(error => {
-    console.error("Error generating canvas:", error);
-    document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
-  });
-}
 
 
   /**
@@ -949,6 +955,7 @@ eventButtonDownloadClicked() {
   eventButtonColorSettingsClicked() {}
 
   eventButtonTableClicked() {
+    // Why the async function call?
     (async () => {
       const {clientHeight: height} = document.body
       const cardStates = this.getCardStates(this.url)
@@ -987,9 +994,7 @@ eventButtonDownloadClicked() {
       }
     
       }
-    
-      console.log({data, this: this, measure: cardStates, state: this.state.areaStateOptions   })
-  
+      
       const content = document.createElement("div");
       content.style.height = (height * .9) + 'px' ;
       content.style.overflowY = 'auto';
@@ -998,14 +1003,14 @@ eventButtonDownloadClicked() {
   
   
       popup(document.body, content , {
-      title: "Data Table",
-      backdrop: true,
-      stopEvents: false,
+        title: "Data Table",
+        backdrop: true,
+        stopEvents: false,
       });
-  
-      let tableColumns = [...mapTableColumns]
-      plotDataTable(data, content, {
-      columns: tableColumns
+    
+        let tableColumns = [...mapTableColumns]
+        plotDataTable(data, content, {
+        columns: tableColumns
       })
     })()
   }
@@ -1144,7 +1149,7 @@ class PlotGrid {
     resizeObserver.observe(this.gridContainerElement)
 
     const addColumnButton = document.createElement("i")
-    addColumnButton.setAttribute("class", "fa-solid fa-circle-plus")
+    addColumnButton.setAttribute("class", "fa-solid fa-plus")
     addColumnButton.classList.add("plot-grid-add")
     addColumnButton.classList.add("plot-grid-add-col")
     addColumnButton.setAttribute("tip", "Add new column");
@@ -1152,7 +1157,7 @@ class PlotGrid {
     this.gridElement.appendChild(addColumnButton)
 
     const addRowButton = document.createElement("i")
-    addRowButton.setAttribute("class", "fa-solid fa-circle-plus")
+    addRowButton.setAttribute("class", "fa-solid fa-plus")
     addRowButton.classList.add("plot-grid-add")
     addRowButton.classList.add("plot-grid-add-row")
     addRowButton.setAttribute("tip", "Add new row");
@@ -1284,6 +1289,12 @@ class PlotGrid {
     blankElement.addEventListener("click", () => {
       this.listeners.blankCardClicked(node.x, node.y)
     });
+    blankElement.addEventListener("mouseover", () => {
+      blankElement.classList.add("hover")
+    })
+    blankElement.addEventListener("mouseleave", () => {
+      blankElement.classList.remove("hover")
+    })
     if (openedBatch) {
       this.grid.batchUpdate(false);
     }
@@ -1317,14 +1328,44 @@ class PlotGrid {
     gridItem.appendChild(blankItem)
 
     const plus = document.createElement("i")
-    plus.className = "fas fa-edit" 
+    plus.className = "fas fa-plus-square" 
     blankItem.appendChild(plus) 
+
+    const plusText = document.createElement("span")
+    plusText.innerText = "Add new map"
+    blankItem.appendChild(plusText)
 
     const handle = document.createElement("div")
     handle.className = "fa-grip-horizontal"
     handle.style.display = "none"
     blankItem.appendChild(handle)
 
+    const deleteButton = document.createElement("i")
+    deleteButton.setAttribute("tip", "Delete card, row, or column")
+    deleteButton.className = "fas fa-trash-alt blank-delete-button"
+    deleteButton.addEventListener("mouseover", (e) => {
+      e.stopPropagation()
+      gridItem.classList.remove("hover")
+      deleteButton.classList.add("hover")
+    })
+    deleteButton.addEventListener("mouseleave", () => {
+      deleteButton.classList.remove("hover")
+    })
+    deleteButton.addEventListener("click", e => {
+      e.stopPropagation()
+    })
+    blankItem.appendChild(deleteButton)
+
+    // TODO: Implement these
+    const dropdown =createDropdownButton(deleteButton, [
+      {text: "Delete blank card", callback: d => d},
+      {text: "Delete card row", callback: d => d},
+      {text: "Delete card column", callback: d => d},
+    ]);
+    dropdown.classList.add("blank-delete-button")
+    dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button")
+
+    this.tippyMap = addTippys();
     return gridItem
   }
 }
@@ -1494,14 +1535,17 @@ class PlotCard {
     gridCard.className = "grid-card";
     gridCard.innerHTML = /*html*/`
       <div class="grid-card-topbar">
-        <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit card"></i>
+        <div class="grid-card-topbar-buttons-lrg">
+          <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit map"></i>
+          <i class="fas fa-image  highlightable-button"  tip="Download map image"></i>
+          <i class="fas fa-table  highlightable-button"  tip="View data table"></i>
+        </div>
         <div class="grid-card-topbar-title">${this.title ? this.title : ""}</div>
         <div class="grid-card-topbar-buttons">
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
           <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
-          <i class="fa-solid fa-download settings-button"></i>
-          <i class="fa-solid fa-table settings-button"></i>
+
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
@@ -1510,8 +1554,8 @@ class PlotCard {
     gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit());
     gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options));
     gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose());
-    gridCard.querySelector(".fa-solid.fa-download").addEventListener("click", () => this.#buttonClickedDownload());
-    gridCard.querySelector(".fa-solid.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
+    gridCard.querySelector(".fas.fa-image").addEventListener("click", () => this.#buttonClickedDownload());
+    gridCard.querySelector(".fas.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
 
     this.cardElement = gridCard;
     this.contentElement = gridCard.querySelector(".grid-card-content");

@@ -3,28 +3,48 @@ footer {
 }
 
 #ex-dashboard {
-  height: calc(100vh - 120px);
+  height: calc(100vh - 145px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* gap: 10px; */
   background: #f9fbff;
   width: 100%;
   position: relative;
 }
 
+.unfocused #ex-dashboard {
+  filter: blur(10px);
+  opacity: .5;
+  pointer-events: none;
+}
+
 #ex-infobar {
   display: flex;
   width: 100%;
-  height: fit-content;
   gap: 10px; 
-  background: white; 
-  box-shadow: 2px -2px 6px 1px rgb(234, 232, 232);
+  padding: 15px;
+  justify-content: space-between;
+  align-items: end;
+}
+
+#infobar-titles {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+}
+
+
+#infobar-right {
+  display: flex;
+  gap: 30px;
+  align-self: stretch;
 }
 
 #grid-container {
   height: 100%;
   padding: 10px;
-  padding-bottom: 0px;
+  padding-top: 0px;
+  padding-right: 30px;
 }
 
 #grid-stack {
@@ -51,6 +71,17 @@ footer {
   padding: 8px;
 }
 
+.grid-card-topbar-buttons-lrg {
+  display: flex;
+  gap: 8px;
+  color: #848484;
+  opacity: .4;
+  font-size: 24px;
+  color: #848484;
+  margin-left: 12px;
+  margin-top: 8px;
+}
+
 .grid-card-topbar-title {
   font-size: .8em;
   font-weight: bold;
@@ -58,13 +89,6 @@ footer {
   margin-left: 12px;
 }
 
-.grid-card-data-edit {
-  margin-left: 12px;
-  margin-top: 8px;
-  font-size: 24px;
-  color: #848484;
-  opacity: .4;
-}
 
 .grid-card-content-container {
   height: 100%;
@@ -136,16 +160,20 @@ footer {
   z-index: 100;
 }
 
+.plot-grid-add {
+  opacity: .4;
+}
+
 .plot-grid-add.show {
-  opacity: .5;
+  opacity: 1;
 }
 
 .add-visible-row .plot-grid-add-row {
-  opacity: .5;
+  opacity: .8;
 }
 
 .add-visible-col .plot-grid-add-col {
-  opacity: .5;
+  opacity: .81;
 }
 
 .plot-grid-add:hover {
@@ -154,20 +182,20 @@ footer {
 
 .plot-grid-add-col {
   top: calc(50% - 12px);
-  right: -7px;
+  right: -25px;
 }
 
 .plot-grid-add-col {
-  opacity: 0.1;
+  opacity: .8;
 }
 
 .plot-grid-add-row {
   left: calc(50% - 12px);
-  bottom: -7px;
+  bottom: -30px;
 }
 
 .plot-grid-add-row {
-  opacity: 0.1;
+  opacity: .8;
 }
 
 .plot-grid-add .dropdown-menu {
@@ -191,28 +219,49 @@ footer {
   background-color: #f9fbff;
   border: 2px dashed lightgrey;
   height: 100%;
-  font-size: 60px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: hsl(0, 0%, 83%);
   cursor: pointer;
   border-radius: 5px;
+  font-size: 20px;
 }
 
-.plot-grid-blank-item:hover {
+.plot-grid-blank-item i {
+  font-size: 50px;
+}
+
+.hover .plot-grid-blank-item {
   color: rgb(233, 233, 233);
+}
+
+.blank-delete-button {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+
+
+.plot-grid-blank-item .blank-delete-button i {
+  font-size: 30px;
+  color: hsl(0, 0%, 83%);
+}
+
+.plot-grid-blank-item .blank-delete-button i.hover {
+  font-size: 30px;
+  color: hsl(0, 0%, 93%);
 }
 
 #title {
   height: fit-content;
-  width: 100%;
-  height: 100%;
+  /* width: 100%; */
+  /* height: 100%; */
   display: flex; 
   align-items: center;
   justify-content: center;
-  padding: 15px;
-  padding-inline: 10px;
+  /* padding: 15px; */
   gap: 20px;
   font-size: .85em;
   font-weight: bold;
@@ -225,7 +274,11 @@ footer {
   gap: 8px;
   justify-content: center;
   align-items: center;
-  padding-inline: 10px;
+  padding-inline: 14px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 2px 2px 6px 1px rgb(234, 232, 232);
+  height: 100%;
 }
 
 #ex-color-legend {
@@ -312,6 +365,10 @@ footer {
 
 #card-submit-button {
   margin-top: 20px;
+}
+
+.dropdown-item {
+  cursor: pointer;
 }
 
 g[aria-label="geo"] path:hover {

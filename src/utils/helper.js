@@ -853,6 +853,36 @@ export function capitalizeFirstWord(str) {
   return [capitalizedWord, ...otherWords].join(" ");
 }
 
+export function createDropdownButton(button, options) {
+  const dropdownContainer = document.createElement("div")
+  dropdownContainer.className = "dropdown"
+  
+  button.replaceWith(dropdownContainer)
+
+  // button.classList.add("dropdown-toggle")
+  button.setAttribute("data-bs-toggle", "dropdown")
+
+  const list = document.createElement("ul")
+  list.className = "dropdown-menu"
+  for (const option of options) {
+    const item = document.createElement("li")
+
+    const link = document.createElement("a")
+    link.innerText = option.text 
+    link.classList.add("dropdown-item") 
+    item.appendChild(link)
+    item.addEventListener("click", () => option.callback())
+
+    list.appendChild(item)
+  }
+
+  dropdownContainer.appendChild(button)
+  dropdownContainer.appendChild(list) 
+
+  return dropdownContainer
+  // button.parentNode.replaceChild(dropdownContainer, button)
+}
+
 export function createDropdownDownloadButton(
   compact = true,
   downloadOptions = []
@@ -1037,6 +1067,8 @@ export function popup(container, content, options) {
     ...options,
   };
 
+  container.classList.add("unfocused");
+
   const popupTemplate = /*html*/ `
     <div class="popup-topbar">
       <div class="popup-title">${options.title}</div>
@@ -1089,6 +1121,7 @@ export function popup(container, content, options) {
       options.backdrop.style.pointerEvents = "auto";
     }
     popupContainer.remove();
+    container.classList.remove("unfocused");
   }
 
   function backdrop() {

@@ -31,12 +31,9 @@
       </div>
 
       <div id="ex-dashboard">
- 
-  
-        <div id="grid-container">
-        </div>
-  
-        <div id="ex-infobar">
+
+          
+        <!-- <div id="ex-infobar">
           <div id="color-legend" >
           </div>
   
@@ -44,19 +41,46 @@
             US county-level age adjusted-mortality rate (per 100,000), 2022, US, All Cancers, All Races, All Sexes
           </div>
 
-          <!-- <div id="loading-test">
-            ...
-          </div> -->
   
           <div id="ex-settings-card">
             <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i>
             <i id="button-color-settings" class="settings-button fas fa-palette" tip="Color settings"></i>
             <i id="button-table" class="settings-button fa-solid fa-table" tip="Table [WIP]"></i>
             <i id="button-download" class="settings-button fa-solid fa-download" tip="Download"></i>
-            <!-- <i id="button-settings" class="settings-button fa-solid fa-gear"></i> -->
-            <!-- <i class="settings-button fas fa-angle-up"></i> -->
           </div>
+        </div> -->
+
+        <div id="ex-infobar">
+          <div id="infobar-titles">
+            <div id="tool-title">
+              EpiTracker Cancer: Map Dashboard
+            </div>
+            <div id="title" >
+              US county-level age adjusted-mortality rate (per 100,000), 2022, US, All Cancers, All Races, All Sexes
+            </div>
+          </div>
+
+          <div id="infobar-right">
+            <div id="color-legend" >
+            </div>
+    
+            <div id="ex-settings-card">
+              <!-- <i id="button-edit-grid" class="settings-button fa-solid fa-plus" tip="Add row or column"></i> -->
+              <i id="button-edit-grid" class="settings-button fa-solid fa-plus" ></i>
+              <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i>
+              <i id="button-color-settings" class="settings-button fas fa-palette" tip="Color settings"></i>
+              <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
+              <i id="button-table" class="settings-button fas fa-image" tip="Download image"></i>
+              <i id="button-download" class="settings-button fa-solid fa-download" tip="Download data"></i>
+            </div>
+          </div>
+        
         </div>
+ 
+  
+        <div id="grid-container">
+        </div>
+
      </div>
     </div>
   </div>
@@ -192,5 +216,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   
   <!-- <script type="module" src="../src/pages/mapPage3.js"></script> -->
+  <script src="https://unpkg.com/tippy.js@6"></script>
+
   <script type="module" src="../src/pages/mapPage.js"></script>
+
 </body>
