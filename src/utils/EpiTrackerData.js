@@ -293,7 +293,7 @@ export class EpiTrackerData {
 
     // return data
 
-    const refYear = year.split("-")[0]
+    const refYear = year.split("-")[1]
 
     const filename = `quantile_data_${year}_ref-${refYear}_q${nQuantiles}.csv`
     return this.#smartLoadZipData(

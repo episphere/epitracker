@@ -36,7 +36,7 @@ window.onload = async () => {
  * Defining some of the necessary configuration options and default values.
  */
 const COMPARABLE_FIELDS = ["race", "sex"];
-const DATA_YEARS = ["2018", "2019", "2020", "2021", "2022", "2018-2022"];
+const DATA_YEARS = ["2018-2022"];
 const QUANTILE_NUMBERS = ["4", "5", "10"];
 // TODO: here...
 const NUMERIC_MEASURES = [
@@ -54,7 +54,7 @@ const INITIAL_STATE = {
   compareFacet: "none",
   sex: "All",
   race: "All",
-  year: "2022",
+  year: "2018-2022",
   measure: "age_adjusted_rate",
   cause: "All",
   quantileField: "adult_smoking",
@@ -100,7 +100,7 @@ export function init() {
 
   Promise.all([
     d3.json("../data/quantile/quantile_details.json"),
-    dataManager.getQuantileMortalityData({ year: "2022", num_quantiles: 4 }),
+    dataManager.getQuantileMortalityData({ year: "2018-2022", num_quantiles: 4 }),
   ]).then(([quantileDetails, mortalityData]) => {
     initialDataLoad(mortalityData, quantileDetails);
   });

@@ -377,7 +377,7 @@ const names = {
       "description": "Percentage of female Medicare enrollees ages 65-74 that received an annual mammography screening.",
       "unit": "Proportion"
     },
-    "high_school_graduation": {
+    "high_school_completion": {
       "measure": "High school graduation",
       "description": "Percentage of ninth-grade cohort that graduates in four years.",
       "unit": "Proportion"
