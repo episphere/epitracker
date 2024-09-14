@@ -14,15 +14,15 @@ export const COLORS = {
     "Non-Hispanic More than one race": "#eeeeee"
   },
   age_group: {
-    "85+": "#563f46",
-    "75-84": "#f0f0f0",
-    "65-74": "#ff00f0",
-    "55-64": "#0ff",
-    "45-54": "#29483A",
-    "35-44": "#50394c",
-    "25-34": "#ffef96",
-    "15-24": "#c1946a",
-    "5-14": "#00f",
-    "0-4": "#0001ff"
+    "85+": "slateblue",
+    "75-84": "slateblue",
+    "65-74": "slateblue",
+    "55-64": "slateblue",
+    "45-54": "slateblue",
+    "35-44": "slateblue",
+    "25-34": "slateblue",
+    "15-24": "slateblue",
+    "5-14": "slateblue",
+    "0-4": "slateblue"
   }
 }
