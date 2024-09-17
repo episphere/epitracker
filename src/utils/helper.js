@@ -1068,6 +1068,7 @@ export function popup(container, content, options) {
   };
 
   container.classList.add("unfocused");
+  document.body.style.overflow = 'hidden'
 
   const popupTemplate = /*html*/ `
     <div class="popup-topbar">
@@ -1122,6 +1123,7 @@ export function popup(container, content, options) {
     }
     popupContainer.remove();
     container.classList.remove("unfocused");
+    document.body.style.overflow = 'auto'
   }
 
   function backdrop() {

@@ -317,7 +317,7 @@ footer {
   box-shadow: 0px 1px 6px 1px rgb(211, 211, 211);
   transform: translate(-50%, -50%);
   filter: blur(0px);
-  z-index: 1000;
+  z-index: 100;
 }
 
 .popup-topbar {
