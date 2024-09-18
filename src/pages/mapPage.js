@@ -43,7 +43,7 @@ const CONSTANTS = {
 
 
 export const CAUSE_SEX_MAP = {
-  Breast: "Female", // female, male
+  "Breast": "Female", // female, male
   "Cervix Uteri": "Female",
   // 'Colon and Rectum': 'female'
 };
@@ -182,7 +182,7 @@ class MapApplication {
         });
       } else {
         // Reset sex and sexOptions
-        this.resetSexOptions();
+        this.resetFields();
       }
     });
 
@@ -400,30 +400,30 @@ class MapApplication {
     hookCheckbox("#check-center-mean-color", this.state, "colorCenterMean");
     hookCheckbox("#check-exclude-outliers", this.state, "colorExcludeOutliers");
   }
-resetFields() {
-  // Reset sex
-  this.state.sex = 'all'; 
-  this.state.sexOptions = this.state.sexOptions.map(item => {
-    const itemLowerCased = typeof item === 'string' ? item.toLowerCase() : item.value;
-    return {
-      value: itemLowerCased,
-      label: typeof item === 'string' ? item : item.label,
-      disabled: false
-    };
-  });
+  resetFields() {
+    // Reset sex
+    this.state.sex = 'all'; 
+    this.state.sexOptions = this.state.sexOptions.map(item => {
+      const itemLowerCased = typeof item === 'string' ? item.toLowerCase() : item.value;
+      return {
+        value: itemLowerCased,
+        label: typeof item === 'string' ? item : item.label,
+        disabled: false
+      };
+    });
 
-  // Reset cause
-  this.state.cause = 'All';
+    // Reset cause
+    this.state.cause = 'All';
 
-  // Reset race
-  this.state.race = 'All'; // Reset race to default value
+    // Reset race
+    this.state.race = 'All'; // Reset race to default value
 
-  // Reset county
-  this.state.areaCounty = 'All'; // Reset county to default value
+    // Reset county
+    this.state.areaCounty = 'All'; // Reset county to default value
 
-  // Reset state
-  this.state.areaState = 'All'; // Reset state to default value
-}
+    // Reset state
+    this.state.areaState = 'All'; // Reset state to default value
+  }
   async getOptionValues() {
     const data = await this.dataManager.getCountyMortalityData({year: "2018-2022"})
     const valueObj = {} 

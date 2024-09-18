@@ -5,7 +5,7 @@ Tabulator.registerModule( [FrozenColumnsModule, SortModule, FormatModule])
 
 
 export const CAUSE_SEX_MAP = {
-  Breast: "Female", // female, male
+  "Breast": "Female", // female, male
   "Cervix Uteri": "Female",
   // 'Colon and Rectum': 'female'
 };
