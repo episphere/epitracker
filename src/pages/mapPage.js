@@ -171,13 +171,13 @@ class MapApplication {
 
     this.state.subscribe('cause', (event) => {
       if (CAUSE_SEX_MAP[event]) {
-        this.state.sex = CAUSE_SEX_MAP[event].toLowerCase(); // Lock sex to mapped value
+        this.state.sex = CAUSE_SEX_MAP[event]; // Lock sex to mapped value
         this.state.sexOptions = this.state.sexOptions.map(item => {
-          const itemLowerCased = typeof item === 'string' ? item.toLowerCase() : item.value;
+          const itemLowerCased = typeof item === 'string' ? item : item.value;
           return {
             value: itemLowerCased,
             label: typeof item === 'string' ? item : item.label,
-            disabled: itemLowerCased !== CAUSE_SEX_MAP[event].toLowerCase() // Disable other options
+            disabled: itemLowerCased !== CAUSE_SEX_MAP[event] // Disable other options
           };
         });
       } else {
