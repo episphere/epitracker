@@ -41,9 +41,8 @@ const CONSTANTS = {
   STATE_URL_FIELDS: ["scheme", "colorReverse", "colorExcludeOutliers", "outlierCutoff"]
 }
 
-
 export const CAUSE_SEX_MAP = {
-  "Breast": "Female", // female, male
+  Breast: "Female", // female, male
   "Cervix Uteri": "Female",
   // 'Colon and Rectum': 'female'
 };
@@ -145,49 +144,62 @@ class MapApplication {
       this.parseUrl();
       this.updateGrid();
     });
+
     this.state.subscribe("race", (event) => {
       if (event === 'Non-Hispanic American Indian or Alaska Native') {
         this.state.spatialLevel = 'state';
-        this.state.spatialLevelOptions = this.state.spatialLevelOptions.map(item => ({
-          ...item,
-          disabled: item.value === 'county'
-        }));
+        this.state.spatialLevelOptions = this.state.spatialLevelOptions.map(item => {
+          return {
+            ...item,
+            disabled: item.value === 'county'
+          }
+        })
       } else {
         this.state.spatialLevel = 'county';
-        this.state.spatialLevelOptions = this.state.spatialLevelOptions.map(item => ({
-          ...item,
-          disabled: false
-        }));
+        this.state.spatialLevelOptions = this.state.spatialLevelOptions.map(item => {
+          return {
+            ...item,
+            disabled: false
+          }
+        })
       }
-    });
+    })
 
     this.state.subscribe("spatialLevel", (event) => {
+      console.log('spatialLevel', {event});
       if (event === 'state') {
         choices["#select-select-county"].disable();
       } else {
         choices["#select-select-county"].enable();
       }
-    });
+      
+    })
 
     this.state.subscribe('cause', (event) => {
+      console.log({event, CAUSE_SEX_MAP, state: this.state});
       if (CAUSE_SEX_MAP[event]) {
-        this.state.sex = CAUSE_SEX_MAP[event].toLowerCase(); // Lock sex to mapped value
+        this.state.sex = CAUSE_SEX_MAP[event];
         this.state.sexOptions = this.state.sexOptions.map(item => {
-          const itemLowerCased = typeof item === 'string' ? item.toLowerCase() : item.value;
+          const itemLowerCased = typeof item === 'string' ? item : item.value
           return {
             value: itemLowerCased,
             label: typeof item === 'string' ? item : item.label,
-            disabled: itemLowerCased !== CAUSE_SEX_MAP[event].toLowerCase() // Disable other options
-          };
-        });
+            disabled: itemLowerCased !== CAUSE_SEX_MAP[event]
+          }
+        })
       } else {
-        // Reset sex and sexOptions
-        this.resetFields();
+        this.state.sex = 'All';
+        this.state.sexOptions = this.state.sexOptions.map(item => {
+          const itemLowerCased = typeof item === 'string' ? item : item.value
+          return {
+            value: itemLowerCased,
+            label: typeof item === 'string' ? item : item.label,
+            disabled: false
+          }
+        })
       }
-    });
-
-
-
+      
+    })
   }
 
 
@@ -400,30 +412,8 @@ class MapApplication {
     hookCheckbox("#check-center-mean-color", this.state, "colorCenterMean");
     hookCheckbox("#check-exclude-outliers", this.state, "colorExcludeOutliers");
   }
-  resetFields() {
-    // Reset sex
-    this.state.sex = 'all'; 
-    this.state.sexOptions = this.state.sexOptions.map(item => {
-      const itemLowerCased = typeof item === 'string' ? item.toLowerCase() : item.value;
-      return {
-        value: itemLowerCased,
-        label: typeof item === 'string' ? item : item.label,
-        disabled: false
-      };
-    });
 
-    // Reset cause
-    this.state.cause = 'All';
 
-    // Reset race
-    this.state.race = 'All'; // Reset race to default value
-
-    // Reset county
-    this.state.areaCounty = 'All'; // Reset county to default value
-
-    // Reset state
-    this.state.areaState = 'All'; // Reset state to default value
-  }
   async getOptionValues() {
     const data = await this.dataManager.getCountyMortalityData({year: "2018-2022"})
     const valueObj = {} 
@@ -491,7 +481,6 @@ class MapApplication {
 
     this.cardStates = this.getCardStates(this.url)
   }
-
 
   /**
    * Fully reset / update the plot grid, usually in response to a page load or undo operation.
@@ -743,101 +732,100 @@ class MapApplication {
   }  
 
 
-createMapCard(x, y, cardState) {
-  this.resetFields(); // Ensure fields are reset before creating a new card
-  if (cardState) {
-    const query = {
-      sex: cardState.sex,
-      race: cardState.race,
-      cause: cardState.cause,
-      year: cardState.year
-    }
-    if (cardState.areaCounty && cardState.areaCounty != "All") {
-      query.county_fips = cardState.areaCounty;
-    }
-    if (cardState.areaState && cardState.areaState  != "All") {
-      query.state_fips = cardState.areaState;
-    }
-    if (cardState.spatialLevel == "state") {
-      query.county_fips = "All";
-    }
+  createMapCard(x, y, cardState) {
+    if (cardState) {
+      const query = {
+        sex: cardState.sex,
+        race: cardState.race,
+        cause: cardState.cause,
+        year: cardState.year
+      }
+      if (cardState.areaCounty && cardState.areaCounty != "All") {
+        query.county_fips = cardState.areaCounty
+      }
+      if (cardState.areaState && cardState.areaState  != "All") {
+        query.state_fips = cardState.areaState
+      }
+      if (cardState.spatialLevel == "state") {
+        query.county_fips = "All";
+      }
+  
+      let data = null;
+      if (cardState.measure == "population") {
+        const populationQuery = {...query};
+        delete populationQuery.cause;
+        data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
+      } else {
+        data = this.dataManager.getCountyMortalityData(query, {
+          includeTotals: false, 
+          states: this.state.areaStateOptions, 
+          counties: this.state.areaCountyOptions
+          });
+      }
 
-    let data = null;
-    if (cardState.measure == "population") {
-      const populationQuery = {...query};
-      delete populationQuery.cause;
-      data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
-    } else {
-      data = this.dataManager.getCountyMortalityData(query, {
-        includeTotals: false, 
-        states: this.state.areaStateOptions, 
-        counties: this.state.areaCountyOptions
-        });
-    }
+      // NOTE: DRAW
+      const drawMap = async (width, height) => {
+        // TODO: Add spinner or something to show loading.
 
-    // NOTE: DRAW
-    const drawMap = async (width, height) => {
-      // TODO: Add spinner or something to show loading.
 
-      return data.then(data => {
-        const indexField =  cardState.spatialLevel + "_fips";
+        return data.then(data => {
+          const indexField =  cardState.spatialLevel + "_fips";
 
-        let overlayFeatureCollection = null;
-        if (cardState.spatialLevel == "county") {
-          overlayFeatureCollection = this.sData.stateGeoJSON;
-          if (cardState.areaState != "All") {
-            overlayFeatureCollection = {
-              type: "FeatureCollection",
-              features: this.sData.stateGeoJSON.features.filter(d => d.id == cardState.areaState)
+          let overlayFeatureCollection = null;
+          if (cardState.spatialLevel == "county") {
+            overlayFeatureCollection = this.sData.stateGeoJSON;
+            if (cardState.areaState != "All") {
+              overlayFeatureCollection = {
+                type: "FeatureCollection",
+                features: this.sData.stateGeoJSON.features.filter(d => d.id == cardState.areaState)
+              }
             }
           }
-        }
 
-        const { plot } = createChoroplethPlot(data, featureCollection, {
-          indexField,
-          measureField: cardState.measure, 
-          overlayFeatureCollection,
-          width: width,
-          height: height,
-          color: this.colorConfig, 
+          const { plot } = createChoroplethPlot(data, featureCollection, {
+            indexField,
+            measureField: cardState.measure, 
+            overlayFeatureCollection,
+            width: width,
+            height: height,
+            color: this.colorConfig, 
+          })
+
+          const valueIndex = new Map(data.map(d => [d[indexField], d[cardState.measure]]))
+          this.hookMapTooltip(plot, featureCollection, valueIndex);
+    
+          // this.plot = plot 
+          // this.postRender(this)
+          return plot 
         })
-
-        const valueIndex = new Map(data.map(d => [d[indexField], d[cardState.measure]]))
-        this.hookMapTooltip(plot, featureCollection, valueIndex);
+      }
   
-        // this.plot = plot 
-        // this.postRender(this)
-        return plot 
-      })
-    }
-
-    let featureCollection = null;
-    if (cardState.spatialLevel == "county") {
-      featureCollection = this.sData.countyGeoJSON;
-      if (cardState.areaState != "All") {
-        featureCollection = {
-          type: "FeatureCollection", 
-          features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaState))
+      let featureCollection = null;
+      if (cardState.spatialLevel == "county") {
+        featureCollection = this.sData.countyGeoJSON;
+        if (cardState.areaState != "All") {
+          featureCollection = {
+            type: "FeatureCollection", 
+            features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaState))
+          }
+        }
+      } else {
+        featureCollection = this.sData.stateGeoJSON;
+        if (cardState.areaState != "All") {
+          featureCollection = {
+            type: "FeatureCollection", 
+            features: featureCollection.features.filter(d => d.id == cardState.areaState)
+          }
         }
       }
+
+      this.plotGrid.addCard(drawMap, {x, y, cardState, data, url: this.url, state: this.state});
     } else {
-      featureCollection = this.sData.stateGeoJSON;
-      if (cardState.areaState != "All") {
-        featureCollection = {
-          type: "FeatureCollection", 
-          features: featureCollection.features.filter(d => d.id == cardState.areaState)
-        }
-      }
+      this.plotGrid.addBlank({x, y});
     }
 
-    this.plotGrid.addCard(drawMap, {x, y, cardState, data, url: this.url, state: this.state});
-  } else {
-    this.plotGrid.addBlank({x, y});
+    this.gridUpdated();
   }
-
-  this.gridUpdated();
-}
-
 
 
   /**
