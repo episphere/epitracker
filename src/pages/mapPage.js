@@ -837,25 +837,57 @@ eventButtonDownloadClicked() {
   console.log("Download button clicked");
 
   // Create and show loading message
+  const loadingOverlay = document.createElement("div");
+  loadingOverlay.id = "loading-overlay";
+  loadingOverlay.style.position = 'fixed';
+  loadingOverlay.style.top = '0';
+  loadingOverlay.style.left = '0';
+  loadingOverlay.style.width = '100%';
+  loadingOverlay.style.height = '100%';
+  loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+  loadingOverlay.style.zIndex = '10000';
+  loadingOverlay.style.display = 'flex';
+  loadingOverlay.style.alignItems = 'center';
+  loadingOverlay.style.justifyContent = 'center';
+
   const loadingMessage = document.createElement("div");
   loadingMessage.innerText = "Generating image...";
-  loadingMessage.style.position = 'fixed';
-  loadingMessage.style.top = '50%';
-  loadingMessage.style.left = '50%';
-  loadingMessage.style.transform = 'translate(-50%, -50%)';
-  loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
   loadingMessage.style.color = 'white';
   loadingMessage.style.padding = '20px';
   loadingMessage.style.borderRadius = '5px';
-  loadingMessage.style.zIndex = '10000';
-  document.body.appendChild(loadingMessage);
+  loadingMessage.style.fontSize = '18px';
+  loadingMessage.style.fontFamily = 'Arial, sans-serif';
+
+  // Add spinner to loading message
+  const spinner = document.createElement("div");
+  spinner.className = 'spinner';
+  spinner.style.border = '4px solid rgba(0, 0, 0, 0.1)';
+  spinner.style.borderLeftColor = '#fff';
+  spinner.style.borderRadius = '50%';
+  spinner.style.width = '50px';
+  spinner.style.height = '50px';
+  spinner.style.animation = 'spin 1s linear infinite';
+
+  loadingMessage.appendChild(spinner);
+  loadingOverlay.appendChild(loadingMessage);
+  document.body.appendChild(loadingOverlay);
+
+  // CSS for spinner animation
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `;
+  document.head.appendChild(style);
 
   // Create the Virtual DOM container
   const virtualContainer = document.createElement('div');
   virtualContainer.id = 'virtual-dashboard';
-  virtualContainer.style.position = 'absolute';
-  virtualContainer.style.top = '-9999px'; // Hide it offscreen
-  virtualContainer.style.left = '-9999px';
+  virtualContainer.style.position = 'absolute'; // Use absolute positioning for correct size calculation
+  virtualContainer.style.top = '0';
+  virtualContainer.style.left = '0';
   virtualContainer.style.width = '100%'; // Ensure it captures full width
   virtualContainer.style.height = 'auto'; // Ensure it captures full height
   virtualContainer.style.overflow = 'hidden'; // Hide overflow
@@ -874,11 +906,16 @@ eventButtonDownloadClicked() {
 
     // Remove specific unwanted elements (edit, add, plus icons, etc.)
     const unwantedElements = clonedGridContainer.querySelectorAll(
-      '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
+      '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus, .plot-grid-blank-item'
     );
     unwantedElements.forEach(el => el.remove());
 
-    // Make sure the maps fit inside their containers (adjust sizing)
+    // Ensure the cloned grid container reflects the updated size
+    const boundingRect = gridContainer.getBoundingClientRect();
+    clonedGridContainer.style.width = `${boundingRect.width}px`;
+    clonedGridContainer.style.height = `${boundingRect.height}px`;
+
+    // Ensure the maps fit inside their containers (adjust sizing)
     const maps = clonedGridContainer.querySelectorAll('.grid-card');
     maps.forEach(map => {
       // Adjust the map and card sizes
@@ -918,26 +955,27 @@ eventButtonDownloadClicked() {
   // Append the virtual container to the body
   document.body.appendChild(virtualContainer);
 
-  // Log the content of virtualContainer for debugging
-  console.log("Virtual container content:", virtualContainer.innerHTML);
+  // Ensure the overlay is displayed and the virtual container is properly sized before rendering
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+        console.log("Canvas generated");
 
-  // Render Virtual DOM to Canvas
-  html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-    console.log("Canvas generated");
+        const dataURL = canvas.toDataURL("image/png");
 
-    const dataURL = canvas.toDataURL("image/png");
+        // Trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = dataURL;
+        downloadLink.download = 'dashboard-maps.png';
+        downloadLink.click();
 
-    // Trigger the download
-    const downloadLink = document.createElement('a');
-    downloadLink.href = dataURL;
-    downloadLink.download = 'dashboard-maps.png';
-    downloadLink.click();
-
-    document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-    document.body.removeChild(loadingMessage);    // Remove the loading message
-  }).catch(error => {
-    console.error("Error generating canvas:", error);
-    document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+        document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+        document.body.removeChild(loadingOverlay);    // Remove the loading overlay
+      }).catch(error => {
+        console.error("Error generating canvas:", error);
+        document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
+      });
+    });
   });
 }
 
@@ -1389,59 +1427,103 @@ class PlotCard {
   eventButtonDownloadClicked() {
     console.log("Download button clicked");
 
-    // Create and show loading message
+    // Create and show loading overlay
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.id = "loading-overlay";
+    loadingOverlay.style.position = 'fixed';
+    loadingOverlay.style.top = '0';
+    loadingOverlay.style.left = '0';
+    loadingOverlay.style.width = '100%';
+    loadingOverlay.style.height = '100%';
+    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingOverlay.style.zIndex = '10000';
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.alignItems = 'center';
+    loadingOverlay.style.justifyContent = 'center';
+
     const loadingMessage = document.createElement("div");
     loadingMessage.innerText = "Generating image...";
-    loadingMessage.style.position = 'fixed';
-    loadingMessage.style.top = '50%';
-    loadingMessage.style.left = '50%';
-    loadingMessage.style.transform = 'translate(-50%, -50%)';
-    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
     loadingMessage.style.color = 'white';
     loadingMessage.style.padding = '20px';
     loadingMessage.style.borderRadius = '5px';
-    loadingMessage.style.zIndex = '10000';
-    document.body.appendChild(loadingMessage);
+    loadingMessage.style.fontSize = '18px';
+    loadingMessage.style.fontFamily = 'Arial, sans-serif';
+
+    // Add spinner to loading message
+    const spinner = document.createElement("div");
+    spinner.className = 'spinner';
+    spinner.style.border = '4px solid rgba(0, 0, 0, 0.1)';
+    spinner.style.borderLeftColor = '#fff';
+    spinner.style.borderRadius = '50%';
+    spinner.style.width = '50px';
+    spinner.style.height = '50px';
+    spinner.style.animation = 'spin 1s linear infinite';
+
+    loadingMessage.appendChild(spinner);
+    loadingOverlay.appendChild(loadingMessage);
+    document.body.appendChild(loadingOverlay);
+
+    // CSS for spinner animation
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
 
     // Create the Virtual DOM container
     const virtualContainer = document.createElement('div');
-    virtualContainer.id = 'virtual-dashboard';
+    virtualContainer.id = 'virtual-card';
     virtualContainer.style.position = 'absolute';
     virtualContainer.style.top = '-9999px'; // Hide it offscreen
     virtualContainer.style.left = '-9999px';
-    virtualContainer.style.width = '100%'; // Ensure it captures full width
-    virtualContainer.style.height = 'auto'; // Ensure it captures full height
+    virtualContainer.style.width = 'auto'; // Adjust to fit content
+    virtualContainer.style.height = 'auto'; // Adjust to fit content
     virtualContainer.style.overflow = 'hidden'; // Hide overflow
+    virtualContainer.style.backgroundColor = 'transparent'; // Set background to transparent
 
     // Get the current card's content
     const cardContent = this.getElement().cloneNode(true);
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
+
+    // Make sure the cardContent has no margin or padding
+    cardContent.style.margin = '0';
+    cardContent.style.padding = '0';
+    cardContent.style.backgroundColor = 'transparent'; // Set background to transparent
+
     virtualContainer.appendChild(cardContent);
 
     // Append the virtual container to the body
     document.body.appendChild(virtualContainer);
 
-    // Render Virtual DOM to Canvas
-    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-      console.log("Canvas generated");
+    // Ensure rendering happens after overlay and spinner are visible
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+                console.log("Canvas generated");
 
-      const dataURL = canvas.toDataURL("image/png");
+                const dataURL = canvas.toDataURL("image/png");
 
-      // Trigger the download
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataURL;
-      downloadLink.download = 'card-map.png';
-      downloadLink.click();
+                // Trigger the download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataURL;
+                downloadLink.download = 'card-map.png';
+                downloadLink.click();
 
-      // Clean up
-      document.body.removeChild(virtualContainer);
-      document.body.removeChild(loadingMessage);
-    }).catch(error => {
-      console.error("Error generating canvas:", error);
-      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
+                // Clean up
+                document.body.removeChild(virtualContainer);
+                document.body.removeChild(loadingOverlay);
+            }).catch(error => {
+                console.error("Error generating canvas:", error);
+                document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
+            });
+        });
     });
-  }
+}
+
 
   eventButtonTableClicked(options) {
      const {clientHeight: height} = document.body
