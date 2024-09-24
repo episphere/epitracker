@@ -1493,90 +1493,84 @@ class PlotCard {
 eventButtonDownloadClicked() {
     console.log("Download button clicked");
 
-    // Create and show loading message with spinner immediately
+    // Create loading overlay
     const loadingOverlay = document.createElement("div");
-    loadingOverlay.style.position = 'fixed';
-    loadingOverlay.style.top = '0';
-    loadingOverlay.style.left = '0';
-    loadingOverlay.style.width = '100%';
-    loadingOverlay.style.height = '100%';
-    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
-    loadingOverlay.style.zIndex = '10000';
-    loadingOverlay.style.display = 'flex';
-    loadingOverlay.style.alignItems = 'center';
-    loadingOverlay.style.justifyContent = 'center';
+    Object.assign(loadingOverlay.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        zIndex: '10000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    });
 
+    // Create loading message with spinner
     const loadingMessage = document.createElement("div");
     loadingMessage.style.color = 'white';
     loadingMessage.style.fontSize = '18px';
-    loadingMessage.style.fontFamily = 'Arial, sans-serif';
     loadingMessage.style.textAlign = 'center';
-
-    // Add the spinner element
-    const spinner = document.createElement("div");
-    spinner.style.border = '4px solid rgba(255, 255, 255, 0.3)';
-    spinner.style.borderLeftColor = '#fff';
-    spinner.style.borderRadius = '50%';
-    spinner.style.width = '50px';
-    spinner.style.height = '50px';
-    spinner.style.marginBottom = '10px';
-    spinner.style.animation = 'spin 1s linear infinite';
-
-    // Add spinner and "Generating image..." text
     loadingMessage.innerHTML = "Generating image...";
+
+    const spinner = document.createElement("div");
+    Object.assign(spinner.style, {
+        border: '4px solid rgba(255, 255, 255, 0.3)',
+        borderLeftColor: '#fff',
+        borderRadius: '50%',
+        width: '50px',
+        height: '50px',
+        marginBottom: '10px',
+        animation: 'spin 1s linear infinite'
+    });
+
     loadingMessage.appendChild(spinner);
+    document.head.insertAdjacentHTML('beforeend', `
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `);
 
-    // CSS for spinner animation
-    const style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Append everything to the overlay
     loadingOverlay.appendChild(loadingMessage);
     document.body.appendChild(loadingOverlay);
 
-    // Create the Virtual DOM container
+    // Create Virtual DOM container
     const virtualContainer = document.createElement('div');
     virtualContainer.id = 'virtual-dashboard';
-    virtualContainer.style.position = 'absolute';
-    virtualContainer.style.top = '0'; // Position to top
-    virtualContainer.style.left = '0'; // Position to left
-    virtualContainer.style.width = 'auto'; // Ensure it captures full width
-    virtualContainer.style.height = 'auto'; // Ensure it captures full height
-    virtualContainer.style.overflow = 'hidden'; // Hide overflow
-    virtualContainer.style.backgroundColor = 'transparent'; // Ensure background is transparent
+    Object.assign(virtualContainer.style, {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        overflow: 'hidden',
+        backgroundColor: 'transparent'
+    });
 
-    // Get the current card's content
+    // Get current card's content
     const cardContent = this.getElement().cloneNode(true);
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
 
-    // Remove unwanted icons if they exist
+    // Remove unwanted icons
     const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button');
     iconsToRemove.forEach(icon => icon.remove());
 
     virtualContainer.appendChild(cardContent);
     document.body.appendChild(virtualContainer);
 
-    // Adjust the size of the virtual container based on content
+    // Set size of the virtual container
     const rect = cardContent.getBoundingClientRect();
     virtualContainer.style.width = `${rect.width}px`;
     virtualContainer.style.height = `${rect.height}px`;
 
-    // Use setTimeout to ensure the loading overlay is visible before rendering the canvas
     setTimeout(() => {
         // Render Virtual DOM to Canvas
         html2canvas(virtualContainer, { useCORS: true, backgroundColor: null }).then(canvas => {
-            console.log("Canvas generated");
-
             const dataURL = canvas.toDataURL("image/png");
-
-            // Trigger the download
             const downloadLink = document.createElement('a');
             downloadLink.href = dataURL;
             downloadLink.download = 'card-map.png';
@@ -1587,10 +1581,11 @@ eventButtonDownloadClicked() {
             document.body.removeChild(loadingOverlay);
         }).catch(error => {
             console.error("Error generating canvas:", error);
-            document.body.removeChild(loadingOverlay);  // Remove the loading message in case of error
+            document.body.removeChild(loadingOverlay);
         });
-    }, 0); // Set a minimal delay to ensure the overlay is rendered
+    }, 0);
 }
+
 
   eventButtonTableClicked(options) {
      const {clientHeight: height} = document.body
