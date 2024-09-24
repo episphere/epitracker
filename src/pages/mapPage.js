@@ -69,69 +69,85 @@ class MapApplication {
 
     // The elems object contains references to the applications HTML elements.
     this.elems = {
-      // body: document.getEl("dashboard-container"),
-      dashboardContainer: document.getElementById("dashboard-container"),
-      dashboard: document.getElementById("dashboard"),
-      innerDashboard: document.getElementById("ex-dashboard"),
-      gridContainer: document.getElementById("grid-container"),
-      grid: document.getElementById("grid-stack"),
-      buttonUndo: document.getElementById("button-undo"),
-      buttonColorSettings: document.getElementById("button-color-settings"),
-      buttonTable: document.getElementById("button-table"),
-      buttonDownload: document.getElementById("button-download"),
-      buttonEditGrid: document.getElementById("button-edit-grid"),
-      title: document.getElementById("title"),
-     
-      // Color settings popup
-      colorLegend: document.getElementById("color-legend"),
-      colorSettings: document.getElementById("color-settings"),
-      buttonColorSettingsClose: document.getElementById("color-settings-close"),
-     
-      // Map tooltip
-      mapTooltipContent: document.getElementById("map-tooltip"),
-      mapTooltipName: document.getElementById("map-tooltip-name"),
-      mapTooltipValue: document.getElementById("map-tooltip-value"),
-      mapTooltipPlot: document.getElementById("map-tooltip-plot")
-    };
+  dashboardContainer: document.getElementById("dashboard-container"),
+  dashboard: document.getElementById("dashboard"),
+  innerDashboard: document.getElementById("ex-dashboard"),
+  gridContainer: document.getElementById("grid-container"),
+  grid: document.getElementById("grid-stack"),
+  buttonUndo: document.getElementById("button-undo"),
+  buttonColorSettings: document.getElementById("button-color-settings"),
+  buttonTable: document.getElementById("button-table"),            // Table button
+  buttonDownload: document.getElementById("button-download"),      // Data download button
+  buttonDownloadImage: document.getElementById("button-download-image"), // Image download button
+  buttonEditGrid: document.getElementById("button-edit-grid"),
+  title: document.getElementById("title"),
+  
+  // Color settings popup
+  colorLegend: document.getElementById("color-legend"),
+  colorSettings: document.getElementById("color-settings"),
+  buttonColorSettingsClose: document.getElementById("color-settings-close"),
+  
+  // Map tooltip
+  mapTooltipContent: document.getElementById("map-tooltip"),
+  mapTooltipName: document.getElementById("map-tooltip-name"),
+  mapTooltipValue: document.getElementById("map-tooltip-value"),
+  mapTooltipPlot: document.getElementById("map-tooltip-plot")
+};
 
-    this.tippyMap = addTippys();
+console.log(this.elems.buttonDownloadImage); // Ensure the buttonDownloadImage is not null
 
-    this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
+this.tippyMap = addTippys();
 
-    this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
-    this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
+this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
 
-    // Non query data.
-    this.sData = {
-      stateGeoJSON: await d3.json("../data/states.json"),
-      countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
-    };
+this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
+this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
 
-    // Set the county names after the GeoJSON is loaded.
-    const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
+// Non query data.
+this.sData = {
+  stateGeoJSON: await d3.json("../data/states.json"),
+  countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
+};
 
-    const countyOptions =  this.state.areaCountyOptions.map(d => {
-      let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0,2), "short");
-      return { value: d, label: name}
-    })
-    this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+// Set the county names after the GeoJSON is loaded.
+const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
 
-    this.addColorSettingsPopup(); 
+const countyOptions =  this.state.areaCountyOptions.map(d => {
+  let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0, 2), "short");
+  return { value: d, label: name }
+});
+this.state.areaCountyOptions = countyOptions.filter(d => d.label);
 
-    // Initialize the grid, and updagte it with the starting state.
-    this.updateGrid();
-    this.toggleLoading(false);
+this.addColorSettingsPopup(); 
 
-    this.showInitialHints();
+// Initialize the grid, and update it with the starting state.
+this.updateGrid();
+this.toggleLoading(false);
 
-    this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
-    this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
-    this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
+this.showInitialHints();
 
-    createDropdownButton(this.elems.buttonDownload, [
-      {text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON")},
-      {text: "Download data (CSV)", callback: () =>this.eventButtonDownloadData("CSV")}
-    ]);
+this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
+this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
+this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
+
+// Create a dropdown for data download (JSON/CSV)
+createDropdownButton(this.elems.buttonDownload, [
+  { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
+  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") }
+]);
+
+// Create a separate dropdown for image download (PNG/SVG)
+  createDropdownButton(this.elems.buttonDownloadImage, [
+    { text: "Download as PNG", callback: () => this.eventButtonDownloadImage("PNG") },
+    { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
+  ]);
+
+  // Dropdown for grid editing
+  createDropdownButton(this.elems.buttonEditGrid, [
+    { text: "Add map row", callback: () => this.plotGrid.addRow() },
+    { text: "Add map column", callback: () => this.plotGrid.addColumn() }
+  ]);
+
 
     createDropdownButton(this.elems.buttonEditGrid, [
       {text: "Add map row", callback: () => this.plotGrid.addRow()},
@@ -902,22 +918,182 @@ class MapApplication {
   }
 
   // TODO: Remove redundant codes
-  eventButtonDownloadClicked() {
+//   eventButtonDownloadImage(format) {
+//     console.log("Download button clicked");
+
+//     // Create and show the loading overlay immediately
+//     const loadingOverlay = document.createElement("div");
+//     loadingOverlay.style.position = 'fixed';
+//     loadingOverlay.style.top = '0';
+//     loadingOverlay.style.left = '0';
+//     loadingOverlay.style.width = '100%';
+//     loadingOverlay.style.height = '100%';
+//     loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+//     loadingOverlay.style.zIndex = '10000';
+//     loadingOverlay.style.display = 'flex';
+//     loadingOverlay.style.alignItems = 'center';
+//     loadingOverlay.style.justifyContent = 'center';
+
+//     // Create the loading message and spinner
+//     const loadingMessage = document.createElement("div");
+//     loadingMessage.style.color = 'white';
+//     loadingMessage.style.fontSize = '18px';
+//     loadingMessage.style.fontFamily = 'Arial, sans-serif';
+//     loadingMessage.style.textAlign = 'center';
+
+//     // Add the spinner element
+//     const spinner = document.createElement("div");
+//     spinner.style.border = '4px solid rgba(255, 255, 255, 0.3)';
+//     spinner.style.borderLeftColor = '#fff';
+//     spinner.style.borderRadius = '50%';
+//     spinner.style.width = '50px';
+//     spinner.style.height = '50px';
+//     spinner.style.marginBottom = '10px';
+//     spinner.style.animation = 'spin 1s linear infinite';
+
+//     // Add spinner and "Generating image..." text
+//     loadingMessage.innerText = "Generating image...";
+//     loadingMessage.appendChild(spinner);
+//     loadingOverlay.appendChild(loadingMessage);
+//     document.body.appendChild(loadingOverlay);
+
+//     // Use setTimeout to let the browser render the loading overlay immediately
+//     setTimeout(() => {
+//         // Create the Virtual DOM container
+//         const virtualContainer = document.createElement('div');
+//         virtualContainer.id = 'virtual-dashboard';
+//         virtualContainer.style.position = 'absolute';
+//         virtualContainer.style.top = '-9999px'; // Hide it offscreen
+//         virtualContainer.style.left = '-9999px';
+//         virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
+//         virtualContainer.style.overflow = 'hidden'; // Hide overflow
+
+//         const originalDashboard = document.getElementById('ex-dashboard');
+//         const gridContainer = originalDashboard.querySelector('#grid-container');
+//         const legend = originalDashboard.querySelector('#color-legend');
+//         const title = originalDashboard.querySelector('#title');
+
+//         let clonedGridContainer; // Declare outside the if block
+
+//         // Clone the grid container (preserves the layout of maps)
+//         if (gridContainer) {
+//             console.log("Grid container found and cloning");
+//             clonedGridContainer = gridContainer.cloneNode(true);
+
+//             // Remove specific unwanted elements (edit, add, plus icons, etc.)
+//             const unwantedElements = clonedGridContainer.querySelectorAll(
+//                 '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
+//             );
+//             unwantedElements.forEach(el => el.remove());
+
+//             // Make sure the maps fit inside their containers (adjust sizing)
+//             const maps = clonedGridContainer.querySelectorAll('.grid-card');
+//             maps.forEach(map => {
+//                 map.style.width = '100%'; // Ensure the card takes the full width
+//                 map.style.height = 'auto'; // Let height adjust automatically
+
+//                 const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
+//                 if (mapContent) {
+//                     mapContent.style.width = '100%';
+//                     mapContent.style.height = '100%'; // Ensure it fits within the card
+//                     mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+//                 }
+//             });
+
+//             // Append the cloned grid container to the virtual container
+//             virtualContainer.appendChild(clonedGridContainer);
+//         } else {
+//             console.warn("Grid container not found");
+//         }
+
+//         // Clone title element
+//         if (title) {
+//             const clonedTitle = title.cloneNode(true);
+//             virtualContainer.appendChild(clonedTitle);
+//         } else {
+//             console.warn("Title element not found");
+//         }
+
+//         // Clone legend element
+//         if (legend) {
+//             console.log("Legend found and cloning");
+//             const clonedLegend = legend.cloneNode(true);
+//             virtualContainer.appendChild(clonedLegend);
+//         } else {
+//             console.warn("Legend element not found");
+//         }
+
+//         // Append the virtual container to the body
+//         document.body.appendChild(virtualContainer);
+
+//         // Set the height of the virtual container after appending
+//         virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
+
+//         // Ensure the virtualContainer is tall enough to accommodate the maps
+//         if (clonedGridContainer) {
+//             const gridContainerHeight = clonedGridContainer.offsetHeight;
+//             const legendHeight = legend ? legend.offsetHeight : 0;
+//             const titleHeight = title ? title.offsetHeight : 0;
+//             virtualContainer.style.height = `${gridContainerHeight + legendHeight + titleHeight}px`;
+//         }
+
+//         // Render Virtual DOM to Canvas
+//         html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+//             console.log("Canvas generated");
+
+//             const dataURL = canvas.toDataURL("image/png");
+
+//             // Trigger the download
+//             const downloadLink = document.createElement('a');
+//             downloadLink.href = dataURL;
+//             downloadLink.download = 'dashboard-maps.png';
+//             downloadLink.click();
+
+//             // Clean up
+//             document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+//             document.body.removeChild(loadingOverlay);    // Remove the loading overlay
+//         }).catch(error => {
+//             console.error("Error generating canvas:", error);
+//             document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
+//         });
+//     }, 0); // Delay for rendering, but it's 0 to let the UI thread process the overlay
+// }
+
+  /**
+   * DIRECT EVENT HANDLER.
+   * Called when the user clicks the the color settings button.
+   */
+  eventButtonColorSettingsClicked() {}
+
+ eventButtonDownloadImage(format) {
     console.log("Download button clicked");
 
-    // Create and show loading message
+    // Create and show loading overlay and message immediately
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.style.position = 'fixed';
+    loadingOverlay.style.top = '0';
+    loadingOverlay.style.left = '0';
+    loadingOverlay.style.width = '100vw';
+    loadingOverlay.style.height = '100vh';
+    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingOverlay.style.zIndex = '10000';
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.justifyContent = 'center';
+    loadingOverlay.style.alignItems = 'center';
+    loadingOverlay.style.flexDirection = 'column';
+
     const loadingMessage = document.createElement("div");
     loadingMessage.innerText = "Generating image...";
-    loadingMessage.style.position = 'fixed';
-    loadingMessage.style.top = '50%';
-    loadingMessage.style.left = '50%';
-    loadingMessage.style.transform = 'translate(-50%, -50%)';
-    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
     loadingMessage.style.color = 'white';
     loadingMessage.style.padding = '20px';
     loadingMessage.style.borderRadius = '5px';
-    loadingMessage.style.zIndex = '10000';
-    document.body.appendChild(loadingMessage);
+
+    const spinner = document.createElement("div");
+    spinner.className = "spinner"; // Add your spinner class or style here
+    loadingOverlay.appendChild(spinner);
+    loadingOverlay.appendChild(loadingMessage);
+
+    document.body.appendChild(loadingOverlay); // Show loading overlay first
 
     // Create the Virtual DOM container
     const virtualContainer = document.createElement('div');
@@ -925,8 +1101,7 @@ class MapApplication {
     virtualContainer.style.position = 'absolute';
     virtualContainer.style.top = '-9999px'; // Hide it offscreen
     virtualContainer.style.left = '-9999px';
-    virtualContainer.style.width = '100%'; // Ensure it captures full width
-    virtualContainer.style.height = 'auto'; // Ensure it captures full height
+    virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
     virtualContainer.style.overflow = 'hidden'; // Hide overflow
 
     const originalDashboard = document.getElementById('ex-dashboard');
@@ -936,147 +1111,104 @@ class MapApplication {
 
     // Clone the grid container (preserves the layout of maps)
     if (gridContainer) {
-      console.log("Grid container found and cloning");
+        console.log("Grid container found and cloning");
 
-      // Clone grid container and remove unwanted elements
-      const clonedGridContainer = gridContainer.cloneNode(true);
+        // Clone grid container and ensure grid layout styles are preserved
+        const clonedGridContainer = gridContainer.cloneNode(true);
+        clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
+        clonedGridContainer.style.gridTemplateColumns = getComputedStyle(gridContainer).gridTemplateColumns; // Keep columns
+        clonedGridContainer.style.gridTemplateRows = getComputedStyle(gridContainer).gridTemplateRows; // Keep rows
 
-      // Remove specific unwanted elements (edit, add, plus icons, etc.)
-      const unwantedElements = clonedGridContainer.querySelectorAll(
-        '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
-      );
-      unwantedElements.forEach(el => el.remove());
+        // Remove specific unwanted elements (image icons, plus buttons, etc.)
+        const unwantedElements = clonedGridContainer.querySelectorAll(
+            '.fa-table, ' +  // Table icon
+            '.fa-image, ' +  // Image icon
+            '.plot-grid-blank-item, ' +  // Blank grid items
+            '.fa-plus-square, ' +  // Plus buttons
+            '.plot-grid-add, ' +  // Plot grid add button (for rows or columns)
+            '.fa-edit, ' +  // Edit button
+            '.fa-grip-horizontal, ' +  // Drag handle
+            '.fa-expand, ' +  // Expand button
+            '.fa-times'  // Close button
+        );
 
-      // Make sure the maps fit inside their containers (adjust sizing)
-      const maps = clonedGridContainer.querySelectorAll('.grid-card');
-      maps.forEach(map => {
-        // Adjust the map and card sizes
-        map.style.width = '100%'; // Ensure the card takes the full width
-        map.style.height = 'auto'; // Let height adjust automatically
+        unwantedElements.forEach(el => el.remove());
 
-        const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
-        if (mapContent) {
-          mapContent.style.width = '100%';
-          mapContent.style.height = '100%'; // Ensure it fits within the card
-          mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
-        }
-      });
+        // Make sure the maps fit inside their containers (adjust sizing)
+        const maps = clonedGridContainer.querySelectorAll('.grid-card');
+        maps.forEach(map => {
+            map.style.width = '100%'; // Ensure the card takes the full width
+            map.style.height = 'auto'; // Let height adjust automatically
 
-      virtualContainer.appendChild(clonedGridContainer);
+            const mapContent = map.querySelector('.map-content');
+            if (mapContent) {
+                mapContent.style.width = '100%';
+                mapContent.style.height = '100%'; // Ensure it fits within the card
+                mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+            }
+        });
+
+        // Append the cloned grid container to the virtual container
+        virtualContainer.appendChild(clonedGridContainer);
     } else {
-      console.warn("Grid container not found");
+        console.warn("Grid container not found");
     }
 
-    // Clone title element
+    // Clone title element and style it
     if (title) {
-      const clonedTitle = title.cloneNode(true);
-      virtualContainer.appendChild(clonedTitle);
+        const clonedTitle = title.cloneNode(true);
+        clonedTitle.style.marginBottom = '20px'; // Space below the title
+        clonedTitle.style.textAlign = 'center'; // Center title
+        virtualContainer.appendChild(clonedTitle);
     } else {
-      console.warn("Title element not found");
+        console.warn("Title element not found");
     }
 
-    // Clone legend element
+    // Clone legend element and style it
     if (legend) {
-      console.log("Legend found and cloning");
-      const clonedLegend = legend.cloneNode(true);
-      virtualContainer.appendChild(clonedLegend);
+        console.log("Legend found and cloning");
+        const clonedLegend = legend.cloneNode(true);
+        clonedLegend.style.marginTop = '20px'; // Space above the legend
+        clonedLegend.style.textAlign = 'center'; // Center legend
+        virtualContainer.appendChild(clonedLegend);
     } else {
-      console.warn("Legend element not found");
+        console.warn("Legend element not found");
     }
 
     // Append the virtual container to the body
     document.body.appendChild(virtualContainer);
 
+    // Set the height of the virtual container after appending
+    virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
+
     // Log the content of virtualContainer for debugging
     console.log("Virtual container content:", virtualContainer.innerHTML);
 
-    // Render Virtual DOM to Canvas
-    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-      console.log("Canvas generated");
+    // Use a timeout to ensure the loading overlay appears immediately
+    setTimeout(() => {
+        // Render Virtual DOM to Canvas
+        html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+            console.log("Canvas generated");
 
-      const dataURL = canvas.toDataURL("image/png");
+            const dataURL = canvas.toDataURL("image/png");
 
-      // Trigger the download
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataURL;
-      downloadLink.download = 'dashboard-maps.png';
-      downloadLink.click();
+            // Trigger the download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = dataURL;
+            downloadLink.download = 'dashboard-maps.png';
+            downloadLink.click();
 
-      document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-      document.body.removeChild(loadingMessage);    // Remove the loading message
-    }).catch(error => {
-      console.error("Error generating canvas:", error);
-      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
-    });
-  }
-
-
-  /**
-   * DIRECT EVENT HANDLER.
-   * Called when the user clicks the the color settings button.
-   */
-  eventButtonColorSettingsClicked() {}
-
-  eventButtonTableClicked() {
-    // Why the async function call?
-    (async () => {
-      const {clientHeight: height} = document.body
-      const cardStates = this.getCardStates(this.url)
-  
-      const data = [];
-  
-      for (const cardState of cardStates) {
-      const query = {
-        sex: cardState.sex,
-        race: cardState.race,
-        cause: cardState.cause,
-        year: cardState.year
-      }
-      if (cardState.areaCounty && cardState.areaCounty != "All") {
-        query.county_fips = cardState.areaCounty
-      }
-      if (cardState.areaState && cardState.areaState != "All") {
-        query.state_fips = cardState.areaState
-      }
-      if (cardState.spatialLevel == "state") {
-        query.county_fips = "All";
-      }
-    
-      if (cardState.measure == "population") {
-        const populationQuery = {...query};
-        delete populationQuery.cause;
-        const filteredData = await this.dataManager.getPopulationData(populationQuery, {includeTotals: false})
-        data.push(...filteredData);
-      } else {
-        const filteredData = await this.dataManager.getCountyMortalityData(query, {
-        includeTotals: false, 
-        states: this.state.areaStateOptions, 
-        counties: this.state.areaCountyOptions
+            // Clean up
+            document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+            document.body.removeChild(loadingOverlay);    // Remove the loading overlay
+        }).catch(error => {
+            console.error("Error generating canvas:", error);
+            document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
         });
-        data.push(...filteredData);
-      }
-    
-      }
-      
-      const content = document.createElement("div");
-      content.style.height = (height * .9) + 'px' ;
-      content.style.overflowY = 'auto';
-      content.style.overflowX = 'auto'; 
-      content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
-  
-  
-      popup(document.body, content , {
-        title: "Data Table",
-        backdrop: true,
-        stopEvents: false,
-      });
-    
-        let tableColumns = [...mapTableColumns]
-        plotDataTable(data, content, {
-        columns: tableColumns
-      })
-    })()
-  }
+    }, 0); // The timeout ensures the loading overlay is shown first
+}
+
+
 
   #calcSharedState() {
     const cardStates = this.plotGrid.getCards().filter(d => d).map(d => d.cardState);
