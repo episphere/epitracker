@@ -1109,6 +1109,30 @@ createDropdownButton(this.elems.buttonDownload, [
     const legend = originalDashboard.querySelector('#color-legend');
     const title = originalDashboard.querySelector('#title');
 
+    // Clone title element and style it
+    if (title) {
+        const clonedTitle = title.cloneNode(true);
+        clonedTitle.style.marginBottom = '20px'; // Space below the title
+        clonedTitle.style.textAlign = 'center'; // Center title
+        virtualContainer.appendChild(clonedTitle);
+    } else {
+        console.warn("Title element not found");
+    }
+
+    // Clone legend element and style it
+    // Clone legend element and style it
+ // Clone legend element and style it
+if (legend) {
+    console.log("Legend found and cloning");
+    const clonedLegend = legend.cloneNode(true);
+    clonedLegend.style.marginTop = '20px'; // Space above the legend
+    clonedLegend.style.textAlign = 'center'; // Center legend
+    clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
+    virtualContainer.appendChild(clonedLegend);
+} else {
+    console.warn("Legend element not found");
+}
+
     // Clone the grid container (preserves the layout of maps)
     if (gridContainer) {
         console.log("Grid container found and cloning");
@@ -1154,27 +1178,6 @@ createDropdownButton(this.elems.buttonDownload, [
         console.warn("Grid container not found");
     }
 
-    // Clone title element and style it
-    if (title) {
-        const clonedTitle = title.cloneNode(true);
-        clonedTitle.style.marginBottom = '20px'; // Space below the title
-        clonedTitle.style.textAlign = 'center'; // Center title
-        virtualContainer.appendChild(clonedTitle);
-    } else {
-        console.warn("Title element not found");
-    }
-
-    // Clone legend element and style it
-    if (legend) {
-        console.log("Legend found and cloning");
-        const clonedLegend = legend.cloneNode(true);
-        clonedLegend.style.marginTop = '20px'; // Space above the legend
-        clonedLegend.style.textAlign = 'center'; // Center legend
-        virtualContainer.appendChild(clonedLegend);
-    } else {
-        console.warn("Legend element not found");
-    }
-
     // Append the virtual container to the body
     document.body.appendChild(virtualContainer);
 
@@ -1207,6 +1210,7 @@ createDropdownButton(this.elems.buttonDownload, [
         });
     }, 0); // The timeout ensures the loading overlay is shown first
 }
+
 
 
 
