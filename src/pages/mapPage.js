@@ -1490,62 +1490,107 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
-  eventButtonDownloadClicked() {
+eventButtonDownloadClicked() {
     console.log("Download button clicked");
 
-    // Create and show loading message
+    // Create and show loading message with spinner immediately
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.style.position = 'fixed';
+    loadingOverlay.style.top = '0';
+    loadingOverlay.style.left = '0';
+    loadingOverlay.style.width = '100%';
+    loadingOverlay.style.height = '100%';
+    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingOverlay.style.zIndex = '10000';
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.alignItems = 'center';
+    loadingOverlay.style.justifyContent = 'center';
+
     const loadingMessage = document.createElement("div");
-    loadingMessage.innerText = "Generating image...";
-    loadingMessage.style.position = 'fixed';
-    loadingMessage.style.top = '50%';
-    loadingMessage.style.left = '50%';
-    loadingMessage.style.transform = 'translate(-50%, -50%)';
-    loadingMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
     loadingMessage.style.color = 'white';
-    loadingMessage.style.padding = '20px';
-    loadingMessage.style.borderRadius = '5px';
-    loadingMessage.style.zIndex = '10000';
-    document.body.appendChild(loadingMessage);
+    loadingMessage.style.fontSize = '18px';
+    loadingMessage.style.fontFamily = 'Arial, sans-serif';
+    loadingMessage.style.textAlign = 'center';
+
+    // Add the spinner element
+    const spinner = document.createElement("div");
+    spinner.style.border = '4px solid rgba(255, 255, 255, 0.3)';
+    spinner.style.borderLeftColor = '#fff';
+    spinner.style.borderRadius = '50%';
+    spinner.style.width = '50px';
+    spinner.style.height = '50px';
+    spinner.style.marginBottom = '10px';
+    spinner.style.animation = 'spin 1s linear infinite';
+
+    // Add spinner and "Generating image..." text
+    loadingMessage.innerHTML = "Generating image...";
+    loadingMessage.appendChild(spinner);
+
+    // CSS for spinner animation
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Append everything to the overlay
+    loadingOverlay.appendChild(loadingMessage);
+    document.body.appendChild(loadingOverlay);
 
     // Create the Virtual DOM container
     const virtualContainer = document.createElement('div');
     virtualContainer.id = 'virtual-dashboard';
     virtualContainer.style.position = 'absolute';
-    virtualContainer.style.top = '-9999px'; // Hide it offscreen
-    virtualContainer.style.left = '-9999px';
-    virtualContainer.style.width = '100%'; // Ensure it captures full width
+    virtualContainer.style.top = '0'; // Position to top
+    virtualContainer.style.left = '0'; // Position to left
+    virtualContainer.style.width = 'auto'; // Ensure it captures full width
     virtualContainer.style.height = 'auto'; // Ensure it captures full height
     virtualContainer.style.overflow = 'hidden'; // Hide overflow
+    virtualContainer.style.backgroundColor = 'transparent'; // Ensure background is transparent
 
     // Get the current card's content
     const cardContent = this.getElement().cloneNode(true);
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
-    virtualContainer.appendChild(cardContent);
 
-    // Append the virtual container to the body
+    // Remove unwanted icons if they exist
+    const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button');
+    iconsToRemove.forEach(icon => icon.remove());
+
+    virtualContainer.appendChild(cardContent);
     document.body.appendChild(virtualContainer);
 
-    // Render Virtual DOM to Canvas
-    html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-      console.log("Canvas generated");
+    // Adjust the size of the virtual container based on content
+    const rect = cardContent.getBoundingClientRect();
+    virtualContainer.style.width = `${rect.width}px`;
+    virtualContainer.style.height = `${rect.height}px`;
 
-      const dataURL = canvas.toDataURL("image/png");
+    // Use setTimeout to ensure the loading overlay is visible before rendering the canvas
+    setTimeout(() => {
+        // Render Virtual DOM to Canvas
+        html2canvas(virtualContainer, { useCORS: true, backgroundColor: null }).then(canvas => {
+            console.log("Canvas generated");
 
-      // Trigger the download
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataURL;
-      downloadLink.download = 'card-map.png';
-      downloadLink.click();
+            const dataURL = canvas.toDataURL("image/png");
 
-      // Clean up
-      document.body.removeChild(virtualContainer);
-      document.body.removeChild(loadingMessage);
-    }).catch(error => {
-      console.error("Error generating canvas:", error);
-      document.body.removeChild(loadingMessage);  // Remove the loading message in case of error
-    });
-  }
+            // Trigger the download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = dataURL;
+            downloadLink.download = 'card-map.png';
+            downloadLink.click();
+
+            // Clean up
+            document.body.removeChild(virtualContainer);
+            document.body.removeChild(loadingOverlay);
+        }).catch(error => {
+            console.error("Error generating canvas:", error);
+            document.body.removeChild(loadingOverlay);  // Remove the loading message in case of error
+        });
+    }, 0); // Set a minimal delay to ensure the overlay is rendered
+}
 
   eventButtonTableClicked(options) {
      const {clientHeight: height} = document.body
