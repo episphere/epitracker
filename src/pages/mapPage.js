@@ -1212,6 +1212,69 @@ if (legend) {
 }
 
 
+eventButtonTableClicked() {
+    const { clientHeight: height } = document.body;
+    const cardStates = this.getCardStates(this.url);
+
+    const dataPromises = cardStates.map((cardState) => {
+        const query = {
+            sex: cardState.sex,
+            race: cardState.race,
+            cause: cardState.cause,
+            year: cardState.year
+        };
+
+        if (cardState.areaCounty && cardState.areaCounty !== "All") {
+            query.county_fips = cardState.areaCounty;
+        }
+        if (cardState.areaState && cardState.areaState !== "All") {
+            query.state_fips = cardState.areaState;
+        }
+        if (cardState.spatialLevel === "state") {
+            query.county_fips = "All";
+        }
+
+        if (cardState.measure === "population") {
+            const populationQuery = { ...query };
+            delete populationQuery.cause;
+
+            // Return a promise for population data
+            return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+        } else {
+            // Return a promise for mortality data
+            return this.dataManager.getCountyMortalityData(query, {
+                includeTotals: false,
+                states: this.state.areaStateOptions,
+                counties: this.state.areaCountyOptions
+            });
+        }
+    });
+
+    // Wait for all promises to resolve
+    Promise.all(dataPromises).then((resolvedDataArrays) => {
+        const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
+
+        const content = document.createElement("div");
+        content.style.height = (height * .9) + 'px';
+        content.style.overflowY = 'auto';
+        content.style.overflowX = 'auto';
+        content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
+
+        popup(document.body, content, {
+            title: "Data Table",
+            backdrop: true,
+            stopEvents: false,
+        });
+
+        let tableColumns = [...mapTableColumns];
+
+        plotDataTable(data, content, {
+            columns: tableColumns
+        });
+    }).catch((error) => {
+        console.error("Error fetching data: ", error);
+    });
+}
 
 
   #calcSharedState() {
