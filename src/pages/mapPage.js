@@ -1120,18 +1120,16 @@ createDropdownButton(this.elems.buttonDownload, [
     }
 
     // Clone legend element and style it
-    // Clone legend element and style it
- // Clone legend element and style it
-if (legend) {
-    console.log("Legend found and cloning");
-    const clonedLegend = legend.cloneNode(true);
-    clonedLegend.style.marginTop = '20px'; // Space above the legend
-    clonedLegend.style.textAlign = 'center'; // Center legend
-    clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
-    virtualContainer.appendChild(clonedLegend);
-} else {
-    console.warn("Legend element not found");
-}
+    if (legend) {
+        console.log("Legend found and cloning");
+        const clonedLegend = legend.cloneNode(true);
+        clonedLegend.style.marginTop = '20px'; // Space above the legend
+        clonedLegend.style.textAlign = 'center'; // Center legend
+        clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
+        virtualContainer.appendChild(clonedLegend);
+    } else {
+        console.warn("Legend element not found");
+    }
 
     // Clone the grid container (preserves the layout of maps)
     if (gridContainer) {
@@ -1172,6 +1170,13 @@ if (legend) {
             }
         });
 
+        // If there is only one map, ensure proper grid behavior
+        if (maps.length === 1) {
+            clonedGridContainer.style.display = 'grid';
+            clonedGridContainer.style.gridTemplateColumns = '1fr'; // Single column
+            clonedGridContainer.style.gridTemplateRows = 'auto'; // Adjust the row height based on content
+        }
+
         // Append the cloned grid container to the virtual container
         virtualContainer.appendChild(clonedGridContainer);
     } else {
@@ -1210,6 +1215,7 @@ if (legend) {
         });
     }, 0); // The timeout ensures the loading overlay is shown first
 }
+
 
 
 eventButtonTableClicked() {
@@ -1695,7 +1701,7 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
-eventButtonDownloadClicked() {
+eventButtonDownloadClicked() { 
     console.log("Download button clicked");
 
     // Create loading overlay
@@ -1752,10 +1758,41 @@ eventButtonDownloadClicked() {
         top: '0',
         left: '0',
         overflow: 'hidden',
-        backgroundColor: 'transparent'
+        backgroundColor: 'white',  // Set background to white
+        padding: '20px',  // Add padding for spacing
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',  // Optional: add some shadow for better visibility
+        width: 'fit-content',  // Adjust width to fit content
+        zIndex: '9999'  // Ensure it's on top of other elements
     });
 
-    // Get current card's content
+    // Get the title and legend from the dashboard
+    const originalDashboard = document.getElementById('ex-dashboard');
+    const title = originalDashboard.querySelector('#title');
+    const legend = originalDashboard.querySelector('#color-legend');
+
+    // Clone title element and add to virtual container
+    if (title) {
+        const clonedTitle = title.cloneNode(true);
+        clonedTitle.style.marginBottom = '20px';
+        clonedTitle.style.textAlign = 'center'; 
+        clonedTitle.style.color = '#000';  // Ensure title text is visible
+        virtualContainer.appendChild(clonedTitle);
+    } else {
+        console.warn("Title element not found");
+    }
+
+    // Clone legend element and add to virtual container
+    if (legend) {
+        const clonedLegend = legend.cloneNode(true);
+        clonedLegend.style.marginTop = '20px'; 
+        clonedLegend.style.textAlign = 'center'; 
+        clonedLegend.style.backgroundColor = 'transparent'; // Keep legend background transparent
+        virtualContainer.appendChild(clonedLegend);
+    } else {
+        console.warn("Legend element not found");
+    }
+
+    // Get current card's content and clone it
     const cardContent = this.getElement().cloneNode(true);
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
@@ -1768,13 +1805,13 @@ eventButtonDownloadClicked() {
     document.body.appendChild(virtualContainer);
 
     // Set size of the virtual container
-    const rect = cardContent.getBoundingClientRect();
+    const rect = virtualContainer.getBoundingClientRect();
     virtualContainer.style.width = `${rect.width}px`;
     virtualContainer.style.height = `${rect.height}px`;
 
     setTimeout(() => {
         // Render Virtual DOM to Canvas
-        html2canvas(virtualContainer, { useCORS: true, backgroundColor: null }).then(canvas => {
+        html2canvas(virtualContainer, { useCORS: true, backgroundColor: 'white' }).then(canvas => {
             const dataURL = canvas.toDataURL("image/png");
             const downloadLink = document.createElement('a');
             downloadLink.href = dataURL;
@@ -1790,6 +1827,11 @@ eventButtonDownloadClicked() {
         });
     }, 0);
 }
+
+
+
+
+
 
 
   eventButtonTableClicked(options) {
