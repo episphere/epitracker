@@ -1344,7 +1344,10 @@ class PlotGrid {
     const resizeObserver = new ResizeObserver(() => {
       this.grid.cellHeight(this.gridContainerElement.getBoundingClientRect().height / this.nRows - 5)
       this.gridElement.style.height = "100%"
-    })
+      this.gridContainerElement.style.minHeight = (this.nRows) * 300 + 'px'
+      const dashboardElement = document.getElementById('dashboard')
+      dashboardElement.style.minHeight = ((this.nRows) * 300) + 145 + 'px'
+})
     resizeObserver.observe(this.gridContainerElement)
 
     const addColumnButton = document.createElement("i")
@@ -1452,6 +1455,9 @@ class PlotGrid {
   }
 
   addRow() {
+    this.gridContainerElement.style.minHeight = (this.nRows + 1) * 300 + 'px'
+    const dashboardElement = document.getElementById('dashboard')
+    dashboardElement.style.minHeight = ((this.nRows + 1) * 300) + 145 + 'px'
     this.grid.cellHeight(this.gridContainerElement.getBoundingClientRect().height / (this.nRows + 1));
     this.grid.batchUpdate();
     this.grid.engine.maxRow = this.nRows + 1;
