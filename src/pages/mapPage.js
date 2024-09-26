@@ -699,6 +699,7 @@ createDropdownButton(this.elems.buttonDownload, [
 
 
     let title = `US ${baseElements.filter(d => d).map(d => d.toLowerCase()).join(" ")}`;
+
     if (filterElements.length > 0) {
       title += `, ${filterElements.join(", ")}`;
     }
@@ -721,6 +722,7 @@ createDropdownButton(this.elems.buttonDownload, [
             return value;
           }
         }).join(", ");
+        console.log({cardTitle, aa: this.dFields})
         card.setTitle(cardTitle);
       }
     }
@@ -1478,7 +1480,7 @@ class PlotGrid {
     if (this.nodeMatrix[options.x]?.[options.y]) {
       this.grid.removeWidget(this.nodeMatrix[options.x][options.y].element);
     }
-
+    console.log({card1: this.getCards(), options})
     const card = new PlotCard(content, options);
     card.addListener("editClicked", (card) =>
       this.listeners.editCardClicked(card)
@@ -1654,6 +1656,7 @@ class PlotCard {
       content = () => this.content;
     }
     this.content = content;
+    console.log({card: this.plotGrid})
     this.#createElement(options);
 
     this.listeners = {
@@ -1701,8 +1704,8 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
-eventButtonDownloadClicked() { 
-    console.log("Download button clicked");
+eventButtonDownloadClicked(cardTitle) { 
+    console.log("Download button clicked", {cardTitle});
 
     // Create loading overlay
     const loadingOverlay = document.createElement("div");
@@ -1776,6 +1779,10 @@ eventButtonDownloadClicked() {
         clonedTitle.style.marginBottom = '20px';
         clonedTitle.style.textAlign = 'center'; 
         clonedTitle.style.color = '#000';  // Ensure title text is visible
+        if (cardTitle) {
+          clonedTitle.innerText = `${clonedTitle.innerText}, ${cardTitle}`
+        }
+
         virtualContainer.appendChild(clonedTitle);
     } else {
         console.warn("Title element not found");
@@ -1798,7 +1805,7 @@ eventButtonDownloadClicked() {
     cardContent.querySelector('.grid-card-data-edit')?.remove();
 
     // Remove unwanted icons
-    const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button');
+    const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title');
     iconsToRemove.forEach(icon => icon.remove());
 
     virtualContainer.appendChild(cardContent);
@@ -1861,11 +1868,13 @@ eventButtonDownloadClicked() {
     this.listeners.editClicked(this);
   }
 
-  #buttonClickedExpand(e) {
+  #buttonClickedExpand(e, options) {
     const isExpand = e.target.classList.contains("fa-expand");
-
+    const titleElement = document.getElementById('title')
+    const cardTitle = `${titleElement.innerText}, ${this.titleElement.innerText}`
+    console.log({options, this: this, title: this.titleElement.innerText    })
     if (isExpand) {
-      openFullscreen(this.content);
+      openFullscreen(this.content, cardTitle);
     }
   }
 
@@ -1874,7 +1883,8 @@ eventButtonDownloadClicked() {
   }
 
   #buttonClickedDownload() {
-    this.eventButtonDownloadClicked();
+    const cardTitle = this.titleElement.innerText
+    this.eventButtonDownloadClicked(cardTitle);
   }
   #buttonClickedTable(options) {
     this.eventButtonTableClicked(options);
@@ -1906,20 +1916,19 @@ eventButtonDownloadClicked() {
     gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose());
     gridCard.querySelector(".fas.fa-image").addEventListener("click", () => this.#buttonClickedDownload());
     gridCard.querySelector(".fas.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
-
     this.cardElement = gridCard;
     this.contentElement = gridCard.querySelector(".grid-card-content");
     this.titleElement = gridCard.querySelector(".grid-card-topbar-title");
   }
 }
 
-async function openFullscreen(content) {
+async function openFullscreen(content, title) {
   const {clientHeight: height, clientWidth: width} = document.body
   document.body.style.overflow = 'hidden'
   const mapElement = await content(width * .9, height * .8)
-
+  console.log({this: this})
   popup(document.body, mapElement, {
-    title: "Configure map card",
+    title: title,
     backdrop: true,
     stopEvents: false,
   });
