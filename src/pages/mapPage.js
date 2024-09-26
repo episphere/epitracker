@@ -1705,7 +1705,7 @@ class PlotCard {
   }
 // TODO: Remove redundant codes
 eventButtonDownloadClicked(cardTitle) { 
-    console.log("Download button clicked", {cardTitle});
+    console.log("Download button clicked", { cardTitle });
 
     // Create loading overlay
     const loadingOverlay = document.createElement("div");
@@ -1761,11 +1761,11 @@ eventButtonDownloadClicked(cardTitle) {
         top: '0',
         left: '0',
         overflow: 'hidden',
-        backgroundColor: 'white',  // Set background to white
-        padding: '20px',  // Add padding for spacing
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',  // Optional: add some shadow for better visibility
-        width: 'fit-content',  // Adjust width to fit content
-        zIndex: '9999'  // Ensure it's on top of other elements
+        backgroundColor: 'white',
+        padding: '20px',
+        boxShadow: 'none', // Remove shadow around the container
+        width: 'fit-content',
+        zIndex: '9999'
     });
 
     // Get the title and legend from the dashboard
@@ -1778,11 +1778,10 @@ eventButtonDownloadClicked(cardTitle) {
         const clonedTitle = title.cloneNode(true);
         clonedTitle.style.marginBottom = '20px';
         clonedTitle.style.textAlign = 'center'; 
-        clonedTitle.style.color = '#000';  // Ensure title text is visible
+        clonedTitle.style.color = '#000';
         if (cardTitle) {
-          clonedTitle.innerText = `${clonedTitle.innerText}, ${cardTitle}`
+            clonedTitle.innerText = `${clonedTitle.innerText}, ${cardTitle}`;
         }
-
         virtualContainer.appendChild(clonedTitle);
     } else {
         console.warn("Title element not found");
@@ -1804,10 +1803,31 @@ eventButtonDownloadClicked(cardTitle) {
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
 
-    // Remove unwanted icons
-    const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title');
-    iconsToRemove.forEach(icon => icon.remove());
+    // Remove unwanted items in a single query
+    const itemsToRemove = cardContent.querySelectorAll(
+        '.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title'
+    );
+    itemsToRemove.forEach(item => item.remove());
 
+    // Clear existing SVG from the card content to avoid duplication
+    const existingSVG = cardContent.querySelector('svg');
+
+    if (existingSVG) {
+        // Clone the SVG only if it exists
+        const clonedSVG = existingSVG.cloneNode(true);
+        clonedSVG.setAttribute('width', '100%');  // Set to fill the container
+        clonedSVG.setAttribute('height', 'auto'); // Maintain aspect ratio
+
+        // Clear the original SVG from the card content to prevent duplication
+        existingSVG.remove();
+
+        // Append the cloned SVG to the virtual container
+        virtualContainer.appendChild(clonedSVG);
+    } else {
+        console.warn("SVG element not found in card content");
+    }
+
+    // Add the rest of the card content (without SVG)
     virtualContainer.appendChild(cardContent);
     document.body.appendChild(virtualContainer);
 
@@ -1834,6 +1854,12 @@ eventButtonDownloadClicked(cardTitle) {
         });
     }, 0);
 }
+
+
+
+
+
+
 
 
 
