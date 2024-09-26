@@ -1704,7 +1704,7 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
-eventButtonDownloadClicked(cardTitle) { 
+ eventButtonDownloadClicked(cardTitle) { 
     console.log("Download button clicked", { cardTitle });
 
     // Create loading overlay
@@ -1763,7 +1763,7 @@ eventButtonDownloadClicked(cardTitle) {
         overflow: 'hidden',
         backgroundColor: 'white',
         padding: '20px',
-        boxShadow: 'none', // Remove shadow around the container
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
         width: 'fit-content',
         zIndex: '9999'
     });
@@ -1803,25 +1803,26 @@ eventButtonDownloadClicked(cardTitle) {
     cardContent.querySelector('.grid-card-topbar-buttons')?.remove();
     cardContent.querySelector('.grid-card-data-edit')?.remove();
 
-    // Remove unwanted items in a single query
-    const itemsToRemove = cardContent.querySelectorAll(
-        '.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title'
-    );
-    itemsToRemove.forEach(item => item.remove());
+    // Remove unwanted icons
+    const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title');
+    iconsToRemove.forEach(icon => icon.remove());
 
-    // Clear existing SVG from the card content to avoid duplication
-    const existingSVG = cardContent.querySelector('svg');
+    // Get the SVG element
+    const svgElement = cardContent.querySelector('svg');
 
-    if (existingSVG) {
-        // Clone the SVG only if it exists
-        const clonedSVG = existingSVG.cloneNode(true);
+    if (svgElement) {
+        // Clone the SVG and ensure proper sizing
+        const clonedSVG = svgElement.cloneNode(true);
         clonedSVG.setAttribute('width', '100%');  // Set to fill the container
         clonedSVG.setAttribute('height', 'auto'); // Maintain aspect ratio
 
-        // Clear the original SVG from the card content to prevent duplication
-        existingSVG.remove();
+        // Clear any existing SVG from the card content to avoid duplication
+        const existingSVG = cardContent.querySelector('svg');
+        if (existingSVG) {
+            existingSVG.remove();
+        }
 
-        // Append the cloned SVG to the virtual container
+        // Append the cloned SVG
         virtualContainer.appendChild(clonedSVG);
     } else {
         console.warn("SVG element not found in card content");
@@ -1854,19 +1855,6 @@ eventButtonDownloadClicked(cardTitle) {
         });
     }, 0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
   eventButtonTableClicked(options) {
      const {clientHeight: height} = document.body
      const content = document.createElement("div");
