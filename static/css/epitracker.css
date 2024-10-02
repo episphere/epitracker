@@ -2578,7 +2578,6 @@ button.previous-btn {
   /* height: fit-content; */
   display: flex;
   justify-content: center;
-  min-width: 900px;
   flex-shrink: 0;
   overflow: visible;
 }
@@ -2933,7 +2932,7 @@ button.previous-btn {
   height: 100%;
   justify-content: center;
   max-width: 100%;
-  min-width: 900px;
+  min-width: 1200px;
   flex-grow: 1;
   flex-shrink: 0;
   text-align: center;
