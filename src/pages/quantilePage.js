@@ -426,6 +426,12 @@ function plotConfigUpdated(plotConfig) {
       legendCheckSet.has(d[plotConfig.query.compareColor])
     );
   }
+  if (plotConfig.query.compareFacet == "race" && plotConfig.query.compareColor == "none") {
+    const legendCheckSet = new Set(plotConfig.legendCheckValues);
+    data = plotConfig.mortalityData.filter((d) =>
+      legendCheckSet.has(d[plotConfig.query.compareFacet])
+    );
+  }
 
   const colorFunction =
     plotConfig.query.compareColor != "none"
@@ -530,6 +536,35 @@ function updateLegend(data, query) {
   const legendContainer = document.getElementById("plot-legend");
   legendContainer.innerHTML = ``;
 
+  if (query.compareFacet == "race" && query.compareColor == "none") {
+    const facetDomainValues = [
+      ...new Set(data.map((d) => d[query.compareFacet])),
+    ].sort();
+    const checkedValueSet = new Set(state.legendCheckValues);
+    let selectedValues = facetDomainValues.filter((d) =>
+      checkedValueSet.has(d)
+    );
+    if (selectedValues.length == 0) selectedValues = facetDomainValues;
+
+    const formatRace = (d) => formatName("race", d, "formatted");
+    const tickFormat =
+      query.compareFacet == "race" ? formatRace : (d) => d;
+    const legend = checkableLegend(
+      facetDomainValues,
+      Array(10).fill("#695ACD"),
+      selectedValues,
+      tickFormat,
+      true
+    );
+    legendContainer.appendChild(legend);
+
+    legend.addEventListener("change", () => {
+      state.legendCheckValues = legend.getValues();
+    });
+
+    state.legendCheckValues = legend.getValues();
+  }
+  
   if (query.compareColor != "none") {
     const colorDomainValues = [
       ...new Set(data.map((d) => d[query.compareColor])),
@@ -551,7 +586,7 @@ function updateLegend(data, query) {
       true
     );
     legendContainer.appendChild(legend);
-
+ 
     legend.addEventListener("change", () => {
       state.legendCheckValues = legend.getValues();
     });

@@ -89,7 +89,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   sizePerFacet = Math.min(900, sizePerFacet)
 
   const plotOptions = {
-    width: sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets,
+    width: (sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets) || 900,
     height,
     style: {fontSize: "14px"},
     color: colorOpt,
