@@ -1067,7 +1067,7 @@ createDropdownButton(this.elems.buttonDownload, [
    */
   eventButtonColorSettingsClicked() {}
 
- eventButtonDownloadImage(format) {
+eventButtonDownloadImage(format) {
     console.log("Download button clicked");
 
     // Create and show loading overlay and message immediately
@@ -1084,14 +1084,18 @@ createDropdownButton(this.elems.buttonDownload, [
     loadingOverlay.style.alignItems = 'center';
     loadingOverlay.style.flexDirection = 'column';
 
+    // Create spinner
+    const spinner = document.createElement("div");
+    spinner.className = "spinner"; // CSS class for spinner
+
+    // Create loading message
     const loadingMessage = document.createElement("div");
     loadingMessage.innerText = "Generating image...";
     loadingMessage.style.color = 'white';
     loadingMessage.style.padding = '20px';
     loadingMessage.style.borderRadius = '5px';
 
-    const spinner = document.createElement("div");
-    spinner.className = "spinner"; // Add your spinner class or style here
+    // Append spinner and message to the overlay
     loadingOverlay.appendChild(spinner);
     loadingOverlay.appendChild(loadingMessage);
 
@@ -1208,6 +1212,8 @@ createDropdownButton(this.elems.buttonDownload, [
         });
     }, 0); // The timeout ensures the loading overlay is shown first
 }
+
+
 
 
 
@@ -1695,7 +1701,7 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
- eventButtonDownloadClicked(cardTitle) { 
+eventButtonDownloadClicked(cardTitle) {  
     console.log("Download button clicked", { cardTitle });
 
     // Create loading overlay
@@ -1846,6 +1852,17 @@ class PlotCard {
         });
     }, 0);
 }
+
+// New dropdown functionality for downloading images
+createDropdownDownloadButton() {
+    const dropdownButton = createDropdownButton(this.elems.buttonDownloadImage, [ 
+        { text: "Download as PNG", callback: () => this.eventButtonDownloadClicked("PNG") },
+        { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
+    ]);
+
+    return dropdownButton;
+}
+
   eventButtonTableClicked(options) {
      const {clientHeight: height} = document.body
      const content = document.createElement("div");
@@ -1895,22 +1912,21 @@ class PlotCard {
     this.eventButtonTableClicked(options);
   }
 
-  #createElement(options) {
+#createElement(options) {
     const gridCard = document.createElement("div");
     gridCard.className = "grid-card";
     gridCard.innerHTML = /*html*/`
       <div class="grid-card-topbar">
         <div class="grid-card-topbar-buttons-lrg">
           <i class="fas fa-edit grid-card-data-edit highlightable-button" tip="Edit map"></i>
-          <i class="fas fa-image  highlightable-button"  tip="Download map image"></i>
-          <i class="fas fa-table  highlightable-button"  tip="View data table"></i>
+          <i class="fas fa-image highlightable-button" tip="Download map image"></i>
+          <i class="fas fa-table highlightable-button" tip="View data table"></i>
         </div>
         <div class="grid-card-topbar-title">${this.title ? this.title : ""}</div>
         <div class="grid-card-topbar-buttons">
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
           <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
-
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
@@ -1919,12 +1935,68 @@ class PlotCard {
     gridCard.querySelector(".fas.fa-edit").addEventListener("click", () => this.#buttonClickedEdit());
     gridCard.querySelector(".fas.fa-expand").addEventListener("click", (e) => this.#buttonClickedExpand(e, options));
     gridCard.querySelector(".fas.fa-times").addEventListener("click", () => this.#buttonClickedClose());
-    gridCard.querySelector(".fas.fa-image").addEventListener("click", () => this.#buttonClickedDownload());
+
+    // Add event listener for the download button
+    // Adding the download button event listener
+// Add event listener for the download button
+// Add event listener for the download button
+    gridCard.querySelector(".fas.fa-image").addEventListener("click", (event) => {
+        const existingDropdown = gridCard.querySelector('.download-dropdown');
+        if (existingDropdown) {
+            existingDropdown.remove(); // Remove existing dropdown if it's already open
+        } else {
+            // Create a dropdown for download format selection
+            const downloadOptions = document.createElement('div');
+            downloadOptions.className = 'download-dropdown';
+            downloadOptions.innerHTML = `
+                <div class="dropdown-content">
+                    <div class="dropdown-item" id="download-png">Download as PNG</div>
+                    <div class="dropdown-item" id="download-svg">Download as SVG (Coming soon)</div>
+                </div>
+            `;
+
+            // Append the dropdown to the gridCard
+            const downloadIcon = gridCard.querySelector('.fas.fa-image');
+            const iconRect = downloadIcon.getBoundingClientRect();
+
+            // Adjust dropdown position relative to the icon
+            downloadOptions.style.position = 'absolute';
+            downloadOptions.style.top = `${downloadIcon.offsetTop + downloadIcon.offsetHeight + 5}px`; // Small gap below the icon
+            downloadOptions.style.left = `${downloadIcon.offsetLeft}px`; // Align it with the icon
+
+            gridCard.querySelector('.grid-card-topbar-buttons-lrg').appendChild(downloadOptions);
+
+            // Handle dropdown item clicks
+            downloadOptions.querySelector("#download-png").addEventListener("click", () => {
+                downloadOptions.remove(); // Remove the dropdown
+                this.eventButtonDownloadClicked("PNG"); // Call your download function
+            });
+
+            downloadOptions.querySelector("#download-svg").addEventListener("click", () => {
+                console.log("SVG download not yet implemented");
+                downloadOptions.remove(); // Remove dropdown after selection
+            });
+
+            // Close the dropdown if clicked outside
+            window.addEventListener("click", (event) => {
+                if (!event.target.closest('.download-dropdown') && !event.target.matches('.fas.fa-image')) {
+                    downloadOptions.remove();
+                }
+            });
+        }
+    });
+
+
+
     gridCard.querySelector(".fas.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
+    
     this.cardElement = gridCard;
     this.contentElement = gridCard.querySelector(".grid-card-content");
     this.titleElement = gridCard.querySelector(".grid-card-topbar-title");
-  }
+}
+
+
+
 }
 
 async function openFullscreen(content, title) {
