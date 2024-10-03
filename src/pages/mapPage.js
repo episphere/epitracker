@@ -1067,7 +1067,7 @@ createDropdownButton(this.elems.buttonDownload, [
    */
   eventButtonColorSettingsClicked() {}
 
- eventButtonDownloadImage(format) {
+eventButtonDownloadImage(format) {
     console.log("Download button clicked");
 
     // Create and show loading overlay and message immediately
@@ -1084,14 +1084,18 @@ createDropdownButton(this.elems.buttonDownload, [
     loadingOverlay.style.alignItems = 'center';
     loadingOverlay.style.flexDirection = 'column';
 
+    // Create spinner
+    const spinner = document.createElement("div");
+    spinner.className = "spinner"; // CSS class for spinner
+
+    // Create loading message
     const loadingMessage = document.createElement("div");
     loadingMessage.innerText = "Generating image...";
     loadingMessage.style.color = 'white';
     loadingMessage.style.padding = '20px';
     loadingMessage.style.borderRadius = '5px';
 
-    const spinner = document.createElement("div");
-    spinner.className = "spinner"; // Add your spinner class or style here
+    // Append spinner and message to the overlay
     loadingOverlay.appendChild(spinner);
     loadingOverlay.appendChild(loadingMessage);
 
@@ -1217,6 +1221,8 @@ createDropdownButton(this.elems.buttonDownload, [
         });
     }, 0); // The timeout ensures the loading overlay is shown first
 }
+
+
 
 
 
