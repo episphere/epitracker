@@ -1111,23 +1111,14 @@ createDropdownButton(this.elems.buttonDownload, [
     const legend = originalDashboard.querySelector('#color-legend');
     const title = originalDashboard.querySelector('#title');
 
-    // Clone title element and style it
-    if (title) {
-        const clonedTitle = title.cloneNode(true);
-        clonedTitle.style.marginBottom = '20px'; // Space below the title
-        clonedTitle.style.textAlign = 'center'; // Center title
-        virtualContainer.appendChild(clonedTitle);
-    } else {
-        console.warn("Title element not found");
-    }
-
     // Clone legend element and style it
-    if (legend) {
+      if (legend) {
         console.log("Legend found and cloning");
         const clonedLegend = legend.cloneNode(true);
         clonedLegend.style.marginTop = '20px'; // Space above the legend
         clonedLegend.style.textAlign = 'center'; // Center legend
         clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
+        clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
         virtualContainer.appendChild(clonedLegend);
     } else {
         console.warn("Legend element not found");
