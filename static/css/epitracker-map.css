@@ -302,14 +302,15 @@ footer {
 .settings-button:hover {
   filter: brightness(120%);
 }
-.download-dropdown {
+.download-dropdown { 
     position: absolute;
     background-color: white;
-    border: 1px solid #ccc;
+    border: 1px solid #333b4d;
     z-index: 1000;
     width: 150px;
     border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
 }
 
 .dropdown-content {
@@ -317,10 +318,12 @@ footer {
     flex-direction: column;
 }
 
-.dropdown-item {
+.download-dropdown .dropdown-item {
     padding: 8px 12px;
-    font-size: 14px;  /* Adjusted font size */
+    font-size: 14px;
+    font-weight: 600;  /* Bolder font */
     cursor: pointer;
+    color: black !important;  /* Force the text color to be black */
 }
 
 .dropdown-item:hover {
@@ -335,6 +338,8 @@ footer {
   height: 40px;
   animation: spin 1s linear infinite;
 }
+
+
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -459,9 +464,6 @@ footer {
   margin-top: 20px;
 }
 
-.dropdown-item {
-  cursor: pointer;
-}
 
 g[aria-label="geo"] path:hover {
   stroke: green;
