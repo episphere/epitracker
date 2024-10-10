@@ -94,7 +94,7 @@ class MapApplication {
   mapTooltipPlot: document.getElementById("map-tooltip-plot")
 };
 
-console.log(this.elems.buttonDownloadImage); // Ensure the buttonDownloadImage is not null
+// console.log(this.elems.buttonDownloadImage); // Ensure the buttonDownloadImage is not null
 
 this.tippyMap = addTippys();
 
@@ -109,14 +109,24 @@ this.sData = {
   countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
 };
 
-// Set the county names after the GeoJSON is loaded.
-const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
+    // Set the county names after the GeoJSON is loaded.
+    const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
 
-const countyOptions =  this.state.areaCountyOptions.map(d => {
-  let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0, 2), "short");
-  return { value: d, label: name }
-});
-this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+    const countyOptions =  this.state.areaCountyOptions.map(d => {
+      let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0, 2), "short");
+      return { value: d, label: name }
+    });
+    this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+
+    // Make a subscriber to filter counties based on the selected state
+    this.state.subscribe("areaState", async(event) => {
+      if (event != "All") {
+        // this.state.areaCounty = "All";
+        this.state.areaCountyOptions = countyOptions.filter(d => d.value.startsWith(event) || d.value === "All");
+      } else {
+        this.state.areaCountyOptions = countyOptions.filter(d => d.value == "All");
+      }
+    });
 
 this.addColorSettingsPopup(); 
 
@@ -133,7 +143,8 @@ this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClic
 // Create a dropdown for data download (JSON/CSV)
 createDropdownButton(this.elems.buttonDownload, [
   { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
-  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") }
+  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
+  { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
 ]);
 
 // Create a separate dropdown for image download (PNG/SVG)
@@ -182,7 +193,6 @@ createDropdownButton(this.elems.buttonDownload, [
     })
 
     this.state.subscribe("spatialLevel", (event) => {
-      console.log('spatialLevel', {event});
       if (event === 'state') {
         choices["#select-select-county"].disable();
       } else {
@@ -192,7 +202,6 @@ createDropdownButton(this.elems.buttonDownload, [
     })
 
     this.state.subscribe('cause', (event) => {
-      console.log({event, CAUSE_SEX_MAP, state: this.state});
       if (CAUSE_SEX_MAP[event]) {
         this.state.sex = CAUSE_SEX_MAP[event];
         this.state.sexOptions = this.state.sexOptions.map(item => {
@@ -412,7 +421,7 @@ createDropdownButton(this.elems.buttonDownload, [
           inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
         )
       }
-  
+
       choices[inputSelectConfig.id] = hookSelectChoices(
         inputSelectConfig.id,
         this.state,
@@ -685,48 +694,82 @@ createDropdownButton(this.elems.buttonDownload, [
   }
 
   updateTitles() {
-    const state = this.sharedState
+    const state = this.sharedState;
 
+    // Base elements (e.g., Data type)
     const baseElements = [ 
-      state.measure ? formatName( "measures", state.measure) : "Data" 
-    ]
+        state.measure ? formatName("measures", state.measure) : "Data" 
+    ];
+
+    // Filter elements (e.g., Year, Cause, Race, Sex)
     let filterElements = [
-      state.year,
-      state.cause == "All" ? "All cancers" : state.cause,
-      state.race == "All" ? "All races" : state.race,
-      state.sex == "All" ? "All sexes" : state.sex,
-    ].filter(d => d);
+        state.year,
+        state.cause == "All" ? "All cancers" : state.cause,
+        state.race == "All" ? "All races" : state.race,
+        state.sex == "All" ? "All sexes" : state.sex
+    ];
 
+    // Handling the spatial level (State or County) 
+    if (state.spatialLevel === "County" && state.areaCounty && !this.isCountyLocked) {
+        // Get county name without "County" label
+        const county = this.state.areaCountyOptions.find(i => state.areaCounty === i.value);
+        const countyNameWithAbbr = county ? county.label : '';
+        const countyName = countyNameWithAbbr.split(",")[0];
+        if (countyName) {
+            filterElements.push(countyName);  // Add county name, exclude "County"
+        }
+    } else if (state.spatialLevel === "State" && state.areaState && state.areaState !== "All") {
+        // Get state name without "State" label
+        const stateName = formatName("states", state.areaState);
+        if (stateName) {
+            filterElements.push(stateName);  // Add state name, exclude "State"
+        }
+    }
 
+    // Remove any empty strings and undefined values from filterElements
+    filterElements = filterElements.filter(d => d && d.trim());
+
+    // Building the title: US + measure (from baseElements) + additional filters
     let title = `US ${baseElements.filter(d => d).map(d => d.toLowerCase()).join(" ")}`;
-
+    
     if (filterElements.length > 0) {
-      title += `, ${filterElements.join(", ")}`;
+        title += `, ${filterElements.join(", ")}`;
     }
-    this.elems.title.innerText = title;
 
+    // Final step: remove any lingering "State" or "County" from the title
+    title = title.replace(/\b(State|County)\b/g, "").trim();
+
+    this.elems.title.innerText = title;  // Set the final title to the element
+
+    // Update individual card titles in the grid
     const cardTitleFormatters = {
-      sex: d => d == "All" ? "All sexes" : d,
-      race: d => d == "All" ? "All races" : d,
-      cause: d => d == "All" ? "All cancers" : d,
-      areaState: d => d == "All" ? "US" : formatName("states", d)
-    }
+        sex: d => d == "All" ? "All sexes" : d,
+        race: d => d == "All" ? "All races" : d,
+        cause: d => d == "All" ? "All cancers" : d,
+        areaState: d => d == "All" ? "US" : formatName("states", d)
+    };
 
     for (const card of this.plotGrid.getCards()) {
-      if (card) {
-        const cardTitle = this.dFields.map(field => {
-          const value = card.cardState[field];
-          if (cardTitleFormatters[field]) {
-            return cardTitleFormatters[field](value);
-          } else {
-            return value;
-          }
-        }).join(", ");
-        console.log({cardTitle, aa: this.dFields})
-        card.setTitle(cardTitle);
-      }
+        if (card) {
+            const cardTitle = this.dFields.map(field => {
+                let value = card.cardState[field];
+                if (field === "areaCounty") {
+                    const county = this.state.areaCountyOptions.find(i => card.cardState[field] === i.value);
+                    const countyNameWithAbbr = county ? county.label : '';
+                    const countyName = countyNameWithAbbr.split(",")[0];
+                    value = countyName;  // Only the county name without "County"
+                }
+                if (cardTitleFormatters[field]) {
+                    return cardTitleFormatters[field](value);
+                } else {
+                    return value;
+                }
+            }).filter(d => d && d.trim()).join(", "); // Filter out empty values
+            card.setTitle(cardTitle);
+        }
     }
-  }
+}
+
 
 
   /**
@@ -919,156 +962,167 @@ createDropdownButton(this.elems.buttonDownload, [
 
   }
 
-  // TODO: Remove redundant codes
-//   eventButtonDownloadImage(format) {
-//     console.log("Download button clicked");
-
-//     // Create and show the loading overlay immediately
-//     const loadingOverlay = document.createElement("div");
-//     loadingOverlay.style.position = 'fixed';
-//     loadingOverlay.style.top = '0';
-//     loadingOverlay.style.left = '0';
-//     loadingOverlay.style.width = '100%';
-//     loadingOverlay.style.height = '100%';
-//     loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
-//     loadingOverlay.style.zIndex = '10000';
-//     loadingOverlay.style.display = 'flex';
-//     loadingOverlay.style.alignItems = 'center';
-//     loadingOverlay.style.justifyContent = 'center';
-
-//     // Create the loading message and spinner
-//     const loadingMessage = document.createElement("div");
-//     loadingMessage.style.color = 'white';
-//     loadingMessage.style.fontSize = '18px';
-//     loadingMessage.style.fontFamily = 'Arial, sans-serif';
-//     loadingMessage.style.textAlign = 'center';
-
-//     // Add the spinner element
-//     const spinner = document.createElement("div");
-//     spinner.style.border = '4px solid rgba(255, 255, 255, 0.3)';
-//     spinner.style.borderLeftColor = '#fff';
-//     spinner.style.borderRadius = '50%';
-//     spinner.style.width = '50px';
-//     spinner.style.height = '50px';
-//     spinner.style.marginBottom = '10px';
-//     spinner.style.animation = 'spin 1s linear infinite';
-
-//     // Add spinner and "Generating image..." text
-//     loadingMessage.innerText = "Generating image...";
-//     loadingMessage.appendChild(spinner);
-//     loadingOverlay.appendChild(loadingMessage);
-//     document.body.appendChild(loadingOverlay);
-
-//     // Use setTimeout to let the browser render the loading overlay immediately
-//     setTimeout(() => {
-//         // Create the Virtual DOM container
-//         const virtualContainer = document.createElement('div');
-//         virtualContainer.id = 'virtual-dashboard';
-//         virtualContainer.style.position = 'absolute';
-//         virtualContainer.style.top = '-9999px'; // Hide it offscreen
-//         virtualContainer.style.left = '-9999px';
-//         virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
-//         virtualContainer.style.overflow = 'hidden'; // Hide overflow
-
-//         const originalDashboard = document.getElementById('ex-dashboard');
-//         const gridContainer = originalDashboard.querySelector('#grid-container');
-//         const legend = originalDashboard.querySelector('#color-legend');
-//         const title = originalDashboard.querySelector('#title');
-
-//         let clonedGridContainer; // Declare outside the if block
-
-//         // Clone the grid container (preserves the layout of maps)
-//         if (gridContainer) {
-//             console.log("Grid container found and cloning");
-//             clonedGridContainer = gridContainer.cloneNode(true);
-
-//             // Remove specific unwanted elements (edit, add, plus icons, etc.)
-//             const unwantedElements = clonedGridContainer.querySelectorAll(
-//                 '.fa-edit, .fa-download, .fa-table, .fa-times, .fa-expand, .fa-grip-horizontal, .fa-circle-plus'
-//             );
-//             unwantedElements.forEach(el => el.remove());
-
-//             // Make sure the maps fit inside their containers (adjust sizing)
-//             const maps = clonedGridContainer.querySelectorAll('.grid-card');
-//             maps.forEach(map => {
-//                 map.style.width = '100%'; // Ensure the card takes the full width
-//                 map.style.height = 'auto'; // Let height adjust automatically
-
-//                 const mapContent = map.querySelector('.map-content'); // Adjust the selector if necessary
-//                 if (mapContent) {
-//                     mapContent.style.width = '100%';
-//                     mapContent.style.height = '100%'; // Ensure it fits within the card
-//                     mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
-//                 }
-//             });
-
-//             // Append the cloned grid container to the virtual container
-//             virtualContainer.appendChild(clonedGridContainer);
-//         } else {
-//             console.warn("Grid container not found");
-//         }
-
-//         // Clone title element
-//         if (title) {
-//             const clonedTitle = title.cloneNode(true);
-//             virtualContainer.appendChild(clonedTitle);
-//         } else {
-//             console.warn("Title element not found");
-//         }
-
-//         // Clone legend element
-//         if (legend) {
-//             console.log("Legend found and cloning");
-//             const clonedLegend = legend.cloneNode(true);
-//             virtualContainer.appendChild(clonedLegend);
-//         } else {
-//             console.warn("Legend element not found");
-//         }
-
-//         // Append the virtual container to the body
-//         document.body.appendChild(virtualContainer);
-
-//         // Set the height of the virtual container after appending
-//         virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
-
-//         // Ensure the virtualContainer is tall enough to accommodate the maps
-//         if (clonedGridContainer) {
-//             const gridContainerHeight = clonedGridContainer.offsetHeight;
-//             const legendHeight = legend ? legend.offsetHeight : 0;
-//             const titleHeight = title ? title.offsetHeight : 0;
-//             virtualContainer.style.height = `${gridContainerHeight + legendHeight + titleHeight}px`;
-//         }
-
-//         // Render Virtual DOM to Canvas
-//         html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-//             console.log("Canvas generated");
-
-//             const dataURL = canvas.toDataURL("image/png");
-
-//             // Trigger the download
-//             const downloadLink = document.createElement('a');
-//             downloadLink.href = dataURL;
-//             downloadLink.download = 'dashboard-maps.png';
-//             downloadLink.click();
-
-//             // Clean up
-//             document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-//             document.body.removeChild(loadingOverlay);    // Remove the loading overlay
-//         }).catch(error => {
-//             console.error("Error generating canvas:", error);
-//             document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
-//         });
-//     }, 0); // Delay for rendering, but it's 0 to let the UI thread process the overlay
-// }
-
-  /**
-   * DIRECT EVENT HANDLER.
-   * Called when the user clicks the the color settings button.
-   */
   eventButtonColorSettingsClicked() {}
 
-eventButtonDownloadImage(format) {
-    console.log("Download button clicked");
+  eventButtonDownloadImage(format) {
+      console.log("Download button clicked");
+
+      // Create and show loading overlay and message immediately
+      const loadingOverlay = document.createElement("div");
+      loadingOverlay.style.position = 'fixed';
+      loadingOverlay.style.top = '0';
+      loadingOverlay.style.left = '0';
+      loadingOverlay.style.width = '100vw';
+      loadingOverlay.style.height = '100vh';
+      loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+      loadingOverlay.style.zIndex = '10000';
+      loadingOverlay.style.display = 'flex';
+      loadingOverlay.style.justifyContent = 'center';
+      loadingOverlay.style.alignItems = 'center';
+      loadingOverlay.style.flexDirection = 'column';
+
+      // Create spinner
+      const spinner = document.createElement("div");
+      spinner.className = "spinner"; // CSS class for spinner
+
+      // Create loading message
+      const loadingMessage = document.createElement("div");
+      loadingMessage.innerText = "Generating image...";
+      loadingMessage.style.color = 'white';
+      loadingMessage.style.padding = '20px';
+      loadingMessage.style.borderRadius = '5px';
+
+      // Append spinner and message to the overlay
+      loadingOverlay.appendChild(spinner);
+      loadingOverlay.appendChild(loadingMessage);
+
+      document.body.appendChild(loadingOverlay); // Show loading overlay first
+
+      // Create the Virtual DOM container
+      const virtualContainer = document.createElement('div');
+      virtualContainer.id = 'virtual-dashboard';
+      virtualContainer.style.position = 'absolute';
+      virtualContainer.style.top = '-9999px'; // Hide it offscreen
+      virtualContainer.style.left = '-9999px';
+      virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
+      virtualContainer.style.overflow = 'hidden'; // Hide overflow
+
+      const originalDashboard = document.getElementById('ex-dashboard');
+      const gridContainer = originalDashboard.querySelector('#grid-container');
+      const legend = originalDashboard.querySelector('#color-legend');
+      const title = originalDashboard.querySelector('#title');
+
+      // Clone title element and style it
+      if (title) {
+          console.log("Title found and cloning");
+          const clonedTitle = title.cloneNode(true);
+          clonedTitle.style.textAlign = 'center'; // Center title
+          clonedTitle.style.marginBottom = '20px'; // Space below the title
+          virtualContainer.appendChild(clonedTitle);
+      } else {
+          console.warn("Title element not found");
+      }
+
+      // Clone legend element and style it
+      if (legend) {
+          console.log("Legend found and cloning");
+          const clonedLegend = legend.cloneNode(true);
+          clonedLegend.style.marginTop = '20px'; // Space above the legend
+          clonedLegend.style.textAlign = 'center'; // Center legend
+          clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
+          clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
+          virtualContainer.appendChild(clonedLegend);
+      } else {
+          console.warn("Legend element not found");
+      }
+
+      // Clone the grid container (preserves the layout of maps)
+      if (gridContainer) {
+          console.log("Grid container found and cloning");
+
+          // Clone grid container and ensure grid layout styles are preserved
+          const clonedGridContainer = gridContainer.cloneNode(true);
+          clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
+          clonedGridContainer.style.gridTemplateColumns = getComputedStyle(gridContainer).gridTemplateColumns; // Keep columns
+          clonedGridContainer.style.gridTemplateRows = getComputedStyle(gridContainer).gridTemplateRows; // Keep rows
+
+          // Remove specific unwanted elements (image icons, plus buttons, etc.)
+          const unwantedElements = clonedGridContainer.querySelectorAll(
+              '.fa-table, ' +  // Table icon
+              '.fa-image, ' +  // Image icon
+              '.plot-grid-blank-item, ' +  // Blank grid items
+              '.fa-plus-square, ' +  // Plus buttons
+              '.plot-grid-add, ' +  // Plot grid add button (for rows or columns)
+              '.fa-edit, ' +  // Edit button
+              '.fa-grip-horizontal, ' +  // Drag handle
+              '.fa-expand, ' +  // Expand button
+              '.fa-times'  // Close button
+          );
+
+          unwantedElements.forEach(el => el.remove());
+
+          // Remove shadows from map containers
+          const maps = clonedGridContainer.querySelectorAll('.grid-card');
+          maps.forEach(map => {
+              map.style.boxShadow = 'none'; // Remove shadow around the map cards
+              map.style.width = '100%'; // Ensure the card takes the full width
+              map.style.height = 'auto'; // Let height adjust automatically
+
+              const mapContent = map.querySelector('.map-content');
+              if (mapContent) {
+                  mapContent.style.width = '100%';
+                  mapContent.style.height = '100%'; // Ensure it fits within the card
+                  mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+              }
+          });
+
+          // If there is only one map, ensure proper grid behavior
+          if (maps.length === 1) {
+              clonedGridContainer.style.display = 'grid';
+              clonedGridContainer.style.gridTemplateColumns = '1fr'; // Single column
+              clonedGridContainer.style.gridTemplateRows = 'auto'; // Adjust the row height based on content
+          }
+
+          // Append the cloned grid container to the virtual container
+          virtualContainer.appendChild(clonedGridContainer);
+      } else {
+          console.warn("Grid container not found");
+      }
+
+      // Append the virtual container to the body
+      document.body.appendChild(virtualContainer);
+
+      // Set the height of the virtual container after appending
+      virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
+
+      // Log the content of virtualContainer for debugging
+      console.log("Virtual container content:", virtualContainer.innerHTML);
+
+      // Use a timeout to ensure the loading overlay appears immediately
+      setTimeout(() => {
+          // Render Virtual DOM to Canvas
+          html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+              console.log("Canvas generated");
+
+              const dataURL = canvas.toDataURL("image/png");
+
+              // Trigger the download
+              const downloadLink = document.createElement('a');
+              downloadLink.href = dataURL;
+              downloadLink.download = 'dashboard-maps.png';
+              downloadLink.click();
+
+              // Clean up
+              document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+              document.body.removeChild(loadingOverlay);    // Remove the loading overlay
+          }).catch(error => {
+              console.error("Error generating canvas:", error);
+              document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
+          });
+      }, 0); // The timeout ensures the loading overlay is shown first
+  }
+eventButtonDownloadData(format) {
+    console.log("Download data button clicked");
 
     // Create and show loading overlay and message immediately
     const loadingOverlay = document.createElement("div");
@@ -1084,149 +1138,39 @@ eventButtonDownloadImage(format) {
     loadingOverlay.style.alignItems = 'center';
     loadingOverlay.style.flexDirection = 'column';
 
-    // Create spinner
-    const spinner = document.createElement("div");
-    spinner.className = "spinner"; // CSS class for spinner
-
     // Create loading message
     const loadingMessage = document.createElement("div");
-    loadingMessage.innerText = "Generating image...";
+    loadingMessage.innerText = "Generating data download...";
     loadingMessage.style.color = 'white';
     loadingMessage.style.padding = '20px';
     loadingMessage.style.borderRadius = '5px';
 
-    // Append spinner and message to the overlay
-    loadingOverlay.appendChild(spinner);
+    // Append message to the overlay
     loadingOverlay.appendChild(loadingMessage);
-
     document.body.appendChild(loadingOverlay); // Show loading overlay first
 
-    // Create the Virtual DOM container
-    const virtualContainer = document.createElement('div');
-    virtualContainer.id = 'virtual-dashboard';
-    virtualContainer.style.position = 'absolute';
-    virtualContainer.style.top = '-9999px'; // Hide it offscreen
-    virtualContainer.style.left = '-9999px';
-    virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
-    virtualContainer.style.overflow = 'hidden'; // Hide overflow
-
-    const originalDashboard = document.getElementById('ex-dashboard');
-    const gridContainer = originalDashboard.querySelector('#grid-container');
-    const legend = originalDashboard.querySelector('#color-legend');
-    const title = originalDashboard.querySelector('#title');
-
-    // Clone legend element and style it
-      if (legend) {
-        console.log("Legend found and cloning");
-        const clonedLegend = legend.cloneNode(true);
-        clonedLegend.style.marginTop = '20px'; // Space above the legend
-        clonedLegend.style.textAlign = 'center'; // Center legend
-        clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
-        clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
-        virtualContainer.appendChild(clonedLegend);
-    } else {
-        console.warn("Legend element not found");
-    }
-
-    // Clone the grid container (preserves the layout of maps)
-    if (gridContainer) {
-        console.log("Grid container found and cloning");
-
-        // Clone grid container and ensure grid layout styles are preserved
-        const clonedGridContainer = gridContainer.cloneNode(true);
-        clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
-        clonedGridContainer.style.gridTemplateColumns = getComputedStyle(gridContainer).gridTemplateColumns; // Keep columns
-        clonedGridContainer.style.gridTemplateRows = getComputedStyle(gridContainer).gridTemplateRows; // Keep rows
-
-        // Remove specific unwanted elements (image icons, plus buttons, etc.)
-        const unwantedElements = clonedGridContainer.querySelectorAll(
-            '.fa-table, ' +  // Table icon
-            '.fa-image, ' +  // Image icon
-            '.plot-grid-blank-item, ' +  // Blank grid items
-            '.fa-plus-square, ' +  // Plus buttons
-            '.plot-grid-add, ' +  // Plot grid add button (for rows or columns)
-            '.fa-edit, ' +  // Edit button
-            '.fa-grip-horizontal, ' +  // Drag handle
-            '.fa-expand, ' +  // Expand button
-            '.fa-times'  // Close button
-        );
-
-        unwantedElements.forEach(el => el.remove());
-
-        // Make sure the maps fit inside their containers (adjust sizing)
-        const maps = clonedGridContainer.querySelectorAll('.grid-card');
-        maps.forEach(map => {
-            map.style.width = '100%'; // Ensure the card takes the full width
-            map.style.height = 'auto'; // Let height adjust automatically
-
-            const mapContent = map.querySelector('.map-content');
-            if (mapContent) {
-                mapContent.style.width = '100%';
-                mapContent.style.height = '100%'; // Ensure it fits within the card
-                mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
-            }
-        });
-
-        // If there is only one map, ensure proper grid behavior
-        if (maps.length === 1) {
-            clonedGridContainer.style.display = 'grid';
-            clonedGridContainer.style.gridTemplateColumns = '1fr'; // Single column
-            clonedGridContainer.style.gridTemplateRows = 'auto'; // Adjust the row height based on content
-        }
-
-        // Append the cloned grid container to the virtual container
-        virtualContainer.appendChild(clonedGridContainer);
-    } else {
-        console.warn("Grid container not found");
-    }
-
-    // Append the virtual container to the body
-    document.body.appendChild(virtualContainer);
-
-    // Set the height of the virtual container after appending
-    virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
-
-    // Log the content of virtualContainer for debugging
-    console.log("Virtual container content:", virtualContainer.innerHTML);
-
-    // Use a timeout to ensure the loading overlay appears immediately
-    setTimeout(() => {
-        // Render Virtual DOM to Canvas
-        html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-            console.log("Canvas generated");
-
-            const dataURL = canvas.toDataURL("image/png");
-
-            // Trigger the download
-            const downloadLink = document.createElement('a');
-            downloadLink.href = dataURL;
-            downloadLink.download = 'dashboard-maps.png';
-            downloadLink.click();
-
-            // Clean up
-            document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-            document.body.removeChild(loadingOverlay);    // Remove the loading overlay
-        }).catch(error => {
-            console.error("Error generating canvas:", error);
-            document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
-        });
-    }, 0); // The timeout ensures the loading overlay is shown first
-}
-
-
-
-
-
-eventButtonTableClicked() {
-    const { clientHeight: height } = document.body;
+    // Retrieve card states for generating data
     const cardStates = this.getCardStates(this.url);
+    const validCardStates = cardStates.filter(cardState => {
+        return cardState && typeof cardState === 'object' &&
+               cardState.sex && cardState.race && 
+               cardState.cause && cardState.year;
+    });
 
-    const dataPromises = cardStates.map((cardState) => {
+    // If no valid cards are available, show an alert and stop further processing
+    if (validCardStates.length === 0) {
+        alert("No valid data cards available for download.");
+        document.body.removeChild(loadingOverlay); // Remove loading overlay
+        return;
+    }
+
+    // Map over validCardStates and generate data promises
+    const dataPromises = validCardStates.map((cardState) => {
         const query = {
             sex: cardState.sex,
             race: cardState.race,
             cause: cardState.cause,
-            year: cardState.year
+            year: cardState.year,
         };
 
         if (cardState.areaCounty && cardState.areaCounty !== "All") {
@@ -1239,9 +1183,141 @@ eventButtonTableClicked() {
             query.county_fips = "All";
         }
 
+        // Fetch appropriate data based on measure
         if (cardState.measure === "population") {
             const populationQuery = { ...query };
-            delete populationQuery.cause;
+            delete populationQuery.cause; // Population query doesn't need cause
+            return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+        } else {
+            return this.dataManager.getCountyMortalityData(query, {
+                includeTotals: false,
+                states: this.state.areaStateOptions,
+                counties: this.state.areaCountyOptions,
+            });
+        }
+    });
+
+    // Wait for all data promises to resolve
+    Promise.all(dataPromises).then((resolvedDataArrays) => {
+        const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
+
+        // Handle download based on format
+        if (format.toLowerCase() === 'csv') {
+            // Prepare data for CSV download
+            const csvContent = this.convertToCSV(data);
+
+            // Create a Blob and download link for CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.csv';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+
+        } else if (format.toLowerCase() === 'tsv') {
+            // Prepare data for TSV download
+            const tsvContent = this.convertToTSV(data);
+
+            // Create a Blob and download link for TSV
+            const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.tsv';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+
+        } else if (format.toLowerCase() === 'json') {
+            // Prepare data for JSON download
+            const jsonContent = JSON.stringify(data, null, 2);
+
+            // Create a Blob and download link for JSON
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.json';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+            
+        } else {
+            console.error("Unsupported format: ", format);
+            alert("The selected format is unsupported. Please choose CSV, TSV, or JSON.");
+        }
+
+        // Clean up
+        document.body.removeChild(loadingOverlay); // Remove the loading overlay
+    }).catch((error) => {
+        console.error("Error fetching data: ", error);
+        document.body.removeChild(loadingOverlay); // Remove the loading overlay in case of error
+    });
+}
+
+// Utility function to convert data array to CSV format
+convertToCSV(data) {
+    const headers = Object.keys(data[0]).join(","); // Get headers from keys of the first object
+    const rows = data.map(item => Object.values(item).join(",")); // Convert each object to a CSV row
+    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+}
+
+// Utility function to convert data array to TSV format
+convertToTSV(data) {
+    const headers = Object.keys(data[0]).join("\t"); // Get headers from keys of the first object, tab-separated
+    const rows = data.map(item => Object.values(item).join("\t")); // Convert each object to a TSV row
+    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+}
+
+
+
+
+
+ eventButtonTableClicked() {
+    const { clientHeight: height } = document.body;
+    const cardStates = this.getCardStates(this.url);
+
+    // Filter out empty, null, or incomplete card states
+    const validCardStates = cardStates.filter(cardState => {
+        // Ensure that cardState is an object and has all required fields
+        return cardState && typeof cardState === 'object' && 
+               cardState.sex && cardState.race && 
+               cardState.cause && cardState.year;
+    });
+
+    // If no valid cards are available, show an alert and stop further processing
+    if (validCardStates.length === 0) {
+        alert("No valid data cards available for table generation.");
+        return;
+    }
+
+    // Map over validCardStates and generate data promises
+    const dataPromises = validCardStates.map((cardState) => {
+        // Construct the query parameters for fetching data
+        const query = {
+            sex: cardState.sex,
+            race: cardState.race,
+            cause: cardState.cause,
+            year: cardState.year
+        };
+
+        // Add area-specific query parameters
+        if (cardState.areaCounty && cardState.areaCounty !== "All") {
+            query.county_fips = cardState.areaCounty;
+        }
+        if (cardState.areaState && cardState.areaState !== "All") {
+            query.state_fips = cardState.areaState;
+        }
+        if (cardState.spatialLevel === "state") {
+            query.county_fips = "All";
+        }
+
+        // Check if the measure is population or mortality, and fetch the appropriate data
+        if (cardState.measure === "population") {
+            const populationQuery = { ...query };
+            delete populationQuery.cause; // Population query doesn't need cause
 
             // Return a promise for population data
             return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
@@ -1255,33 +1331,39 @@ eventButtonTableClicked() {
         }
     });
 
-    // Wait for all promises to resolve
+    // Wait for all data promises to resolve
     Promise.all(dataPromises).then((resolvedDataArrays) => {
         const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
 
+        // Create and style the content element for the popup
         const content = document.createElement("div");
         content.style.height = (height * .9) + 'px';
         content.style.overflowY = 'auto';
         content.style.overflowX = 'auto';
         content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
 
+        // Create the popup for the data table
         popup(document.body, content, {
             title: "Data Table",
             backdrop: true,
             stopEvents: false,
         });
 
-        let tableColumns = [...mapTableColumns];
+        let tableColumns = [...mapTableColumns]; // Define table columns
 
-        plotDataTable(data, content, {
-            columns: tableColumns
-        });
+        // Check if there is data to display, otherwise show a 'No data available' message
+        if (data.length === 0) {
+            content.innerHTML = "<p>No data available for this card.</p>";
+        } else {
+            // Plot the data table if data is available
+            plotDataTable(data, content, {
+                columns: tableColumns
+            });
+        }
     }).catch((error) => {
         console.error("Error fetching data: ", error);
     });
 }
-
-
   #calcSharedState() {
     const cardStates = this.plotGrid.getCards().filter(d => d).map(d => d.cardState);
     
@@ -1592,55 +1674,59 @@ class PlotGrid {
     this.listeners[type] = listener
   }
 
-  #blankItemElement() {
-    const gridItem = document.createElement("div")
-    gridItem.classList.add("plot-grid-item")
+  // Blank card creation function
+#blankItemElement() {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("plot-grid-item");
 
-    const blankItem = document.createElement("div")
-    blankItem.classList.add("plot-grid-blank-item")
-    gridItem.appendChild(blankItem)
+    const blankItem = document.createElement("div");
+    blankItem.classList.add("plot-grid-blank-item");
+    gridItem.appendChild(blankItem);
 
-    const plus = document.createElement("i")
-    plus.className = "fas fa-plus-square" 
-    blankItem.appendChild(plus) 
+    const plus = document.createElement("i");
+    plus.className = "fas fa-plus-square";
+    blankItem.appendChild(plus);
 
-    const plusText = document.createElement("span")
-    plusText.innerText = "Add new map"
-    blankItem.appendChild(plusText)
+    const plusText = document.createElement("span");
+    plusText.innerText = "Add new map";
+    blankItem.appendChild(plusText);
 
-    const handle = document.createElement("div")
-    handle.className = "fa-grip-horizontal"
-    handle.style.display = "none"
-    blankItem.appendChild(handle)
+    const handle = document.createElement("div");
+    handle.className = "fa-grip-horizontal";
+    handle.style.display = "none";
+    blankItem.appendChild(handle);
 
-    const deleteButton = document.createElement("i")
-    deleteButton.setAttribute("tip", "Delete card, row, or column")
-    deleteButton.className = "fas fa-trash-alt blank-delete-button"
+    const deleteButton = document.createElement("i");
+    deleteButton.setAttribute("tip", "Delete card, row, or column");
+    deleteButton.className = "fas fa-trash-alt blank-delete-button";
     deleteButton.addEventListener("mouseover", (e) => {
-      e.stopPropagation()
-      gridItem.classList.remove("hover")
-      deleteButton.classList.add("hover")
-    })
+        e.stopPropagation();
+        gridItem.classList.remove("hover");
+        deleteButton.classList.add("hover");
+    });
     deleteButton.addEventListener("mouseleave", () => {
-      deleteButton.classList.remove("hover")
-    })
+        deleteButton.classList.remove("hover");
+    });
     deleteButton.addEventListener("click", e => {
-      e.stopPropagation()
-    })
-    blankItem.appendChild(deleteButton)
+        e.stopPropagation();
+    });
+    blankItem.appendChild(deleteButton);
 
-    // TODO: Implement these
-    const dropdown =createDropdownButton(deleteButton, [
-      {text: "Delete blank card", callback: d => d},
-      {text: "Delete card row", callback: d => d},
-      {text: "Delete card column", callback: d => d},
+    const dropdown = createDropdownButton(deleteButton, [
+        { text: "Delete blank card", callback: d => d },
+        { text: "Delete card row", callback: d => d },
+        { text: "Delete card column", callback: d => d },
     ]);
-    dropdown.classList.add("blank-delete-button")
-    dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button")
+    dropdown.classList.add("blank-delete-button");
+    dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button");
 
     this.tippyMap = addTippys();
-    return gridItem
-  }
+
+    // Set an empty data structure for the blank card
+    gridItem.options = { data: Promise.resolve([]) };
+
+    return gridItem;
+}
 }
 class PlotCard {
   constructor(content, options) {
@@ -1701,7 +1787,7 @@ class PlotCard {
     this.listeners[type] = listener;
   }
 // TODO: Remove redundant codes
-eventButtonDownloadClicked(cardTitle) {  
+eventButtonDownloadClicked(cardTitle) { 
     console.log("Download button clicked", { cardTitle });
 
     // Create loading overlay
@@ -1759,8 +1845,8 @@ eventButtonDownloadClicked(cardTitle) {
         left: '0',
         overflow: 'hidden',
         backgroundColor: 'white',
-        padding: '20px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+        padding: '1', // Ensure no padding
+        margin: '1',  // Ensure no margin
         width: 'fit-content',
         zIndex: '9999'
     });
@@ -1790,6 +1876,11 @@ eventButtonDownloadClicked(cardTitle) {
         clonedLegend.style.marginTop = '20px'; 
         clonedLegend.style.textAlign = 'center'; 
         clonedLegend.style.backgroundColor = 'transparent'; // Keep legend background transparent
+        clonedLegend.style.padding = '0';  // Remove padding
+        clonedLegend.style.margin = '0';   // Remove margin
+        clonedLegend.style.boxShadow = 'none'; // Remove any box-shadow
+        clonedLegend.style.border = 'none'; // Ensure there is no border
+        clonedLegend.style.outline = 'none'; // Ensure there is no outline
         virtualContainer.appendChild(clonedLegend);
     } else {
         console.warn("Legend element not found");
@@ -1804,14 +1895,19 @@ eventButtonDownloadClicked(cardTitle) {
     const iconsToRemove = cardContent.querySelectorAll('.fas.fa-table.highlightable-button, .fas.fa-image.highlightable-button, .grid-card-topbar-title');
     iconsToRemove.forEach(icon => icon.remove());
 
+    // Clear any potential box shadow and set styles
+    cardContent.style.boxShadow = 'none'; // Remove box-shadow
+    cardContent.style.margin = '0'; // Ensure no margin
+    cardContent.style.padding = '0'; // Ensure no padding
+
     // Get the SVG element
     const svgElement = cardContent.querySelector('svg');
 
     if (svgElement) {
         // Clone the SVG and ensure proper sizing
         const clonedSVG = svgElement.cloneNode(true);
-        clonedSVG.setAttribute('width', '100%');  // Set to fill the container
-        clonedSVG.setAttribute('height', 'auto'); // Maintain aspect ratio
+        clonedSVG.setAttribute('width', '800');  // Set to fill the container
+        clonedSVG.setAttribute('height', '600'); // Maintain aspect ratio
 
         // Clear any existing SVG from the card content to avoid duplication
         const existingSVG = cardContent.querySelector('svg');
@@ -1852,6 +1948,10 @@ eventButtonDownloadClicked(cardTitle) {
         });
     }, 0);
 }
+
+
+
+
 
 // New dropdown functionality for downloading images
 createDropdownDownloadButton() {
