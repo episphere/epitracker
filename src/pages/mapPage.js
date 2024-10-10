@@ -143,7 +143,8 @@ this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClic
 // Create a dropdown for data download (JSON/CSV)
 createDropdownButton(this.elems.buttonDownload, [
   { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
-  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") }
+  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
+  { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
 ]);
 
 // Create a separate dropdown for image download (PNG/SVG)
@@ -1120,6 +1121,158 @@ createDropdownButton(this.elems.buttonDownload, [
           });
       }, 0); // The timeout ensures the loading overlay is shown first
   }
+eventButtonDownloadData(format) {
+    console.log("Download data button clicked");
+
+    // Create and show loading overlay and message immediately
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.style.position = 'fixed';
+    loadingOverlay.style.top = '0';
+    loadingOverlay.style.left = '0';
+    loadingOverlay.style.width = '100vw';
+    loadingOverlay.style.height = '100vh';
+    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingOverlay.style.zIndex = '10000';
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.justifyContent = 'center';
+    loadingOverlay.style.alignItems = 'center';
+    loadingOverlay.style.flexDirection = 'column';
+
+    // Create loading message
+    const loadingMessage = document.createElement("div");
+    loadingMessage.innerText = "Generating data download...";
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '20px';
+    loadingMessage.style.borderRadius = '5px';
+
+    // Append message to the overlay
+    loadingOverlay.appendChild(loadingMessage);
+    document.body.appendChild(loadingOverlay); // Show loading overlay first
+
+    // Retrieve card states for generating data
+    const cardStates = this.getCardStates(this.url);
+    const validCardStates = cardStates.filter(cardState => {
+        return cardState && typeof cardState === 'object' &&
+               cardState.sex && cardState.race && 
+               cardState.cause && cardState.year;
+    });
+
+    // If no valid cards are available, show an alert and stop further processing
+    if (validCardStates.length === 0) {
+        alert("No valid data cards available for download.");
+        document.body.removeChild(loadingOverlay); // Remove loading overlay
+        return;
+    }
+
+    // Map over validCardStates and generate data promises
+    const dataPromises = validCardStates.map((cardState) => {
+        const query = {
+            sex: cardState.sex,
+            race: cardState.race,
+            cause: cardState.cause,
+            year: cardState.year,
+        };
+
+        if (cardState.areaCounty && cardState.areaCounty !== "All") {
+            query.county_fips = cardState.areaCounty;
+        }
+        if (cardState.areaState && cardState.areaState !== "All") {
+            query.state_fips = cardState.areaState;
+        }
+        if (cardState.spatialLevel === "state") {
+            query.county_fips = "All";
+        }
+
+        // Fetch appropriate data based on measure
+        if (cardState.measure === "population") {
+            const populationQuery = { ...query };
+            delete populationQuery.cause; // Population query doesn't need cause
+            return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+        } else {
+            return this.dataManager.getCountyMortalityData(query, {
+                includeTotals: false,
+                states: this.state.areaStateOptions,
+                counties: this.state.areaCountyOptions,
+            });
+        }
+    });
+
+    // Wait for all data promises to resolve
+    Promise.all(dataPromises).then((resolvedDataArrays) => {
+        const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
+
+        // Handle download based on format
+        if (format.toLowerCase() === 'csv') {
+            // Prepare data for CSV download
+            const csvContent = this.convertToCSV(data);
+
+            // Create a Blob and download link for CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.csv';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+
+        } else if (format.toLowerCase() === 'tsv') {
+            // Prepare data for TSV download
+            const tsvContent = this.convertToTSV(data);
+
+            // Create a Blob and download link for TSV
+            const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.tsv';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+
+        } else if (format.toLowerCase() === 'json') {
+            // Prepare data for JSON download
+            const jsonContent = JSON.stringify(data, null, 2);
+
+            // Create a Blob and download link for JSON
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'dashboard-data.json';
+            downloadLink.style.display = 'none'; // Hide the link
+            document.body.appendChild(downloadLink);
+            downloadLink.click(); // Trigger download
+            document.body.removeChild(downloadLink); // Cleanup
+            
+        } else {
+            console.error("Unsupported format: ", format);
+            alert("The selected format is unsupported. Please choose CSV, TSV, or JSON.");
+        }
+
+        // Clean up
+        document.body.removeChild(loadingOverlay); // Remove the loading overlay
+    }).catch((error) => {
+        console.error("Error fetching data: ", error);
+        document.body.removeChild(loadingOverlay); // Remove the loading overlay in case of error
+    });
+}
+
+// Utility function to convert data array to CSV format
+convertToCSV(data) {
+    const headers = Object.keys(data[0]).join(","); // Get headers from keys of the first object
+    const rows = data.map(item => Object.values(item).join(",")); // Convert each object to a CSV row
+    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+}
+
+// Utility function to convert data array to TSV format
+convertToTSV(data) {
+    const headers = Object.keys(data[0]).join("\t"); // Get headers from keys of the first object, tab-separated
+    const rows = data.map(item => Object.values(item).join("\t")); // Convert each object to a TSV row
+    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+}
+
+
+
 
 
  eventButtonTableClicked() {
