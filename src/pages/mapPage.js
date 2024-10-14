@@ -69,94 +69,93 @@ class MapApplication {
 
     // The elems object contains references to the applications HTML elements.
     this.elems = {
-  dashboardContainer: document.getElementById("dashboard-container"),
-  dashboard: document.getElementById("dashboard"),
-  innerDashboard: document.getElementById("ex-dashboard"),
-  gridContainer: document.getElementById("grid-container"),
-  grid: document.getElementById("grid-stack"),
-  buttonUndo: document.getElementById("button-undo"),
-  buttonColorSettings: document.getElementById("button-color-settings"),
-  buttonTable: document.getElementById("button-table"),            // Table button
-  buttonDownload: document.getElementById("button-download"),      // Data download button
-  buttonDownloadImage: document.getElementById("button-download-image"), // Image download button
-  buttonEditGrid: document.getElementById("button-edit-grid"),
-  title: document.getElementById("title"),
-  
-  // Color settings popup
-  colorLegend: document.getElementById("color-legend"),
-  colorSettings: document.getElementById("color-settings"),
-  buttonColorSettingsClose: document.getElementById("color-settings-close"),
-  
-  // Map tooltip
-  mapTooltipContent: document.getElementById("map-tooltip"),
-  mapTooltipName: document.getElementById("map-tooltip-name"),
-  mapTooltipValue: document.getElementById("map-tooltip-value"),
-  mapTooltipPlot: document.getElementById("map-tooltip-plot")
-};
+      dashboardContainer: document.getElementById("dashboard-container"),
+      dashboard: document.getElementById("dashboard"),
+      innerDashboard: document.getElementById("ex-dashboard"),
+      gridContainer: document.getElementById("grid-container"),
+      grid: document.getElementById("grid-stack"),
+      buttonUndo: document.getElementById("button-undo"),
+      buttonColorSettings: document.getElementById("button-color-settings"),
+      buttonTable: document.getElementById("button-table"),            // Table button
+      buttonDownload: document.getElementById("button-download"),      // Data download button
+      buttonDownloadImage: document.getElementById("button-download-image"), // Image download button
+      buttonEditGrid: document.getElementById("button-edit-grid"),
+      title: document.getElementById("title"),
+      
+      // Color settings popup
+      colorLegend: document.getElementById("color-legend"),
+      colorSettings: document.getElementById("color-settings"),
+      buttonColorSettingsClose: document.getElementById("color-settings-close"),
+      
+      // Map tooltip
+      mapTooltipContent: document.getElementById("map-tooltip"),
+      mapTooltipName: document.getElementById("map-tooltip-name"),
+      mapTooltipValue: document.getElementById("map-tooltip-value"),
+      mapTooltipPlot: document.getElementById("map-tooltip-plot")
+    };
 
-// console.log(this.elems.buttonDownloadImage); // Ensure the buttonDownloadImage is not null
+  this.tippyMap = addTippys();
 
-this.tippyMap = addTippys();
+  this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
 
-this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
+  this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
+  this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
 
-this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
-this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
+  // Non query data.
+  this.sData = {
+    stateGeoJSON: await d3.json("../data/states.json"),
+    countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
+  };
 
-// Non query data.
-this.sData = {
-  stateGeoJSON: await d3.json("../data/states.json"),
-  countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
-};
+  // Set the county names after the GeoJSON is loaded.
+  this.countyNameMap = new Map(this.sData.countyGeoJSON.features.map(d => [d.id, d.properties.name]));
+  // d3.index(this.sData.countyGeoJSON.features, d => d.id);
 
-    // Set the county names after the GeoJSON is loaded.
-    const countyNameMap = d3.index(this.sData.countyGeoJSON.features, d => d.id);
+  const countyOptions =  this.state.areaCountyOptions.map(d => {
+    let name = d == "All" ? "All" : this.countyNameMap.get(d) + ", " + formatName("states", d.slice(0, 2), "short");
+    return { value: d, label: name }
+  });
+  this.state.areaCountyOptions = countyOptions.filter(d => d.label);
 
-    const countyOptions =  this.state.areaCountyOptions.map(d => {
-      let name = d == "All" ? "All" : countyNameMap.get(d)?.properties?.name + ", " + formatName("states", d.slice(0, 2), "short");
-      return { value: d, label: name }
-    });
-    this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+  // Make a subscriber to filter counties based on the selected state
+  this.state.subscribe("areaState", async(event) => {
+    if (event != "All") {
+      // this.state.areaCounty = "All";
+      this.state.areaCountyOptions = countyOptions.filter(d => d.value.startsWith(event) || d.value === "All");
+    } else {
+      this.state.areaCountyOptions = countyOptions.filter(d => d.value == "All");
+    }
+  });
 
-    // Make a subscriber to filter counties based on the selected state
-    this.state.subscribe("areaState", async(event) => {
-      if (event != "All") {
-        // this.state.areaCounty = "All";
-        this.state.areaCountyOptions = countyOptions.filter(d => d.value.startsWith(event) || d.value === "All");
-      } else {
-        this.state.areaCountyOptions = countyOptions.filter(d => d.value == "All");
-      }
-    });
+  this.addColorSettingsPopup(); 
 
-this.addColorSettingsPopup(); 
+  // Initialize the grid, and update it with the starting state.
+  this.updateGrid();
+  this.toggleLoading(false);
 
-// Initialize the grid, and update it with the starting state.
-this.updateGrid();
-this.toggleLoading(false);
+  this.showInitialHints();
 
-this.showInitialHints();
+  this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
+  this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
+  this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
 
-this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
-this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
-this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
-
-// Create a dropdown for data download (JSON/CSV)
-createDropdownButton(this.elems.buttonDownload, [
-  { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
-  { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
-  { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
-]);
-
-// Create a separate dropdown for image download (PNG/SVG)
-  createDropdownButton(this.elems.buttonDownloadImage, [
-    { text: "Download as PNG", callback: () => this.eventButtonDownloadImage("PNG") },
-    { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
+  // Create a dropdown for data download (JSON/CSV)
+  createDropdownButton(this.elems.buttonDownload, [
+    { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
+    { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
+    { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
   ]);
 
-  // Dropdown for grid editing
-  createDropdownButton(this.elems.buttonEditGrid, [
-    { text: "Add map row", callback: () => this.plotGrid.addRow() },
-    { text: "Add map column", callback: () => this.plotGrid.addColumn() }
+  // Create a separate dropdown for image download (PNG/SVG)
+    createDropdownButton(this.elems.buttonDownloadImage, [
+      { text: "Download as PNG", callback: () => this.eventButtonDownloadImage("PNG") },
+      { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
+    ]);
+
+    // Dropdown for grid editing
+    createDropdownButton(this.elems.buttonEditGrid, [
+      { text: "Add map row", callback: () => this.plotGrid.addRow() },
+      { text: "Add map column", callback: () => this.plotGrid.addColumn() }
   ]);
 
 
@@ -254,17 +253,17 @@ createDropdownButton(this.elems.buttonDownload, [
     this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES.map(d => ({
       value: d, label: formatName("measures", d)
     })));
+    this.state.defineProperty("spatialLevel", initialState.spatialLevel);
+    this.state.defineProperty("spatialLevelOptions", CONSTANTS.SPATIAL_LEVELS.map(d => ({
+      value: d, label: formatName("levels", d)
+    })));
     this.state.defineProperty("areaState", initialState.areaState);
     this.state.defineProperty("areaStateOptions", optionValues.state_fips.map(d => ({
       value: d, label: formatName("states", d)
     })));
     // this.state.defineProperty("areaStateOptions", optionValues.state_fips);
-    this.state.defineProperty("areaCounty", initialState.areaCounty, ["areaState"]);
-    this.state.defineProperty("areaCountyOptions", optionValues.county_fips, ["areaState"]);
-    this.state.defineProperty("spatialLevel", initialState.spatialLevel);
-    this.state.defineProperty("spatialLevelOptions", CONSTANTS.SPATIAL_LEVELS.map(d => ({
-      value: d, label: formatName("levels", d)
-    })));
+    this.state.defineProperty("areaCounty", initialState.areaCounty, ["areaState", "spatialLevel"]);
+    this.state.defineProperty("areaCountyOptions", optionValues.county_fips, ["areaState", "spatialLevel"]);
     this.state.defineProperty("scheme", initialState.scheme);
     this.state.defineProperty("schemeOptions");
     this.state.defineProperty("colorReverse", initialState.colorReverse);
@@ -274,13 +273,19 @@ createDropdownButton(this.elems.buttonDownload, [
     this.state.defineProperty("colorExcludeOutliers", initialState.colorExcludeOutliers);
     this.state.defineProperty("outlierCutoff", initialState.outlierCutoff);
 
-
     this.state.defineJointProperty("colorSettings", 
       ["scheme", "colorReverse", "colorCenterMean", "colorExcludeOutliers", "outlierCutoff"]);
     this.state.subscribe("colorSettings", () => {
       this.updateColors();
       this.updateUrl();
     });
+
+
+    this.state.subscribe("spatialLevel", () => {
+      if (this.state.spatialLevel == "state") {
+        this.state.areaCounty = "All";
+      }
+    })
   }
 
   showInitialHints() {
@@ -451,12 +456,10 @@ createDropdownButton(this.elems.buttonDownload, [
   getCardStates(url) {
     const cardStates = []
     const dFieldsString = url.searchParams.get("dFields")
-    console.log('getQuery 0', {url, a: dFieldsString})
     if (dFieldsString) {
       const dFields = dFieldsString.split(",");
       const dCardString = url.searchParams.get("dCards");
       const dCards = dCardString.split("|");
-      console.log('getQuery 1', {dFields, dCards})
 
       for (const dValueString of dCards) {
         if (dValueString) {
@@ -474,7 +477,6 @@ createDropdownButton(this.elems.buttonDownload, [
       CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field]);
       cardStates.push(cardState);
     }
-    console.log('ssss: ', {cardStates})
 
     return cardStates
   }
@@ -694,81 +696,68 @@ createDropdownButton(this.elems.buttonDownload, [
   }
 
   updateTitles() {
-    const state = this.sharedState;
+    const state = this.sharedState
 
-    // Base elements (e.g., Data type)
     const baseElements = [ 
-        state.measure ? formatName("measures", state.measure) : "Data" 
-    ];
-
-    // Filter elements (e.g., Year, Cause, Race, Sex)
+      state.measure ? formatName( "measures", state.measure) : "Data" 
+    ]
     let filterElements = [
-        state.year,
-        state.cause == "All" ? "All cancers" : state.cause,
-        state.race == "All" ? "All races" : state.race,
-        state.sex == "All" ? "All sexes" : state.sex
-    ];
+      state.year,
+      state.cause == "All" ? "All cancers" : state.cause,
+      state.race == "All" ? "All races" : state.race,
+      state.sex == "All" ? "All sexes" : state.sex,
+    ].filter(d => d);
 
-    // Handling the spatial level (State or County) 
-    if (state.spatialLevel === "County" && state.areaCounty && !this.isCountyLocked) {
-        // Get county name without "County" label
-        const county = this.state.areaCountyOptions.find(i => state.areaCounty === i.value);
-        const countyNameWithAbbr = county ? county.label : '';
-        const countyName = countyNameWithAbbr.split(",")[0];
-        if (countyName) {
-            filterElements.push(countyName);  // Add county name, exclude "County"
-        }
-    } else if (state.spatialLevel === "State" && state.areaState && state.areaState !== "All") {
-        // Get state name without "State" label
-        const stateName = formatName("states", state.areaState);
-        if (stateName) {
-            filterElements.push(stateName);  // Add state name, exclude "State"
-        }
-    }
 
-    // Remove any empty strings and undefined values from filterElements
-    filterElements = filterElements.filter(d => d && d.trim());
-
-    // Building the title: US + measure (from baseElements) + additional filters
     let title = `US ${baseElements.filter(d => d).map(d => d.toLowerCase()).join(" ")}`;
-    
     if (filterElements.length > 0) {
-        title += `, ${filterElements.join(", ")}`;
+      title += `, ${filterElements.join(", ")}`;
+    }
+    this.elems.title.innerText = title;
+
+    const cardTitleFormatters = {
+      sex: d => d == "All" ? "All sexes" : d,
+      race: d => d == "All" ? "All races" : d,
+      cause: d => d == "All" ? "All cancers" : d,
+      areaState: d => d == "All" ? "US" : formatName("states", d),
+      areaCounty: d => `${this.countyNameMap.get(d)} (${formatName("states", d.slice(0,2), "short")})`
     }
 
-    // Final step: remove any lingering "State" or "County" from the title
-    title = title.replace(/\b(State|County)\b/g, "").trim();
 
-    this.elems.title.innerText = title;  // Set the final title to the element
-
-    // Update individual card titles in the grid
-    const cardTitleFormatters = {
-        sex: d => d == "All" ? "All sexes" : d,
-        race: d => d == "All" ? "All races" : d,
-        cause: d => d == "All" ? "All cancers" : d,
-        areaState: d => d == "All" ? "US" : formatName("states", d)
-    };
 
     for (const card of this.plotGrid.getCards()) {
-        if (card) {
-            const cardTitle = this.dFields.map(field => {
-                let value = card.cardState[field];
-                if (field === "areaCounty") {
-                    const county = this.state.areaCountyOptions.find(i => card.cardState[field] === i.value);
-                    const countyNameWithAbbr = county ? county.label : '';
-                    const countyName = countyNameWithAbbr.split(",")[0];
-                    value = countyName;  // Only the county name without "County"
-                }
-                if (cardTitleFormatters[field]) {
-                    return cardTitleFormatters[field](value);
-                } else {
-                    return value;
-                }
-            }).filter(d => d && d.trim()).join(", "); // Filter out empty values
-            card.setTitle(cardTitle);
+      if (card) {
+        const titleElements = []
+        for (const field of ["sex", "race", "cause"]) {
+          if (this.dFields.includes(field)) {
+            const value = card.cardState[field];
+            titleElements.push(cardTitleFormatters[field](value));
+          }
+          
+          // if (cardTitleFormatters[field]) {
+         
+          // } else {
+          //   return value;
+          // }
         }
+
+        // Area is a special case because we want to consider state and county together
+        if (this.dFields.includes("areaCounty") || this.dFields.includes("areaState")) {
+          if (card.cardState.areaCounty != "All") {
+            titleElements.push(cardTitleFormatters.areaCounty(card.cardState.areaCounty))
+          } else {
+            titleElements.push(cardTitleFormatters.areaState(card.cardState.areaState))
+          }
+        }
+
+
+        // const cardTitle = this.dFields.filter(d => d != "spatialLevel").map(field => {
+         
+        // }).join(", ");
+        card.setTitle(titleElements.join(", "));
+      }
     }
-}
+  }
 
 
 
@@ -833,7 +822,7 @@ createDropdownButton(this.elems.buttonDownload, [
           const indexField =  cardState.spatialLevel + "_fips";
 
           let overlayFeatureCollection = null;
-          if (cardState.spatialLevel == "county") {
+          if (cardState.spatialLevel == "county" && cardState.areaCounty == "All") {
             overlayFeatureCollection = this.sData.stateGeoJSON;
             if (cardState.areaState != "All") {
               overlayFeatureCollection = {
@@ -864,11 +853,19 @@ createDropdownButton(this.elems.buttonDownload, [
       let featureCollection = null;
       if (cardState.spatialLevel == "county") {
         featureCollection = this.sData.countyGeoJSON;
+
+        if (cardState.areaCounty != "All") {
+          featureCollection = {
+            type: "FeatureCollection", 
+            features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaCounty))
+          }
+        }
         if (cardState.areaState != "All") {
           featureCollection = {
             type: "FeatureCollection", 
             features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaState))
           }
+          console.log(featureCollection)
         }
       } else {
         featureCollection = this.sData.stateGeoJSON;
