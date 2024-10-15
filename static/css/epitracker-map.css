@@ -378,6 +378,7 @@ footer {
 .popup-content {
   height: 100%;
   overflow-y: auto;
+  overflow-y: visible; /* Allow dropdowns to overflow without causing a scrollbar */
 }
 
 #plot-card-config {
@@ -386,7 +387,12 @@ footer {
   padding: 10px;
   min-height: 150px;
   height: fit-content;
+  overflow: visible;
+  min-width: 300px; /* Ensure there's enough room for dropdowns */
+  max-width: 90vw; /* Allow the popup to grow */
+  overflow: visible; /* Prevent clipping of content */
 }
+
 
 /* TODO: Fix popup column wrap overflowing width issue. May be a browser bug */
 #plot-card-select-container {
