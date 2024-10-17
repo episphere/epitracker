@@ -2751,10 +2751,15 @@ button.previous-btn {
 
 .choices__item--selectable {
   overflow: hidden;
+  filter: none !important; /* Remove any blurring effect */
 }
 
 .choices__list--dropdown .choices__item--selectable {
   padding-right: 10px !important;
+  filter: none !important;
+  opacity: 1 !important;
+    /* Ensure no other visual effects are applied */
+  background: none !important;
 }
 
 .choices__list--single {

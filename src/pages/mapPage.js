@@ -1696,34 +1696,105 @@ class PlotGrid {
     const deleteButton = document.createElement("i");
     deleteButton.setAttribute("tip", "Delete card, row, or column");
     deleteButton.className = "fas fa-trash-alt blank-delete-button";
+    
+    // Hover behavior for the delete button
     deleteButton.addEventListener("mouseover", (e) => {
         e.stopPropagation();
         gridItem.classList.remove("hover");
         deleteButton.classList.add("hover");
     });
+
     deleteButton.addEventListener("mouseleave", () => {
         deleteButton.classList.remove("hover");
     });
+
     deleteButton.addEventListener("click", e => {
-        e.stopPropagation();
+        e.stopPropagation(); // Stop event propagation to avoid triggering other events
     });
+
     blankItem.appendChild(deleteButton);
 
+    // Use the updated createDropdownButton function and pass the event to callbacks
     const dropdown = createDropdownButton(deleteButton, [
-        { text: "Delete blank card", callback: d => d },
-        { text: "Delete card row", callback: d => d },
-        { text: "Delete card column", callback: d => d },
+        {
+            text: "Delete blank card",
+            callback: (e) => {
+                e.preventDefault();  // Prevent default action
+                e.stopPropagation();  // Stop parent handlers
+                gridItem.remove();    // Remove the current blank card from the grid
+            }
+        },
+        {
+            text: "Delete card row",
+            callback: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Find the y position (row) from the current gridItem
+                const row = gridItem.getAttribute("gs-y");
+
+                if (row !== null) {
+                    // Remove all items in this row
+                    for (let i = 0; i < this.nCols; i++) {
+                        const node = this.nodeMatrix[i][row];
+                        if (node && node.element) {
+                            this.grid.removeWidget(node.element);
+                            this.nodeMatrix[i][row] = null;  // Remove from matrix
+                        }
+                    }
+                    console.log(`Row ${row} deleted`);
+                    this.grid.batchUpdate(false);
+                    this.listeners.gridUpdated();
+                } else {
+                    console.error("Row not found!");
+                }
+            }
+        },
+        {
+            text: "Delete card column",
+            callback: (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Find the x position (column) from the current gridItem
+                const column = gridItem.getAttribute("gs-x");
+
+                if (column !== null) {
+                    // Remove all items in this column
+                    for (let i = 0; i < this.nRows; i++) {
+                        const node = this.nodeMatrix[column][i];
+                        if (node && node.element) {
+                            this.grid.removeWidget(node.element);
+                            this.nodeMatrix[column][i] = null;  // Remove from matrix
+                        }
+                    }
+                    console.log(`Column ${column} deleted`);
+                    this.grid.batchUpdate(false);
+                    this.listeners.gridUpdated();
+                } else {
+                    console.error("Column not found!");
+                }
+            }
+        }
     ]);
+
+    // Add dropdown to the delete button
     dropdown.classList.add("blank-delete-button");
     dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button");
 
-    this.tippyMap = addTippys();
+    this.tippyMap = addTippys();  // Assuming this adds tooltips or additional functionality
 
     // Set an empty data structure for the blank card
     gridItem.options = { data: Promise.resolve([]) };
 
     return gridItem;
 }
+
+
+
+
+
+
 }
 class PlotCard {
   constructor(content, options) {

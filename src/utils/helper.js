@@ -854,34 +854,38 @@ export function capitalizeFirstWord(str) {
 }
 
 export function createDropdownButton(button, options) {
-  const dropdownContainer = document.createElement("div")
-  dropdownContainer.className = "dropdown"
+  const dropdownContainer = document.createElement("div");
+  dropdownContainer.className = "dropdown";
   
-  button.replaceWith(dropdownContainer)
+  button.replaceWith(dropdownContainer);
 
-  // button.classList.add("dropdown-toggle")
-  button.setAttribute("data-bs-toggle", "dropdown")
+  // Adding Bootstrap toggle attribute
+  button.setAttribute("data-bs-toggle", "dropdown");
 
-  const list = document.createElement("ul")
-  list.className = "dropdown-menu"
+  const list = document.createElement("ul");
+  list.className = "dropdown-menu";
+
+  // Loop through the options to create dropdown items
   for (const option of options) {
-    const item = document.createElement("li")
+    const item = document.createElement("li");
 
-    const link = document.createElement("a")
-    link.innerText = option.text 
-    link.classList.add("dropdown-item") 
-    item.appendChild(link)
-    item.addEventListener("click", () => option.callback())
+    const link = document.createElement("a");
+    link.innerText = option.text;
+    link.classList.add("dropdown-item");
+    item.appendChild(link);
 
-    list.appendChild(item)
+    // Pass the event to the callback when the item is clicked
+    item.addEventListener("click", (event) => option.callback(event));
+
+    list.appendChild(item);
   }
 
-  dropdownContainer.appendChild(button)
-  dropdownContainer.appendChild(list) 
+  dropdownContainer.appendChild(button);
+  dropdownContainer.appendChild(list);
 
-  return dropdownContainer
-  // button.parentNode.replaceChild(dropdownContainer, button)
+  return dropdownContainer;
 }
+
 
 export function createDropdownDownloadButton(
   compact = true,
