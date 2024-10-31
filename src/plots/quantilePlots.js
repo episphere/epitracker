@@ -31,7 +31,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
   //const containerWidth = container.getBoundingClientRect().width
-  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
+  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.98) // The multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
                                                                                            
@@ -126,13 +126,13 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
 
   plot.removeAttribute("viewBox")
 
-  const settingsButton = document.createElement("i");
-  settingsButton.className = "fa-solid fa-gear";
+  // const settingsButton = document.createElement("i");
+  // settingsButton.className = "fa-solid fa-gear";
 
-  settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
+  // settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
 
-  settingLegend.innerHTML = ``;
-  settingLegend.appendChild(settingsButton);
+  // settingLegend.innerHTML = ``;
+  // settingLegend.appendChild(settingsButton);
 
 
   return {plot}

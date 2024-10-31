@@ -2575,7 +2575,7 @@ button.previous-btn {
 
 #plot-quantiles {
   width: 100%;
-  /* height: fit-content; */
+  height: fit-content;
   display: flex;
   justify-content: center;
   flex-shrink: 0;
@@ -2811,7 +2811,8 @@ button.previous-btn {
 
 #sidebar-form {
   overflow-y: auto;
-  padding-right: 15px;
+  padding-inline: 15px;
+  padding-top: 10px;
   position: relative;
   flex-grow: 1;
 }
