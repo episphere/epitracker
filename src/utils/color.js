@@ -1,28 +1,27 @@
 export const COLORS = {
   sex: {
-    'Male': '#ff000',
-    'Female': '#00ff00'
+    'Male': '#338084',
+    'Female': '#a3eef1'
   },
   race: {
-    "All": "#000000",
-    "Non-Hispanic Black or African American": '#ffff00',
-    "Non-Hispanic American Indian or Alaska Native": "#b9936c",
-    "Non-Hispanic White": "#e6e2d3",
-    "Non-Hispanic Asian": "#d6cbd3",
-    "Hispanic": "#465177",
-    "Non-Hispanic Native Hawaiian or Other Pacific Islander": "#0ff0000",
-    "Non-Hispanic More than one race": "#eeeeee"
+    "All": "#950b30",
+    "Non-Hispanic Black or African American": '#42979a',
+    "Non-Hispanic American Indian or Alaska Native": "#226467",
+    "Non-Hispanic White": "#a9aeb1",
+    "Non-Hispanic Asian": "#284976",
+    "Hispanic": "#d13d64",
+    "Non-Hispanic Native Hawaiian or Other Pacific Islander": "#ffbe2e",
   },
   age_group: {
-    "85+": "slateblue",
-    "75-84": "slateblue",
-    "65-74": "slateblue",
-    "55-64": "slateblue",
-    "45-54": "slateblue",
-    "35-44": "slateblue",
-    "25-34": "slateblue",
-    "15-24": "slateblue",
-    "5-14": "slateblue",
-    "0-4": "slateblue"
+    "85+": "#950b30",
+    "75-84": "#950b30",
+    "65-74": "#950b30",
+    "55-64": "#950b30",
+    "45-54": "#950b30",
+    "35-44": "#950b30",
+    "25-34": "#950b30",
+    "15-24": "#950b30",
+    "5-14": "#950b30",
+    "0-4": "#950b30"
   }
 }
