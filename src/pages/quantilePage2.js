@@ -88,6 +88,7 @@ export function init() {
   elements.graphNavLink = document.getElementById("graph-nav-link");
   elements.tableNavLink = document.getElementById("table-nav-link");
   elements.graphContainer = document.getElementById("plot-container");
+  elements.quantileContainer = document.getElementById("quantile-container");
   elements.plotContainer = document.getElementById("plot-quantiles");
   elements.tableContainer = document.getElementById("table-container");
   elements.plotLegend = document.getElementById("plot-legend");
@@ -284,19 +285,24 @@ function initialDataLoad(mortalityData, quantileDetails) {
   state.trigger("query");
 
   let resizeTimeout;
+  let previousSize = [-1,-1];
   const resizeObserver = new ResizeObserver(() => {
+    const rect = elements.quantileContainer.getBoundingClientRect();    
+
     if (resizeTimeout) {
       clearTimeout(resizeTimeout);
     }
 
-    elements.plotContainer.innerHTML = '';
+    if (rect.width != previousSize[0] || rect.height != previousSize[1]) {
+      elements.plotContainer.innerHTML = '';
+      resizeTimeout = setTimeout(() => {
+        state.trigger("plotConfig");
+      }, 50);
+      previousSize = [rect.width, rect.height]
 
-    resizeTimeout = setTimeout(() => {
-      console.log("Draw")
-      state.trigger("plotConfig");
-    }, 50);
+    }
   });
-  resizeObserver.observe(elements.plotContainer);
+  resizeObserver.observe(elements.quantileContainer);
 
   setInputsEnabled();
 }
