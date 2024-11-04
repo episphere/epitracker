@@ -829,7 +829,7 @@ export function createDropdownButton(button, options) {
   button.setAttribute("data-bs-toggle", "dropdown");
   
   // Add class for cursor change
-  button.classList.add("dropdown-toggle", "cursor-pointer");
+  // button.classList.add("dropdown-toggle", "cursor-pointer");
 
   const list = document.createElement("ul");
   list.className = "dropdown-menu";
