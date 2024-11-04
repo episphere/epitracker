@@ -119,6 +119,7 @@ footer {
   border-right-color: #333b4d;
 }
 
+
 .grid-card-topbar i {
   cursor: pointer;
 }
@@ -346,9 +347,14 @@ footer {
   100% { transform: rotate(360deg); }
 }
 
-/* Popup container styling for improved responsiveness */
+.popup-minor {
+  display: flex;
+  flex-direction: column;
+  pointer-events: all;
+}
+
 .popup {
-  position: fixed;
+  position: absolute;
   left: 50%;
   top: 50%;
   min-width: 600px; /* Ensure a minimum width for horizontal scrolls */
@@ -361,19 +367,17 @@ footer {
   display: flex;
   flex-direction: column;
   padding: 8px;
-  box-shadow: 0px 1px 6px 1px rgb(211, 211, 211);
+  box-shadow: 0px 1px 6px 1px rgb(0, 0, 0, .15);
+  left: 50%;
   transform: translate(-50%, -50%);
   z-index: 100;
 }
 
-/* Ensuring overflow behavior for both x and y directions */
-.popup-content {
-  overflow-y: auto !important;
-  overflow-x: auto !important;
-  min-width: 100%; /* This enables horizontal scrolling when content overflows */
+.popup.popup-fill {
+  height: 90%;
+  width: 90%;
 }
 
-/* Close icon styling for better visibility on smaller screens */
 .popup-topbar {
   display: flex;
   justify-content: space-between;
@@ -383,16 +387,19 @@ footer {
 
 .popup-title {
   font-weight: bold;
-  margin-left: 10px;
+  margin-left:  5px;
+  margin-right: 20px;
 }
 
-@media (max-width: 600px) {
-  .popup {
-    width: 100vw; /* Full width on very small screens */
-    max-width: 100vw;
-    max-height: 100vh;
-    height: 100vh;
-  }
+.popup-content {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.popup-buttons {
+  margin-top: -8px;
 }
 
 

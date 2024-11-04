@@ -8,7 +8,7 @@ import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import { checkableLegend } from "../utils/checkableLegend.js";
-import { downloadElementAsImage } from "../utils/download.js";
+import {  downloadElementAsImage } from "../utils/download.js";
 import {
   createDropdownDownloadButton,
   createOptionSorter,
@@ -17,13 +17,19 @@ import {
   grayOutSexSelectionBasedOnCause,
   CAUSE_SEX_MAP,
   plotDataTable,
-  addPopperTooltip
+  addPopperTooltip,
+  minorPopup,
+  addTippys,
+  popup,
+  createDropdownButton,
+  downloadDataWithPopup
 } from "../utils/helper.js";
 import { hookSelectChoices, hookCheckbox } from "../utils/input2.js";
 import { plotQuantileScatter } from "../plots/quantilePlots.js";
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm";
 import { quantileTableColumns } from "../utils/tableDefinitions.js";
 import { formatName } from "../utils/nameFormat.js";
+import { COLORS } from "../utils/color.js";
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule]);
 
@@ -42,11 +48,12 @@ const QUANTILE_NUMBERS = ["4", "5", "10"];
 const NUMERIC_MEASURES = [
   "age_adjusted_rate",
   "crude_rate",
-  "age_adjusted_rate_ratio (ref=low)",
-  "age_adjusted_rate_ratio (ref=high)",
-  "crude_rate_ratio(ref=low)",
-  "crude_rate_ratio (ref=high)",
+  "age_adjusted_rate_ratio_ref-low",
+  "age_adjusted_rate_ratio_ref-high",
+  "crude_rate_ratio_ref-low",
+  "crude_rate_ratio_ref-high",
 ];
+const TABLE_FIELDS = []
 
 // The default state, shown if no URL params.
 const INITIAL_STATE = {
@@ -65,6 +72,7 @@ const INITIAL_STATE = {
 
 let state, dataManager;
 let elements, choices, staticData;
+let currentData;
 
 export function init() {
   toggleLoading(true);
@@ -77,7 +85,7 @@ export function init() {
   staticData = {};
 
   initializeState();
-  addDownloadButton();
+
   const selectSexElement = document.getElementById("select-select-sex");
   if (selectSexElement) {
     elements.selectChoicesListSex =
@@ -87,16 +95,39 @@ export function init() {
   elements.selectRace = document.getElementById("select-select-race");
   elements.graphNavLink = document.getElementById("graph-nav-link");
   elements.tableNavLink = document.getElementById("table-nav-link");
+  elements.dashboardContainer = document.getElementById("dashboard-container");
   elements.graphContainer = document.getElementById("plot-container");
+  elements.quantileContainer = document.getElementById("quantile-container");
   elements.plotContainer = document.getElementById("plot-quantiles");
   elements.tableContainer = document.getElementById("table-container");
   elements.plotLegend = document.getElementById("plot-legend");
-  elements.tableNavLink.addEventListener("click", () => changeView("table"));
-  elements.graphNavLink.addEventListener("click", () => changeView("plot"));
+  elements.legendContainer = document.getElementById("legend-container");
+  elements.settingsDropdown = document.getElementById("settings-dropdown");
+  // elements.tableNavLink.addEventListener("click", () => changeView("table"));
+  // elements.graphNavLink.addEventListener("click", () => changeView("plot"));
   elements.groupDownloadButton = document.querySelector(
     "#group-download-container button"
   );
-  elements.graphTitle = document.getElementById("plot-title");
+  elements.title = document.getElementById("title");
+  elements.buttonSettings = document.getElementById("button-options");
+  elements.buttonTable = document.getElementById("button-table");
+  elements.buttonDownloadData = document.getElementById("button-download-data");
+  elements.buttonDownloadImage = document.getElementById("button-download-image");
+  elements.imageTemplate = document.getElementById("img-template");
+  elements.imageTitle = document.getElementById("img-title");
+  elements.imageLegend = document.getElementById("img-legend");
+  elements.imagePlot = document.getElementById("img-plot");
+  elements.imageSource = document.getElementById("img-source");
+
+  addControlsLogic();
+  addTippys();
+
+  // TODO: Remove
+  const content = document.createElement("div");
+  content.style.height = "100%";
+  content.style.width = "100%";
+  content.style.backgroundColor = "pink";
+
 
   Promise.all([
     d3.json("../data/quantile/quantile_details.json"),
@@ -207,7 +238,7 @@ function initializeState() {
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
     { id: "#select-select-cause", propertyName: "cause", searchable: true, format: causeFormat },
-    { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
+    // { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-measure", propertyName: "measure" },
     {
       id: "#select-quantile-field",
@@ -239,7 +270,7 @@ function initializeState() {
   hookCheckbox("#check-start-zero", state, "startZero");
 
   state.subscribe("query", queryUpdated);
-  state.subscribe("plotConfig", plotConfigUpdated);
+  state.subscribe("plotConfig", (d) => plotConfigUpdated(d));
 }
 
 // =================================
@@ -284,16 +315,24 @@ function initialDataLoad(mortalityData, quantileDetails) {
   state.trigger("query");
 
   let resizeTimeout;
+  let previousSize = [-1,-1];
   const resizeObserver = new ResizeObserver(() => {
+    const rect = elements.quantileContainer.getBoundingClientRect();    
+
     if (resizeTimeout) {
       clearTimeout(resizeTimeout);
     }
 
-    resizeTimeout = setTimeout(() => {
-      state.trigger("plotConfig");
-    }, 25);
+    if (rect.width != previousSize[0] || rect.height != previousSize[1]) {
+      elements.plotContainer.innerHTML = '';
+      resizeTimeout = setTimeout(() => {
+        state.trigger("plotConfig");
+      }, 50);
+      previousSize = [rect.width, rect.height]
+
+    }
   });
-  resizeObserver.observe(elements.plotContainer);
+  resizeObserver.observe(elements.quantileContainer);
 
   setInputsEnabled();
 }
@@ -404,7 +443,14 @@ async function queryUpdated(query) {
 
   updateLegend(data, query);
 }
-function plotConfigUpdated(plotConfig) {
+function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null) {
+  if (!plotContainer) {
+    plotContainer = elements.plotContainer;
+  }
+  if (!legendContainer) {
+    legendContainer = elements.legendContainer;
+  }
+
   const measureDetails =  formatName("quantile_fields", plotConfig.query.quantileField, "all");
 
   const xTickFormat = (_, i) => {
@@ -426,6 +472,7 @@ function plotConfigUpdated(plotConfig) {
       legendCheckSet.has(d[plotConfig.query.compareColor])
     );
   }
+  currentData = data;
   // if (plotConfig.query.compareFacet == "race" && plotConfig.query.compareColor == "none") {
   //   const legendCheckSet = new Set(plotConfig.legendCheckValues);
   //   data = plotConfig.mortalityData.filter((d) =>
@@ -433,10 +480,20 @@ function plotConfigUpdated(plotConfig) {
   //   );
   // }
 
-  const colorFunction =
-    plotConfig.query.compareColor != "none"
-      ? (d) => d[plotConfig.query.compareColor]
-      : null;
+  const colorFunction = (row) => {
+    if (plotConfig.query.compareColor == "race") {
+      return COLORS.race[row.race];
+    } else if (plotConfig.query.compareColor == "sex") {
+      return COLORS.sex[row.sex];
+    } else {
+      return COLORS.base;
+    }
+  }
+
+  // const colorFunction =
+  //   plotConfig.query.compareColor != "none"
+  //     ? (d) => d[plotConfig.query.compareColor]
+  //     : null;
 
   let colorDomainValues = null;
   if (colorFunction) {
@@ -452,118 +509,87 @@ function plotConfigUpdated(plotConfig) {
   const colorTickFormat =
     plotConfig.query.compareColor == "race" ? formatRace : (d) => d;
 
-  const legendContainer = document.getElementById("setting-legend");
+  // if (!state.onSettingsClick) {
+  //   const topbarElement = document.getElementById("ex-settings-card");
+  //   const settingsTooltip = addPopperTooltip(topbarElement);
+  //   const settingsElement = document.getElementById(
+  //     "settings-dropdown"
+  //   );
+  //   const settingsClose = document.getElementById("settings-close");
 
-  if (!state.onSettingsClick) {
-    const topbarElement = document.getElementById("topbar-cnt");
-    const settingsTooltip = addPopperTooltip(topbarElement);
-    const settingsElement = document.getElementById(
-      "settings-dropdown"
-    );
-    const settingsClose = document.getElementById("settings-close");
+  //   let tooltipShown = false;
+  //   state.onSettingsClick = (settingsButton) => {
+  //     settingsElement.style.display = "flex";
+  //     if (tooltipShown) {
+  //       settingsTooltip.hide();
+  //     } else {
+  //       settingsTooltip.show(settingsButton, settingsElement);
+  //     }
+  //     tooltipShown = !tooltipShown;
+  //   };
 
-    let tooltipShown = false;
-    state.onSettingsClick = (settingsButton) => {
-      settingsElement.style.display = "flex";
-      if (tooltipShown) {
-        settingsTooltip.hide();
-      } else {
-        settingsTooltip.show(settingsButton, settingsElement);
-      }
-      tooltipShown = !tooltipShown;
-    };
+  //   settingsClose.addEventListener("click", () => {
+  //     tooltipShown = !tooltipShown;
+  //     settingsTooltip.hide();
+  //   });
+  // }
 
-    settingsClose.addEventListener("click", () => {
-      tooltipShown = !tooltipShown;
-      settingsTooltip.hide();
+  if (state.mortalityData.length == 0) {
+    plotContainer.innerHTML =
+      "<i> There is no data for this selection. </i>";
+  } else {
+    console.log(data, plotConfig.measure)
+    plotQuantileScatter(plotContainer, legendContainer, data, {
+      valueField: plotConfig.measure,
+      facet:
+        plotConfig.query.compareFacet != "none"
+          ? plotConfig.query.compareFacet
+          : null,
+      intervalFields: [
+        plotConfig.measure + "_low",
+        plotConfig.measure + "_high",
+      ],
+      color: colorFunction,
+      drawLines: state.showLines,
+      yStartZero: state.startZero,
+      xLabel: `${measureDetails.name} (${
+        measureDetails.unit === "Proportion"
+          ? "Percentage"
+          : measureDetails.unit
+      })`,
+      yLabel: formatName("measures", plotConfig.measure),
+      facetLabel:  formatName("fields", state.compareFacet),
+      xTickFormat: xTickFormat,
+      quantileFieldUnit: quantileFieldUnit(),
+      tooltipFields: [
+        plotConfig.query.compareFacet,
+        plotConfig.query.compareColor,
+      ].filter((d) => d != "none"),
+      colorDomain: colorDomainValues,
+      facetTickFormat,
+      colorTickFormat,
+      onSettingsClick: state.onSettingsClick,
     });
   }
 
-  if (state.mortalityData.length == 0) {
-    elements.plotContainer.innerHTML =
-      "<i> There is no data for this selection. </i>";
-    elements.tableContainer.innerHTML =
-      "<i> There is no data for this selection. </i>";
-  } else {
-    const isActiveTable = elements.tableNavLink.classList.contains("active");
-
-    if (isActiveTable) {
-      plotTable();
-    } else {
-      plotQuantileScatter(elements.plotContainer, legendContainer, data, {
-        valueField: plotConfig.measure,
-        facet:
-          plotConfig.query.compareFacet != "none"
-            ? plotConfig.query.compareFacet
-            : null,
-        intervalFields: [
-          plotConfig.measure + "_low",
-          plotConfig.measure + "_high",
-        ],
-        color: colorFunction,
-        drawLines: state.showLines,
-        yStartZero: state.startZero,
-        xLabel: `${measureDetails.measure} (${
-          measureDetails.unit === "Proportion"
-            ? "Percentage"
-            : measureDetails.unit
-        })`,
-        yLabel: formatName("measures", plotConfig.measure),
-        facetLabel:  formatName("fields", state.compareFacet),
-        xTickFormat: xTickFormat,
-        quantileFieldUnit: quantileFieldUnit(),
-        tooltipFields: [
-          plotConfig.query.compareFacet,
-          plotConfig.query.compareColor,
-        ].filter((d) => d != "none"),
-        colorDomain: colorDomainValues,
-        facetTickFormat,
-        colorTickFormat,
-        onSettingsClick: state.onSettingsClick,
-      });
-    }
-  }
-
-  updateGraphTitle();
+  updateTitle();
   toggleLoading(false);
 }
+
+
 
 // =================================
 // Other inputs
 // =================================
 
-function updateLegend(data, query) {
-  const legendContainer = document.getElementById("plot-legend");
+function updateLegend(data, query, legendContainer=null) {
+  if (!legendContainer) {
+    legendContainer = document.getElementById("plot-legend");
+    elements.legendContainer.style.display = query.compareColor == "none" ? "none" : "flex";
+  }
+
   legendContainer.innerHTML = ``;
 
-  // if (query.compareFacet == "race" && query.compareColor == "none") {
-  //   const facetDomainValues = [
-  //     ...new Set(data.map((d) => d[query.compareFacet])),
-  //   ].sort();
-  //   const checkedValueSet = new Set(state.legendCheckValues);
-  //   let selectedValues = facetDomainValues.filter((d) =>
-  //     checkedValueSet.has(d)
-  //   );
-  //   if (selectedValues.length == 0) selectedValues = facetDomainValues;
-
-  //   const formatRace = (d) => formatName("race", d, "formatted");
-  //   const tickFormat =
-  //     query.compareFacet == "race" ? formatRace : (d) => d;
-  //   const legend = checkableLegend(
-  //     facetDomainValues,
-  //     Array(10).fill("#695ACD"),
-  //     selectedValues,
-  //     tickFormat,
-  //     true
-  //   );
-  //   legendContainer.appendChild(legend);
-
-  //   legend.addEventListener("change", () => {
-  //     state.legendCheckValues = legend.getValues();
-  //   });
-
-  //   state.legendCheckValues = legend.getValues();
-  // }
   
   if (query.compareColor != "none") {
     const colorDomainValues = [
@@ -575,12 +601,21 @@ function updateLegend(data, query) {
     );
     if (selectedValues.length == 0) selectedValues = colorDomainValues;
 
-    const formatRace = (d) => formatName("race", d, "formatted");
+    const formatRace = (d) => formatName("race", d, "half_short");
     const colorTickFormat =
       query.compareColor == "race" ? formatRace : (d) => d;
+    const colors = colorDomainValues.map(value => {
+      if (query.compareColor == "race") {
+        return COLORS.race[value];
+      } else if (query.compareColor == "sex") {
+        return COLORS.sex[value];
+      } else {
+        return COLORS.base;
+      }
+    })
     const legend = checkableLegend(
       colorDomainValues,
-      d3.schemeTableau10,
+      colors,
       selectedValues,
       colorTickFormat,
       true
@@ -595,61 +630,86 @@ function updateLegend(data, query) {
   }
 }
 
-function changeView(view) {
-  toggleLoading(true);
-
-  if (view == "plot") {
-    elements.tableNavLink.classList.remove("active");
-    elements.graphNavLink.classList.add("active");
-    elements.graphContainer.style.display = "flex";
-    elements.tableContainer.style.display = "none";
-    elements.plotLegend.style.display = "block";
-
-    state.trigger("plotConfig"); // Trigger a redraw so sizing is correct.
-  } else if (view == "table") {
-    elements.graphNavLink.classList.remove("active");
-    elements.tableNavLink.classList.add("active");
-    elements.graphContainer.style.display = "none";
-    elements.tableContainer.style.display = "block";
-    elements.plotLegend.style.display = "none";
-
-    if (state.mortalityData.length > 0) {
-      plotTable();
-    }
-  }
-
-  toggleLoading(false);
-}
 
 // =================================
 // Helper functions
 // =================================
 
-function addDownloadButton() {
-  const baseFilename = "epitracker_quantile";
 
-  const groupDownloadContainer = document.getElementById("download-container");
-  const downloadButton = createDropdownDownloadButton(false, [
-    {
-      label: "Download data (CSV)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "csv"),
-    },
-    {
-      label: "Download data (TSV)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "tsv"),
-    },
-    {
-      label: "Download data (JSON)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "json"),
-    },
-    { label: "Download plot (PNG)", listener: downloadGraph },
-    { label: "Download plot (SVG)", listener: downloadGraphSVG },
+// Add all the various control logic
+function addControlsLogic() {
+  // Add plot settings topbar popup
+  minorPopup(elements.dashboardContainer, elements.buttonSettings, elements.settingsDropdown, "Plot Settings");
+
+  // Create table popup
+  elements.buttonTable.addEventListener("click", () => {
+    const content = document.createElement("div");
+    content.className = "table-popup-content";
+
+    const tableTopbar = document.createElement("div");
+    tableTopbar.classList.add("table-topbar");
+     
+    const tableTitle = document.createElement("div");
+    tableTitle.classList.add("table-title");
+    tableTitle.innerText = elements.title.innerText;
+    tableTopbar.appendChild(tableTitle);
+
+    const downloadButton = document.createElement("div");
+    downloadButton.className = "settings-button fa-solid fa-download";
+    tableTopbar.appendChild(downloadButton);
+    content.appendChild(tableTopbar);
+
+    // Create a dropdown for data download (JSON/CSV)
+    createDropdownButton(downloadButton, [
+      { text: "Download JSON", callback: () => eventButtonDownloadData("json") },
+      { text: "Download CSV", callback: () => eventButtonDownloadData("csv") },
+      { text: "Download TSV", callback: () => eventButtonDownloadData("tsv") }
+    ]);
+
+    const tableContainer = document.createElement("div");
+    tableContainer.classList.add("table-container");
+    content.appendChild(tableContainer);
+
+    const fields = ["race", "sex", "cause", "quantile_field", "quantile", "quantile_range"]
+      .map(d => ({field: d, title: formatName("fields", d)}));
+    const measureFields = NUMERIC_MEASURES
+      .map(d => ({field: d, title: formatName("measures", d)}))
+
+    const contentRender = (width, height) => {
+      plotDataTable(currentData, tableContainer, {
+        columns: [...fields, ...measureFields]
+      });
+      return content
+    }
+  
+    popup(elements.dashboardContainer, contentRender, {
+      title: "Data Table", 
+      fillScreen: true,
+    });
+  })
+
+  // Create a dropdown for data download (JSON/CSV)
+  createDropdownButton(elements.buttonDownloadData, [
+    { text: "Download JSON", callback: () => eventButtonDownloadData("json") },
+    { text: "Download CSV", callback: () => eventButtonDownloadData("csv") },
+    { text: "Download TSV", callback: () => eventButtonDownloadData("tsv") }
   ]);
-  groupDownloadContainer.appendChild(downloadButton);
+
+  createDropdownButton(elements.buttonDownloadImage, [
+    { text: "Download PNG", callback: () => eventButtonDownloadImage("png") },
+    { text: "Download SVG", callback: () =>eventButtonDownloadImage("svg") },
+  ]);
+
 }
+
+function eventButtonDownloadData(format) {
+  downloadDataWithPopup(elements.dashboardContainer,currentData, "epitracker_quantile_data", format);
+}
+
+function eventButtonDownloadImage(format) {
+  downloadGraph(format)
+}
+
 
 function downloadGraphSVG() {
   const sourceElement = document.getElementById('plot-source')
@@ -669,35 +729,13 @@ function downloadGraphSVG() {
   });
 }
 
-function downloadGraph() {
-  const temporaryContainer = elements.graphContainer.cloneNode(true);
-  const temporaryLegend = elements.plotLegend.cloneNode(true);
-  const temporaryTitle = elements.graphTitle.cloneNode(true);
 
-  const sourceSvgElement = elements.graphContainer.getElementsByTagName('svg')[0]
-  const sourceSvgElementHeight = sourceSvgElement.getBBox().height
-
-  const svgElement = temporaryContainer.getElementsByTagName('svg')[0]
-  svgElement.style.height = `${sourceSvgElementHeight}px`;
-
-  const legendChecks = temporaryLegend.querySelectorAll(".legend-check");
-  legendChecks.forEach((check) => {
-    if (!check.hasAttribute("checked")) {
-      check.style.display = "none";
-    }
-  });
-
-  const checkPaths = temporaryLegend.querySelectorAll(".legend-check path");
-  checkPaths.forEach((path) => (path.style.visibility = "hidden"));
-
-  const wrapperElement = document.createElement("div");
-  wrapperElement.appendChild(temporaryLegend);
-  wrapperElement.appendChild(temporaryTitle);
-  wrapperElement.appendChild(temporaryContainer);
-  const sourceDiv = document.createElement('div')
-  sourceDiv.innerText = 'the source...'
-  wrapperElement.appendChild(sourceDiv);
-  return downloadElementAsImage(wrapperElement, "epitracker-quantile-plot");
+function downloadGraph(format) {
+  elements.imageTitle.innerText = elements.title.innerText;
+  updateLegend(state.mortalityData, state.query, elements.imageLegend);
+  plotConfigUpdated(state.plotConfig, elements.imagePlot, elements.imageLegend);
+  downloadElementAsImage(elements.imageTemplate, "epitracker-quantile-plot", format);
+  // downloadElementAsImage(elements.imageTemplate, "epitracker-quantile-plot");
 }
 
 /**
@@ -750,7 +788,7 @@ function setInputsEnabled(enabled) {
     "select-select-race",
     "select-select-sex",
     "select-select-cause",
-    "select-select-year",
+    // "select-select-year",
     "select-measure",
   ]) {
     const element = document.getElementById(input);
@@ -766,72 +804,82 @@ function setInputsEnabled(enabled) {
   }
 }
 
-function plotTable() {
-  const pin = [
-    "cause",
-    "race",
-    "sex",
-    "quantile_field",
-    "quantile",
-    "quantile_range",
-  ].map((d) => ({ field: d, frozen: true }));
-  plotDataTable(state.mortalityData, elements.tableContainer, {
-    colDefinitions: pin,
-    columns: quantileTableColumns,
-  });
-}
 
 function toggleLoading(loading, soft = false) {
-  if (loading) {
-    document.getElementById("plot-container").style.opacity = soft
-      ? "0.5"
-      : "0";
-    document.getElementById("plot-title").style.opacity = soft ? "0.5" : "0";
-    document.getElementById("loader-container").style.visibility = "visible";
-    document.getElementById("table-container").style.visibility = "hidden";
-  } else {
-    document.getElementById("plot-container").style.opacity = "1";
-    document.getElementById("plot-title").style.opacity = "1";
-    document.getElementById("loader-container").style.visibility = "hidden";
-    document.getElementById("table-container").style.visibility = "visible";
-  }
+  // TODO: Reimplement
+  // if (loading) {
+  //   document.getElementById("plot-container").style.opacity = soft
+  //     ? "0.5"
+  //     : "0";
+  //   document.getElementById("plot-title").style.opacity = soft ? "0.5" : "0";
+  //   document.getElementById("loader-container").style.visibility = "visible";
+  //   document.getElementById("table-container").style.visibility = "hidden";
+  // } else {
+  //   document.getElementById("plot-container").style.opacity = "1";
+  //   document.getElementById("plot-title").style.opacity = "1";
+  //   document.getElementById("loader-container").style.visibility = "hidden";
+  //   document.getElementById("table-container").style.visibility = "visible";
+  // }
 }
-function updateGraphTitle() {
-  let compareString = [state.compareColor, state.compareFacet]
-    .filter((d) => d != "none")
-    .map((d) => formatName("fields", d).toLowerCase())
-    .join(" and ");
-  if (compareString != "") {
-    //compareString = "</br> Stratified by " + compareString;
-  }
-  const compareSet = new Set([state.compareColor, state.compareFacet]);
-  const selects = [
-    { name: "Year", value: state.year },
-    { name: "Cause of death", value: formatCauseName(state.cause) },
-    {
-      name: formatName("fields", "sex"),
-      value: state.sex,
-      exclude: compareSet.has("sex"),
-    },
-    {
-      name: formatName("fields", "race"),
-      value: state.race,
-      exclude: compareSet.has("race"),
-    },
-  ];
-  const selectsString = selects
-    .filter((d) => !d.exclude)
-    .map((d) => `${d.name}: ${d.value}`)
-    .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
+function updateTitle() {
 
-  const quantileMeasure = formatName("quantile_fields", state.quantileField); 
-  let measureName = formatName("measures", state.measure).toLowerCase(); 
-  measureName = measureName[0].toUpperCase() + measureName.slice(1);
-  const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
-  const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
-  const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
-  elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
+  const quantileNames = {"3": "tertile", "4": "quartile", "5": "quintile", "10": "decile"};
+
+  let title = `US ${formatName( "measures", state.measure, "verbose").toLowerCase()} by ${quantileNames[state.quantileNumber]} of county-level ${ formatName("quantile_fields", state.quantileField).toLowerCase()}`;
+  
+  let filterElements = [
+    state.year,
+    state.cause == "All" ? null : state.cause,
+    state.race == "All" ? null : state.race,
+    state.sex == "All" ? null : state.sex,
+  ].filter(d => d).map(d => d.toLowerCase());
+
+  if (filterElements.length > 0) {
+    title += `, ${filterElements.join(", ")}`;
+    
+
+  elements.title.innerText = title;
+
+  }
+  // TODO: Reimplement 
+
+  // let compareString = [state.compareColor, state.compareFacet]
+  //   .filter((d) => d != "none")
+  //   .map((d) => formatName("fields", d).toLowerCase())
+  //   .join(" and ");
+  // if (compareString != "") {
+  //   //compareString = "</br> Stratified by " + compareString;
+  // }
+  // const compareSet = new Set([state.compareColor, state.compareFacet]);
+  // const selects = [
+  //   { name: "Year", value: state.year },
+  //   { name: "Cause of death", value: formatCauseName(state.cause) },
+  //   {
+  //     name: formatName("fields", "sex"),
+  //     value: state.sex,
+  //     exclude: compareSet.has("sex"),
+  //   },
+  //   {
+  //     name: formatName("fields", "race"),
+  //     value: state.race,
+  //     exclude: compareSet.has("race"),
+  //   },
+  // ];
+  // const selectsString = selects
+  //   .filter((d) => !d.exclude)
+  //   .map((d) => `${d.name}: ${d.value}`)
+  //   .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
+
+  // const quantileMeasure = formatName("quantile_fields", state.quantileField); 
+  // let measureName = formatName("measures", state.measure).toLowerCase(); 
+  // measureName = measureName[0].toUpperCase() + measureName.slice(1);
+  // const isNoneCompares = state.compareColor === 'none' && state.compareFacet === 'none'
+  // const title = `${measureName} by ${compareString} and octile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
+  // const noneTitle = `${measureName} by quantile of US county characteristic: ${quantileMeasure} </br> ${selectsString}`;
+  // elements.graphTitle.innerHTML = isNoneCompares ? noneTitle : title;
 }
+
+
 
 function getAgeAdjustedRateData(data, row, key) {
   const dataSortedByQuantile = data
@@ -842,16 +890,16 @@ function getAgeAdjustedRateData(data, row, key) {
   const firstIndex = 0;
 
   if (dataSortedByQuantile.length) {
-    row["age_adjusted_rate_ratio (ref=low)"] = +parseFloat(
+    row["age_adjusted_rate_ratio_ref-low"] = +parseFloat(
       row.age_adjusted_rate / dataSortedByQuantile[firstIndex].age_adjusted_rate
     ).toFixed(2);
-    row["age_adjusted_rate_ratio (ref=high)"] = +parseFloat(
+    row["age_adjusted_rate_ratio_ref-high"] = +parseFloat(
       row.age_adjusted_rate / dataSortedByQuantile[lastIndex].age_adjusted_rate
     ).toFixed(2);
-    row["crude_rate_ratio(ref=low)"] = +parseFloat(
+    row["crude_rate_ratio_ref-low"] = +parseFloat(
       row.crude_rate / dataSortedByQuantile[firstIndex].crude_rate
     ).toFixed(2);
-    row["crude_rate_ratio (ref=high)"] = +parseFloat(
+    row["crude_rate_ratio_ref-high"] = +parseFloat(
       row.crude_rate / dataSortedByQuantile[lastIndex].crude_rate
     ).toFixed(2);
   }

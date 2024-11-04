@@ -53,77 +53,21 @@ export function plotDataTable(data, container, options={}) {
     columns = [],
   } = options 
 
-  // const colDefMap = d3.index(colDefinitions, d => d.field)
   columns.forEach(col => {
     if (!col.title) col.title = col.field
   })
 
   const table = document.createElement("div")
+  table.style.height = "100%"
+  table.style.width = "100%"
   container.innerHTML = ``;
-  container.appendChild(table)
+  container.appendChild(table);
+
 
   const tabulator = new Tabulator(table, {
-    height: Math.min(data.length*48 + 100, container.getBoundingClientRect().height), 
     data,
     columns,
-    // columns: [
-    //   { field: "state_fips", title: "state_fips"},
-    //   { field: "race", title: "race"}
-    // ]
-    //autoColumns: true,
-    // autoColumnsDefinitions: (columns) =>
-    //      columns.map((d) => {
-    //       const def = { ...d, frozen: pin.has(d.field) ? true : false, maxWidth: 200 }
-    //       console.log(def)
-    //       return def
-    //     }),
   })
-
-
-  // tabulator.on("tableBuilt", () => {
-  //   console.log("move")
-  //   tabulator.moveColumn("state", "state_fips", true)
-
-  //   // container.innerHTML = ``;
-  //   // container.appendChild(table)
-  // })
-  
-  // tabulator.on("tableBuilt", () => {
-
-
-  //   let definitions = [...tabulator.getColumnDefinitions()]
-
-  //   const definitionIndex = d3.index(definitions, d => d.field)
-
-  //   const newDefinitions = [] 
-  //   for (const field of order) {
-  //     newDefinitions.push(definitionIndex.get(field))
-  //     definitions = definitions.filter(d => d.field != field)
-  //   }
-  //   for (let definition of definitions) {
-      
-  //     newDefinitions.push(definition)
-  //   }  
-
-  //   for (let definition of newDefinitions) {
-  //     const userDefinition = colDefMap.get(definition.field)
-  //     if (userDefinition) {
-  //       for (const [k,v] of Object.entries(userDefinition)) {
-  //         definition[k] = v
-  //       }
-  //     }
-     
-  //   }
-
-
-  //   console.log("New definitions", newDefinitions)
-
-  //   tabulator.setColumns(newDefinitions)
-  
-  // })
- 
-  //definitions.sort
-
 
 }
 
@@ -818,6 +762,28 @@ export function sortCompare(a, b, key) {
   return 0;
 }
 
+export function downloadDataWithPopup(container, data, filename, contentType) {
+  const contentContainer = document.createElement("div");
+  contentContainer.className = "download-popup-content";
+
+  const text = document.createElement("div");
+  text.innerText = "Preparing download (this may take a moment)";
+  contentContainer.appendChild(text);
+
+  const spinner = document.createElement("div");
+  spinner.className = "spinner-border text-primary";
+  contentContainer.appendChild(spinner);
+
+  const {close} = popup(container, contentContainer, {
+    closable: false,
+  });
+
+  // downloadStringAsFile(content, filename, contentType);
+  downloadMortalityData(data, filename, contentType);
+  close();
+
+}
+
 export function downloadStringAsFile(content, filename, contentType) {
   const blob = new Blob([content], { type: contentType });
   const url = window.URL.createObjectURL(blob);
@@ -863,7 +829,7 @@ export function createDropdownButton(button, options) {
   button.setAttribute("data-bs-toggle", "dropdown");
   
   // Add class for cursor change
-  button.classList.add("dropdown-toggle", "cursor-pointer");
+  // button.classList.add("dropdown-toggle", "cursor-pointer");
 
   const list = document.createElement("ul");
   list.className = "dropdown-menu";
@@ -1069,18 +1035,11 @@ export function createNestedDropdown(buttonElement, items) {
 
 }
 
-export function popup(container, content, options) {
-  options = {
-    stopEvents: true,
-    ...options,
-  };
-
-  container.classList.add("unfocused");
-  document.body.style.overflow = 'hidden'
-
+// Popup attached to an element 
+export function minorPopup(container, button, content, title) {
   const popupTemplate = /*html*/ `
     <div class="popup-topbar">
-      <div class="popup-title">${options.title}</div>
+      <div class="popup-title">${title}</div>
       <div class="popup-buttons">
         <i class="fas fa-times highlightable-button"></i>
       </div>
@@ -1088,61 +1047,158 @@ export function popup(container, content, options) {
     <div class="popup-content">
   `;
 
+  const tooltip = addPopperTooltip(container);
+
+  let popup = document.createElement("div");
+  popup.className = "popup-minor";
+  popup.innerHTML = popupTemplate;
+  // popupContainer.appendChild(popup);
+
+  const popupContent = popup.querySelector(".popup-content");
+  popupContent.innerHTML = "";
+  popupContent.appendChild(content);
+
+  let tooltipShown = false;
+  popup.querySelector(".popup-buttons .fa-times").addEventListener("click", () => {
+    tooltipShown = false;
+    tooltip.hide();
+  })
+
+  button.addEventListener("click", () => {
+    content.style.display = "flex";
+    if (tooltipShown) {
+      tooltip.hide();
+    } else {
+      tooltip.show(button, popup);
+    }
+    tooltipShown = !tooltipShown;
+  });
+
+
+  // container.appendChild(popupContainer);
+}
+
+
+// For screen filling, central pop-ups
+const openPopups = new Set();
+export function popup(container, content, options) {
+  options = {
+    stopEvents: true,
+    fillScreen: false,
+    closable: true,
+    ...options,
+  };
+
+  container.classList.add("unfocused");
+  document.body.style.overflow = 'hidden';
+
+  let popupTemplate = "";
+  if (options.closable || options.title) {
+    popupTemplate += /*html*/`
+    <div class="popup-topbar">
+      <div class="popup-title">${options.title}</div>
+      <div class="popup-buttons">
+        <i class="fas fa-times highlightable-button"></i>
+      </div>
+    </div>`
+  }
+  popupTemplate += /*html*/`<div class="popup-content">`;
+
+  // const popupTemplate = /*html*/ `
+  //   <div class="popup-topbar">
+  //     <div class="popup-title">${options.title}</div>
+  //     <div class="popup-buttons">
+  //       <i class="fas fa-times highlightable-button"></i>
+  //     </div>
+  //   </div>
+  //   <div class="popup-content">
+  // `;
+
   if (typeof content == "string") {
     const contentDiv = document.createElement("div");
     contentDiv.innerText = content;
     content = contentDiv;
   }
 
-  let popupContainer = document.createElement("div");
-  popupContainer.className = "popup-container";
-  if (options.backdrop) {
-    options.backdrop = backdrop();
-    popupContainer.appendChild(options.backdrop)
-  }
+  openPopups.add(content);
+
+  // let popupContainer = document.createElement("div");
+  // popupContainer.className = "popup-container";
+
+  // if (options.backdrop) {
+  //   options.backdrop = backdrop();
+  //   popupContainer.appendChild(options.backdrop)
+  // }
 
   let popup = document.createElement("div");
   popup.className = "popup";
   popup.innerHTML = popupTemplate;
-  popupContainer.appendChild(popup);
+  container.appendChild(popup);
+
+  if (options.fillScreen) {
+    popup.classList.add("popup-fill");
+  }
 
   const popupContent = popup.querySelector(".popup-content");
   popupContent.innerHTML = "";
-  popupContent.appendChild(content);
+  if (content instanceof Element) {
+    popupContent.appendChild(content);
+  }
 
   if (options.stopEvents && options.backdrop) {
     options.backdrop.style.pointerEvents = "none";
   }
-  container.appendChild(popupContainer);
+  // container.appendChild(popupContainer);
 
-  const resizeObserver = new ResizeObserver(() => {
-    content.style.maxHeight =
-      container.getBoundingClientRect().height - 100 + "px";
-  });
-  resizeObserver.observe(container);
+  // const resizeObserver = new ResizeObserver(() => {
+  //   // content.style.maxHeight = container.getBoundingClientRect().height - 100 + "px";
+  // });
+  // resizeObserver.observe(container);
 
   function close() {
-    if (options.backdrop) {
-      options.backdrop.remove()
-      options.backdrop = true
+    // if (options.backdrop) {
+    //   options.backdrop.remove()
+    //   options.backdrop = true
+    // }
+    // if (options.stopEvents && options.backdrop) {
+    //   options.backdrop.style.pointerEvents = "auto";
+    // }
+    
+    popup.remove();
+    openPopups.delete(content);
+    if (openPopups.size == 0) {
+      container.classList.remove("unfocused");
     }
-    if (options.stopEvents && options.backdrop) {
-      options.backdrop.style.pointerEvents = "auto";
-    }
-    popupContainer.remove();
-    container.classList.remove("unfocused");
-    document.body.style.overflow = 'auto'
+    // document.body.style.overflow = 'auto';
   }
 
-  function backdrop() {
-    const element = document.createElement('div')
-    element.classList.add('backdrop');
-    return element
+  if (options.closable) {
+    popup.querySelector(".fa-times").addEventListener("click", () => {
+      close();
+    });
   }
 
-  popup.querySelector(".fa-times").addEventListener("click", () => {
-    close();
-  });
+  if (typeof content == "function") {
+    
+    let timeout = null;
+    let previousSize = [-1, -1];
+    const resizeObserver = new ResizeObserver(() => {
+      const bbox = popupContent.getBoundingClientRect();
+
+      if (bbox.width != previousSize[0] || bbox.height != previousSize[1]) {
+
+        popupContent.innerHTML = "";
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          previousSize = [bbox.width, bbox.height];
+          popupContent.appendChild(content(bbox.width, bbox.height));
+        }, 200);
+      }
+     
+    });
+    resizeObserver.observe(popup);
+  }
+ 
 
   return { close };
 }

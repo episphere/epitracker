@@ -6,7 +6,7 @@ import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton, minorPopup } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
@@ -301,18 +301,19 @@ class MapApplication {
   }
 
   addColorSettingsPopup() {
-    const colorSettingsTooltip = addPopperTooltip(this.elems.innerDashboard);
 
-    let tooltipShown = false;
-    this.elems.buttonColorSettings.addEventListener("click", () => {
-      this.elems.colorSettings.style.display = "flex";
-      if (tooltipShown) {
-        colorSettingsTooltip.hide();
-      } else {
-        colorSettingsTooltip.show(this.elems.buttonColorSettings, this.elems.colorSettings);
-      }
-      tooltipShown = !tooltipShown;
-    })
+    // const colorSettingsTooltip = addPopperTooltip(this.elems.innerDashboard);
+
+    // let tooltipShown = false;
+    // this.elems.buttonColorSettings.addEventListener("click", () => {
+    //   this.elems.colorSettings.style.display = "flex";
+    //   if (tooltipShown) {
+    //     colorSettingsTooltip.hide();
+    //   } else {
+    //     colorSettingsTooltip.show(this.elems.buttonColorSettings, this.elems.colorSettings);
+    //   }
+    //   tooltipShown = !tooltipShown;
+    // })
 
     // Add color scheme gradients
     this.state.schemeOptions = Object.entries(formatName("colorSchemes")).map(
@@ -327,11 +328,6 @@ class MapApplication {
         return { value: k, label: div.outerHTML };
       });
 
-    this.elems.buttonColorSettingsClose.addEventListener("click", () => {
-      tooltipShown = false;
-      colorSettingsTooltip.hide()
-    });
-
     const outlierCutoffRange = document.getElementById("outlier-cutoff-range");
     const outlierCutoffRangeText = document.getElementById(
       "outlier-cutoff-range-text"
@@ -342,6 +338,9 @@ class MapApplication {
     });
     outlierCutoffRange.value = this.state.outlierCutoff;
     outlierCutoffRangeText.innerText = "±" + this.state.outlierCutoff + "σ";
+
+    minorPopup(this.elems.innerDashboard, this.elems.buttonColorSettings, this.elems.colorSettings, "Color Settings");
+
   }
 
   async createMapTooltip() {

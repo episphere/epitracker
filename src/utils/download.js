@@ -1,5 +1,6 @@
 import {json2other} from "./../shared.js";
 import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm'
+import domToImage from 'https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/+esm'
 
 export function toggleLoading(spinnerId, downloadId, isShow) {
   const spinner = document.getElementById(spinnerId)
@@ -15,37 +16,74 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
   }
 }
 
-export function downloadElementAsImage(element, fileName, removeAfter=true) {
-  const temporaryDiv = document.createElement("div")
-  temporaryDiv.style.position = "fixed"
-  temporaryDiv.style.left = "-10000px"
-  temporaryDiv.style.right = "-10000px"
-  temporaryDiv.style.width = "fit-content"
+// export function downloadElementAsImage(element, fileName, removeAfter=true) {
+//   const temporaryDiv = document.createElement("div")
+//   temporaryDiv.style.position = "fixed"
+//   temporaryDiv.style.left = "-10000px"
+//   temporaryDiv.style.right = "-10000px"
+//   temporaryDiv.style.width = "fit-content"
 
-  temporaryDiv.appendChild(element)
-  document.body.appendChild(temporaryDiv)
+//   temporaryDiv.appendChild(element)
+//   document.body.appendChild(temporaryDiv)
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      html2canvas(element).then(function(canvas) {
-        downloadImage(canvas, fileName)
-        if (removeAfter) {
-          temporaryDiv.remove()
-        }
-        resolve()
-      });
-    }, 10)
-  })
-}
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       html2canvas(element, {pixelRatio: 4}).then(function(canvas) {
+//         downloadImage(canvas, fileName)
+//         if (removeAfter) {
+//           temporaryDiv.remove()
+//         }
+//         resolve()
+//       });
+//     }, 10)
+//   })
+// }
 
   
 function downloadImage(image, fileName) {
-  var dataUrl = image.toDataURL();
-  var link = document.createElement("a");
-  link.href = dataUrl;
+  // var dataUrl = image.toDataURL();
+  // var link = document.createElement("a");
+  // link.href = dataUrl;
+  // link.download = `${fileName}.png`;
+  // link.click();
+  const imageURL = URL.createObjectURL(image);
+  const link = document.createElement('a');
+  link.href = imageURL;
   link.download = `${fileName}.png`;
+  document.body.appendChild(link);
   link.click();
-  
+  document.body.removeChild(link);
+  URL.revokeObjectURL(imageURL);
+}
+
+export function downloadElementAsImage(element, filename, format="png") {
+  const scale = 2
+
+  const toImage = format == "png" ? domToImage.toPng : domToImage.toSvg;
+
+  toImage(element, { 
+    width: element.clientWidth * scale,
+    height: element.clientHeight * scale,
+    style: {
+     transform: 'scale('+scale+')',
+     transformOrigin: 'top left'
+   }}).then((dataUrl) => {
+    fetch(dataUrl)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+    // var img = new Image();
+    // img.src = dataUrl;
+    // downloadImage(img, filename);
+    // document.body.appendChild(img);
+  })
 }
 
 export function downloadGraph(graphId, fileName) {

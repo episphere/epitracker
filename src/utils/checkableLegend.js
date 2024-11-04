@@ -111,7 +111,7 @@ function legendCheck(color, label, checked=true, size=25) {
   labelElement.style.fontSize = "0.8em"
   labelElement.style.pointerEvents = "none"
   labelElement.style.userSelect = "none"
-  labelElement.style.maxWidth = "100px"
+  labelElement.style.maxWidth = "140px"
   labelElement.style.textAlign = "center"
   labelElement.style.flex = "1"
   

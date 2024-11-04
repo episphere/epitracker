@@ -9,151 +9,145 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link href="../static/css/epitracker.css" rel="stylesheet" defer  />
   <link crossorigin="anonymous" type="text/css" rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
-    <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+  <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
+  <link href="../static/css/epitracker.css" rel="stylesheet" defer  />
+  <link href="../static/css/epitracker-map.css" rel="stylesheet" defer  />
+  <link href="../static/css/epitracker-quantile.css" rel="stylesheet" defer  />
 
 </head>
 
 <body>
   <header></header>
   
-  <div id="dashboard">
-    <div id="sidebar" >
-      <div id="sidebar-toggle">
-        <i class="bi bi-caret-left-fill"></i>
-      </div>
-
-      <div id="sidebar-content" >
-        <h2><i class="bi bi-gear-fill me-2"></i>Configure</h2>
-
-        <div id="sidebar-form"> 
-          <h4 class="mt-2">Compare</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute">Color by</label>
-            <select class="form-select" disabled id="select-compare-color" aria-label="Compare color">
-              <option hidden >Awaiting data...</option>
-            </select>
+  <div id="dashboard-container">
+    <div id="dashboard" >
+      <div id="ex-dashboard">
+        <div id="ex-infobar">
+          <div id="infobar-titles">
+            <div id="tool-title">
+              EpiTracker Cancer: Quantile Dashboard
+            </div>
+            <div id="title" >
+              US county-level age adjusted-mortality rate (per 100,000), 2022, US, All Cancers, All Races, All Sexes
+            </div>
           </div>
 
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-compare-facet">Sub-plot by</label>
-            <select id="select-compare-facet" class="form-select disabled" disabled aria-label="Compare sub-plot">
-              <option hidden >Awaiting data...</option>
-            </select>
+          <div id="infobar-right">
+  
+            <div id="ex-settings-card">
+              <!-- <i id="button-edit-grid" class="settings-button fa-solid fa-plus" tip="Add row or column"></i> -->
+              <i id="button-options" class="settings-button fa-solid fa-gear" tip="Plot settings"></i>
+              <!-- <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i> -->
+              <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
+              <!-- Image download button -->
+              <i id="button-download-image" class="settings-button fas fa-image" tip="Download image"></i>
+              <!-- Data download button -->
+              <i id="button-download-data" class="settings-button fa-solid fa-download" tip="Download data"></i> 
+
+            </div>
           </div>
+        
+        </div>
+ 
+  
+        <div id="content-container">
+          <div id="options-container" class="grid-card">
+            <h2>Data Options</h2>
 
-          <h4 class="mt-2">Select</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-year">Year</label>
-            <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
-              <option hidden >Awaiting data...</option>
-            </select>
+            <div id="sidebar-form"> 
+              <h4 class="mt-2">Compare</h4>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute">Within Plot</label>
+                <select class="form-select" disabled id="select-compare-color" aria-label="Compare color">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-compare-facet">Between Plots</label>
+                <select id="select-compare-facet" class="form-select disabled" disabled aria-label="Compare sub-plot">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <h4 class="mt-2">Filter</h4>
+    
+              <!-- <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-select-year">Year</label>
+                <select id="select-select-year" class="form-select mb-2" disabled aria-label="Year select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div> -->
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-select-cause">Cancer Site</label>
+                <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+              
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-select-sex">Sex</label>
+                <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-select-race">Race</label>
+                <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <h4>Stratify Quantiles</h4>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-quantile-field">County Characteristic</label>
+                <select id="select-quantile-field" class="form-select mb-2" disabled aria-label="Quantile field select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-quantile-number"># Quantiles</label>
+                <select id="select-quantile-number" class="form-select mb-2" disabled aria-label="Quantile select">
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+    
+              <h4>Other</h4>
+    
+              <div class="floating-select">
+                <label class="floating-label position-absolute" for="select-measure">Measure</label>
+                <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
+                  <option hidden >Awaiting data...</option>
+                </select>
+              </div>
+            </div>
           </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-cause">Cause</label>
-            <select id="select-select-cause" class="form-select mb-2" disabled aria-label="Cause select">
-              <option hidden >Awaiting data...</option>
-            </select>
+          <div id="right-container">
+            <div id="legend-container" class="grid-card">
+              <div id="plot-legend"></div>
+            </div>
+            <div id="quantile-container" class="grid-card">
+              <div id="plot-quantiles"></div>
+            </div>
           </div>
           
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-sex">Sex</label>
-            <select id="select-select-sex" class="form-select mb-2" disabled aria-label="Sex select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-select-race">Race</label>
-            <select id="select-select-race" class="form-select mb-2" disabled aria-label="Race select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <h4>Quantiles</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-quantile-field">Quantile field</label>
-            <select id="select-quantile-field" class="form-select mb-2" disabled aria-label="Quantile field select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-quantile-number"># Quantiles</label>
-            <select id="select-quantile-number" class="form-select mb-2" disabled aria-label="Quantile select">
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
-
-          <h4>Other</h4>
-
-          <div class="floating-select">
-            <label class="floating-label position-absolute" for="select-measure">Measure</label>
-            <select id="select-measure" class="form-select mb-2" aria-label="Measure select" disabled>
-              <option hidden >Awaiting data...</option>
-            </select>
-          </div>
         </div>
-      </div>
+
+     </div>
     </div>
 
-    <div id="content">
-      <div id="topbar">
-        <div id="display-mode-control">
-            <ul class="nav nav-tabs">
-              <li class="nav-item">
-                <a id="graph-nav-link" class="nav-link active"><i class="bi bi-graph-up"></i></a>
-              </li>
-              <li class="nav-item">
-                <a id="table-nav-link" class="nav-link"><i class="bi bi-table"></i></a>
-              </li>
-            <ul>
-        </div>
-        
-        <div id="plot-title"></div>
-
-        <div id="topbar-cnt">
-          <div id="setting-legend-wrapper">
-            <div id="setting-legend"></div>
-          </div>
-          <div id="download-container"></div>
-
-        </div>
-       
-      </div>
-      <div id="plots">
-        <div id="plot-legend"></div>
-        <!-- <div id="setting-legend-wrapper">
-          <div id="setting-legend"></div>
-        </div> -->
-        <div id="plot-container" class="fill-height">
-          <div id="plot-quantiles"></div>
-        </div>
-
-        <div id="table-container"> </div>
-
-        <div id="loader-container" class="position-absolute" style="top:50%; left:50%;">
-          <div class="spinner-border" role="status"></div>
-        </div>
-        <div id="plot-source" style="display: none;">The source...</div>
-      </div>
-      
-    </div>
+    
   </div>
 
   <div id="settings-dropdown">
-    <div class="d-flex justify-content-between">
-      <h5>Settings</h5>
-      <i id="settings-close" class="fa-solid fa-xmark"></i>
-    </div>
-
     <div class="form-check">
       <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
       <label class="form-check-label" for="check-show-lines">
@@ -168,20 +162,33 @@
     </div>
   </div>
 
+  <div style="position: absolute; left: 0; top:0; opacity: 0; pointer-events:none;">
+    <div id="img-template">
+      <div id="img-title"></div>
+      <div id="img-legend"></div>
+      <div id="img-plot"></div>
+      <div id="img-source">Plot Generated by DCEG EpiTracker Cancer</div>
+    </div>
+  </div>
+
   <footer></footer>
 
   <script type="module">
     import { loadHeaderTemplate, loadFooterTemplate } from "../src/layouts/layout.js";
-    import { initSidebar } from "../src/utils/helper.js"
 
     loadHeaderTemplate()
     loadFooterTemplate()
-    initSidebar()
   </script>
 
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/tippy.js@6/animations/scale.css"
+/>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
       integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
       crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
       integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS"
       crossorigin="anonymous"></script>
@@ -190,5 +197,9 @@
     integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   
+  <!-- <script type="module" src="../src/pages/mapPage3.js"></script> -->
+  <script src="https://unpkg.com/tippy.js@6"></script>
+
   <script type="module" src="../src/pages/quantilePage.js"></script>
+
 </body>

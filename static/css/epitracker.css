@@ -1473,9 +1473,9 @@ span.icon {
   /* font-size: 0.7em; */
   padding: 8px;
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   display: none;
-  box-shadow: 1px 1px 5px rgb(81, 81, 81);
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
   pointer-events: none;
   z-index: 300;
 }
@@ -2231,8 +2231,8 @@ p {
 /* Toggle this class - hide and show the popup */
 .popup .show {
   visibility: visible;
-  -webkit-animation: fadeIn 1s;
-  animation: fadeIn 1s;
+  /* -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s; */
 }
 
 /* .popup-container .backdrop  {
@@ -2575,7 +2575,7 @@ button.previous-btn {
 
 #plot-quantiles {
   width: 100%;
-  /* height: fit-content; */
+  height: fit-content;
   display: flex;
   justify-content: center;
   flex-shrink: 0;
@@ -2812,7 +2812,8 @@ button.previous-btn {
 
 #sidebar-form {
   overflow-y: auto;
-  padding-right: 15px;
+  padding-inline: 15px;
+  padding-top: 10px;
   position: relative;
   flex-grow: 1;
 }
@@ -3112,7 +3113,7 @@ footer {
 #settings-dropdown {
   display: none;
   flex-direction: column;
-  padding: 5px;
+  padding: 15px;
   pointer-events: all;
 }
 
@@ -3147,4 +3148,23 @@ g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {
   top: 0;
   z-index: 10;
   background: #f9fbff;
+}
+
+.dropdown-item {
+  cursor: pointer;
+}
+
+.download-popup-content {
+  display: flex; 
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  height: 150px;
+  gap: 20px;
+}
+
+.download-popup-content .spinner-border {
+  width: 50px;
+  height: 50px;
 }
