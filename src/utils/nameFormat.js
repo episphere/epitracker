@@ -5,21 +5,27 @@ const names = {
     "sex": "Sex",
     "county": "County",
     "state": "State",
-    "age_group": "Age Group"
+    "age_group": "Age Group",
+    "quantile": "Quantile",
+    "quantile_field": "County Characteristic",
+    "quantile_range": "Quantile Range",
+    "cause": "Cause",
   },
   "measures": {
     "age_adjusted_rate": { 
       "name": "Age-Adjusted Mortality Rate (per 100,000)",
-      "short": "AA Rate"
+      "short": "AA Rate",
+      "verbose":  "Age-Adjusted Cancer Mortality Rate (per 100,000)",
     },
     "crude_rate": {
       "name": "Crude Mortality Rate (per 100,000)",
-      "short": "Crude Rate"
+      "short": "Crude Rate",
+      "verbose":  "Crude Cancer Mortality Rate (per 100,000)",
     },
-    "age_adjusted_rate_ratio (ref=low)": "Age-Adjusted Rate Ratio (Ref=Low)",
-    "age_adjusted_rate_ratio (ref=high)": "Age-Adjusted Rate Ratio (Ref=High)",
-    "crude_rate_ratio(ref=low)": "Crude Rate Ratio (Ref=Low)",
-    "crude_rate_ratio (ref=high)": "Crude Rate Ratio (Ref=High)",
+    "age_adjusted_rate_ratio_ref-low": "Age-Adjusted Rate Ratio (Ref=Low)",
+    "age_adjusted_rate_ratio_ref-high": "Age-Adjusted Rate Ratio (Ref=High)",
+    "crude_rate_ratio_ref-low": "Crude Rate Ratio (Ref=Low)",
+    "crude_rate_ratio_ref-high": "Crude Rate Ratio (Ref=High)",
     "deaths": "Deaths",
     "population": "Population"
   },
@@ -275,523 +281,523 @@ const names = {
   },
   "quantile_fields": {
     "premature_death": {
-      "measure": "Premature death",
+      "name": "Premature death",
       "description": "Years of potential life lost before age 75 per 100,000 population (age-adjusted).",
       "unit": "Year"
     },
     "poor_or_fair_health": {
-      "measure": "Poor or fair health",
+      "name": "Poor or fair health",
       "description": "Percentage of adults reporting fair or poor health (age-adjusted).",
       "unit": "Proportion"
     },
     "poor_physical_health_days": {
-      "measure": "Poor physical health days",
+      "name": "Poor physical health days",
       "description": "Average number of physically unhealthy days reported in past 30 days (age-adjusted).",
       "unit": "Days"
     },
     "poor_mental_health_days": {
-      "measure": "Poor mental health days",
+      "name": "Poor mental health days",
       "description": "Average number of mentally unhealthy days reported in past 30 days (age-adjusted).",
       "unit": "Days"
     },
     "low_birthweight": {
-      "measure": "Low birthweight",
+      "name": "Low birthweight",
       "description": "Percentage of live births with low birthweight (&lt; 2,500 grams).",
       "unit": "Proportion"
     },
     "adult_smoking": {
-      "measure": "Adult smoking",
+      "name": "Adult smoking",
       "description": "Percentage of adults who are current smokers.",
       "unit": "Proportion"
     },
     "adult_obesity": {
-      "measure": "Adult obesity",
+      "name": "Adult obesity",
       "description": "Percentage of the adult population (age 20 and older) that reports a body mass index (BMI) greater than or equal to 30 kg/m2.",
       "unit": "Proportion"
     },
     "food_environment_index": {
-      "measure": "Food environment index",
+      "name": "Food environment index",
       "description": "Index of factors that contribute to a healthy food environment, from 0 (worst) to 10 (best).",
       "unit": "Food Environment Index (0-10)"
     },
     "physical_inactivity": {
-      "measure": "Physical inactivity",
+      "name": "Physical inactivity",
       "description": "Percentage of adults age 20 and over reporting no leisure-time physical activity.",
       "unit": "Proportion"
     },
     "access_to_exercise_opportunities": {
-      "measure": "Access to exercise opportunities",
+      "name": "Access to exercise opportunities",
       "description": "Percentage of population with adequate access to locations for physical activity.",
       "unit": "Proportion"
     },
     "excessive_drinking": {
-      "measure": "Excessive drinking",
+      "name": "Excessive drinking",
       "description": "Percentage of adults reporting binge or heavy drinking.",
       "unit": "Proportion"
     },
     "alcohol_impaired_driving_deaths": {
-      "measure": "Alcohol-impaired driving deaths",
+      "name": "Alcohol-impaired driving deaths",
       "description": "Percentage of driving deaths with alcohol involvement.",
       "unit": "Proportion"
     },
     "sexually_transmitted_infections": {
-      "measure": "Sexually transmitted infections",
+      "name": "Sexually transmitted infections",
       "description": "Number of newly diagnosed chlamydia cases per 100,000 population.",
       "unit": "per 100,000"
     },
     "teen_births": {
-      "measure": "Teen births",
+      "name": "Teen births",
       "description": "Number of births per 1,000 female population ages 15-19.",
       "unit": "per 1,000"
     },
     "uninsured": {
-      "measure": "Uninsured",
+      "name": "Uninsured",
       "description": "Percentage of population under age 65 without health insurance.",
       "unit": "Proportion"
     },
     "primary_care_physicians": {
-      "measure": "Primary care physicians",
+      "name": "Primary care physicians",
       "description": "Number of primary care physicians per 100,000 population",
       "unit": "Rate per 100,000"
     },
     "dentists": {
-      "measure": "Dentists",
+      "name": "Dentists",
       "description": "Number of dentists per 100,000 population",
       "unit": "per 100,000"
     },
     "mental_health_providers": {
-      "measure": "Mental health providers",
+      "name": "Mental health providers",
       "description": "Number of mental health care providers per 100,000 population",
       "unit": "per 100,000"
     },
     "preventable_hospital_stays": {
-      "measure": "Preventable hospital stays",
+      "name": "Preventable hospital stays",
       "description": "Rate of hospital stays for ambulatory-care sensitive conditions per 100,000 Medicare enrollees.",
       "unit": "per 100,000"
     },
     "diabetes_monitoring": {
-      "measure": "Diabetes monitoring"
+      "name": "Diabetes monitoring"
     },
     "mammography_screening": {
-      "measure": "Mammography screening",
+      "name": "Mammography screening",
       "description": "Percentage of female Medicare enrollees ages 65-74 that received an annual mammography screening.",
       "unit": "Proportion"
     },
     "high_school_completion": {
-      "measure": "High school graduation",
+      "name": "High school graduation",
       "description": "Percentage of ninth-grade cohort that graduates in four years.",
       "unit": "Proportion"
     },
     "some_college": {
-      "measure": "Some college",
+      "name": "Some college",
       "description": "Percentage of adults ages 25-44 with some post-secondary education.",
       "unit": "Proportion"
     },
     "unemployment": {
-      "measure": "Unemployment",
+      "name": "Unemployment",
       "description": "Percentage of population ages 16 and older unemployed but seeking work.",
       "unit": "Proportion"
     },
     "children_in_poverty": {
-      "measure": "Children in poverty",
+      "name": "Children in poverty",
       "description": "Percentage of people under age 18 in poverty.",
       "unit": "Proportion"
     },
     "income_inequality": {
-      "measure": "Income inequality",
+      "name": "Income inequality",
       "description": "Ratio of household income at the 80th percentile to income at the 20th percentile.",
       "unit": "Ratio (80th/20th)"
     },
     "children_in_single_parent_households": {
-      "measure": "Children in single-parent households",
+      "name": "Children in single-parent households",
       "description": "Percentage of children that live in a household headed by single parent.",
       "unit": "Proportion"
     },
     "social_associations": {
-      "measure": "Social associations",
+      "name": "Social associations",
       "description": "Number of membership associations per 10,000 population.",
       "unit": "per 100,000"
     },
     "violent_crime": {
-      "measure": "Violent crime",
+      "name": "Violent crime",
       "description": "Number of reported violent crime offenses per 100,000 population.",
       "unit": "per 100,000"
     },
     "injury_deaths": {
-      "measure": "Injury deaths",
+      "name": "Injury deaths",
       "description": "Number of deaths due to injury per 100,000 population.",
       "unit": "per 100,000"
     },
     "air_pollution_particulate_matter": {
-      "measure": "Air pollution - particulate matter",
+      "name": "Air pollution - particulate matter",
       "description": "Average daily density of fine particulate matter in micrograms per cubic meter (PM2.5).",
       "unit": "PM2.5 Concentration (µg/m³)"
     },
     "drinking_water_violations": {
-      "measure": "Drinking water violations",
+      "name": "Drinking water violations",
       "description": "Indicator of the presence of health-related drinking water violations. 0=No, 1=Yes",
       "unit": "Violation Indicator (0/1)"
     },
     "severe_housing_problems": {
-      "measure": "Severe housing problems",
+      "name": "Severe housing problems",
       "description": "Percentage of households with at least 1 of 4 housing problems: overcrowding, high housing costs, lack of kitchen facilities, or lack of plumbing facilities.",
       "unit": "Proportion"
     },
     "driving_alone_to_work": {
-      "measure": "Driving alone to work",
+      "name": "Driving alone to work",
       "description": "Percentage of the workforce that drives alone to work.",
       "unit": "Proportion"
     },
     "long_commute_driving_alone": {
-      "measure": "Long commute - driving alone",
+      "name": "Long commute - driving alone",
       "description": "Among workers who commute in their car alone, the percentage that commute more than 30 minutes.",
       "unit": "Proportion"
     },
     "premature_age_adjusted_mortality": {
-      "measure": "Premature age-adjusted mortality",
+      "name": "Premature age-adjusted mortality",
       "description": "Number of deaths among residents under age 75 per 100,000 population (age-adjusted).",
       "unit": "per 100,000"
     },
     "child_mortality": {
-      "measure": "Child mortality",
+      "name": "Child mortality",
       "description": "Number of deaths among children under age 18 per 100,000 population."
     },
     "infant_mortality": {
-      "measure": "Infant mortality",
+      "name": "Infant mortality",
       "description": "Number of all infant deaths (within 1 year), per 1,000 live births."
     },
     "frequent_physical_distress": {
-      "measure": "Frequent physical distress",
+      "name": "Frequent physical distress",
       "description": "Percentage of adults reporting 14 or more days of poor physical health per month.",
       "unit": "Proportion"
     },
     "frequent_mental_distress": {
-      "measure": "Frequent mental distress",
+      "name": "Frequent mental distress",
       "description": "Percentage of adults reporting 14 or more days of poor mental health per month.",
       "unit": "Proportion"
     },
     "diabetes_prevalence": {
-      "measure": "Diabetes prevalence",
+      "name": "Diabetes prevalence",
       "description": "Percentage of adults aged 20 and above with diagnosed diabetes.",
       "unit": "Proportion"
     },
     "hiv_prevalence": {
-      "measure": "HIV prevalence",
+      "name": "HIV prevalence",
       "description": "Number of people aged 13 years and older living with a diagnosis of human immunodeficiency virus (HIV) infection per 100,000 population."
     },
     "food_insecurity": {
-      "measure": "Food insecurity",
+      "name": "Food insecurity",
       "description": "Percentage of population who lack adequate access to food.",
       "unit": "Proportion"
     },
     "limited_access_to_healthy_foods": {
-      "measure": "Limited access to healthy foods",
+      "name": "Limited access to healthy foods",
       "description": "Percentage of population who are low-income and do not live close to a grocery store.",
       "unit": "Proportion"
     },
     "drug_overdose_deaths": {
-      "measure": "Drug overdose deaths",
+      "name": "Drug overdose deaths",
       "description": "Number of drug poisoning deaths per 100,000 population."
     },
     "drug_overdose_deaths_modeled": {
-      "measure": "Drug overdose deaths - modeled"
+      "name": "Drug overdose deaths - modeled"
     },
     "motor_vehicle_crash_deaths": {
-      "measure": "Motor vehicle crash deaths",
+      "name": "Motor vehicle crash deaths",
       "description": "Number of motor vehicle crash deaths per 100,000 population."
     },
     "insufficient_sleep": {
-      "measure": "Insufficient sleep",
+      "name": "Insufficient sleep",
       "description": "Percentage of adults who report fewer than 7 hours of sleep on average.",
       "unit": "Proportion"
     },
     "uninsured_adults": {
-      "measure": "Uninsured adults",
+      "name": "Uninsured adults",
       "description": "Percentage of adults under age 65 without health insurance.",
       "unit": "uninsured_adults"
     },
     "uninsured_children": {
-      "measure": "Uninsured children",
+      "name": "Uninsured children",
       "description": "Percentage of children under age 19 without health insurance.",
       "unit": "uninsured_adults"
     },
     "health_care_costs": {
-      "measure": "Health care costs"
+      "name": "Health care costs"
     },
     "other_primary_care_providers": {
-      "measure": "Other primary care providers",
+      "name": "Other primary care providers",
       "description": "Number of other primary care providers per 100,000 population",
       "unit": "per 100,000"
     },
     "disconnected_youth": {
-      "measure": "Disconnected youth",
+      "name": "Disconnected youth",
       "description": "Percentage of teens and young adults ages 16-19 who are neither working nor in school."
     },
     "median_household_income": {
-      "measure": "Median household income",
+      "name": "Median household income",
       "description": "The income where half of households in a county earn more and half of households earn less.",
       "unit": "(USD)"
     },
     "children_eligible_for_free_or_reduced_price_lunch": {
-      "measure": "Children eligible for free or reduced price lunch raw value",
+      "name": "Children eligible for free or reduced price lunch raw value",
       "description": "Percentage of children enrolled in public schools that are eligible for free or reduced price lunch.",
       "unit": "Proportion"
     },
     "residential_segregation_black_white": {
-      "measure": "Residential segregation - Black/White",
+      "name": "Residential segregation - Black/White",
       "description": "Index of dissimilarity where higher values indicate greater residential segregation between Black and White county residents."
     },
     "residential_segregation_non_white_white": {
-      "measure": "Residential segregation - non-White/White",
+      "name": "Residential segregation - non-White/White",
       "description": "Index of dissimilarity where higher values indicate greater residential segregation between non-White and White county residents."
     },
     "homicides": {
-      "measure": "Homicides",
+      "name": "Homicides",
       "description": "Number of deaths due to homicide per 100,000 population."
     },
     "firearm_fatalities": {
-      "measure": "Firearm fatalities",
+      "name": "Firearm fatalities",
       "description": "Number of deaths due to firearms per 100,000 population."
     },
     "population": {
-      "measure": "Population",
+      "name": "Population",
       "description": "Resident population.",
       "unit": "(in thousands)"
     },
     "percent_below_18_years_of_age": {
-      "measure": "% below 18 years of age",
+      "name": "% below 18 years of age",
       "description": "Percentage of population below 18 years of age.",
       "unit": "Proportion"
     },
     "percent_65_and_older": {
-      "measure": "% 65 and older",
+      "name": "% 65 and older",
       "description": "Percentage of population ages 65 and older.",
       "unit": "Proportion"
     },
     "percent_non_hispanic_african_american": {
-      "measure": "% Non-Hispanic African American"
+      "name": "% Non-Hispanic African American"
     },
     "percent_american_indian_and_alaskan_native": {
-      "measure": "% American Indian and Alaskan Native"
+      "name": "% American Indian and Alaskan Native"
     },
     "percent_asian": {
-      "measure": "% Asian",
+      "name": "% Asian",
       "description": "Percentage of population that is Asian.",
       "unit": "Proportion"
     },
     "percent_native_hawaiian_other_pacific_islander": {
-      "measure": "% Native Hawaiian/Other Pacific Islander",
+      "name": "% Native Hawaiian/Other Pacific Islander",
       "description": "Percentage of population that is Native Hawaiian or Other Pacific Islander.",
       "unit": "Proportion"
     },
     "percent_hispanic": {
-      "measure": "% Hispanic",
+      "name": "% Hispanic",
       "description": "Percentage of population that is Hispanic.",
       "unit": "Proportion"
     },
     "percent_non_hispanic_white": {
-      "measure": "% Non-Hispanic White",
+      "name": "% Non-Hispanic White",
       "description": "Percentage of population that is non-Hispanic White.",
       "unit": "Proportion"
     },
     "percent_not_proficient_in_english": {
-      "measure": "% not proficient in English",
+      "name": "% not proficient in English",
       "description": "Percentage of population that is not proficient in English.",
       "unit": "Proportion"
     },
     "percent_females": {
-      "measure": "% Females",
+      "name": "% Females",
       "description": "Percentage of population that is female.",
       "unit": "Proportion"
     },
     "percent_rural": {
-      "measure": "% Rural",
+      "name": "% Rural",
       "description": "Percentage of population living in a rural area.",
       "unit": "Proportion"
     },
     "communicable_disease": {
-      "measure": "Communicable disease",
+      "name": "Communicable disease",
       "description": "Number of new cases of reportable diseases and conditions per 100,000 population."
     },
     "self_inflicted_injury_hospitalizations": {
-      "measure": "Self-inflicted injury hospitalizations",
+      "name": "Self-inflicted injury hospitalizations",
       "description": "Hospitalizations due to self-inflicted injuries per 100,000 population."
     },
     "cancer_incidence": {
-      "measure": "Cancer incidence",
+      "name": "Cancer incidence",
       "description": "Number of new cancer diagnoses per 100,000 population (age-adjusted)."
     },
     "smoking_during_pregnancy": {
-      "measure": "Smoking during pregnancy",
+      "name": "Smoking during pregnancy",
       "description": "Percentage of births where mother reports smoking during pregnancy."
     },
     "drug_arrests": {
-      "measure": "Drug arrests"
+      "name": "Drug arrests"
     },
     "motor_vehicle_crash_occupancy_rate": {
-      "measure": "Motor vehicle crash occupancy rate",
+      "name": "Motor vehicle crash occupancy rate",
       "description": "Motor vehicle crash occupancy rate per 1,000 population."
     },
     "on_road_motor_vehicle_crash_related_er_visits": {
-      "measure": "On-road motor vehicle crash-related ER visits raw value",
+      "name": "On-road motor vehicle crash-related ER visits raw value",
       "description": "On-road motor vehicle crash-related emergency room visits per 100,000 population."
     },
     "off_road_motor_vehicle_crash_related_er_visits": {
-      "measure": "Off-road motor vehicle crash-related ER visits"
+      "name": "Off-road motor vehicle crash-related ER visits"
     },
     "no_recent_dental_visit": {
-      "measure": "No recent dental visit"
+      "name": "No recent dental visit"
     },
     "did_not_get_needed_health_care": {
-      "measure": "Did not get needed health care"
+      "name": "Did not get needed health care"
     },
     "childhood_immunizations": {
-      "measure": "Childhood immunizations",
+      "name": "Childhood immunizations",
       "description": "Percentage of children aged 19 to 35 months who received the recommended doses of DTaP, polio, MMR, Hib, hepatitis B, varicella, and Pneumococcal conjugate."
     },
     "reading_proficiency": {
-      "measure": "Reading proficiency",
+      "name": "Reading proficiency",
       "description": "Percentage of fourth grade students proficient or advanced in reading."
     },
     "w_2_enrollment": {
-      "measure": "W-2 enrollment",
+      "name": "W-2 enrollment",
       "description": "Count of individuals enrolled in W-2 (Wisconsin Works) on the last working day of the month."
     },
     "poverty": {
-      "measure": "Poverty",
+      "name": "Poverty",
       "description": "Percentage of population living below the Federal Poverty Line."
     },
     "older_adults_living_alone": {
-      "measure": "Older adults living alone",
+      "name": "Older adults living alone",
       "description": "Percentage of adults 65 years and older who live alone."
     },
     "hate_crimes": {
-      "measure": "Hate crimes"
+      "name": "Hate crimes"
     },
     "child_abuse": {
-      "measure": "Child abuse",
+      "name": "Child abuse",
       "description": "Child abuse rate per 1,000 population."
     },
     "injury_hospitalizations": {
-      "measure": "Injury hospitalizations",
+      "name": "Injury hospitalizations",
       "description": "Hospitalizations due to injuries per 100,000 population (age-adjusted)."
     },
     "fall_fatalities_65_plus": {
-      "measure": "Fall fatalities 65+",
+      "name": "Fall fatalities 65+",
       "description": "Number of injury deaths due to falls among those 65 years of age and over per 100,000 population."
     },
     "year_structure_built": {
-      "measure": "Year structure built",
+      "name": "Year structure built",
       "description": "Percentage of housing units built prior to 1950."
     },
     "male_population_0_17": {
-      "measure": "Male population 0-17",
+      "name": "Male population 0-17",
       "description": "Number of males ages 0-17."
     },
     "male_population_18_44": {
-      "measure": "Male population 18-44",
+      "name": "Male population 18-44",
       "description": "Number of males ages 18-44."
     },
     "male_population_45_64": {
-      "measure": "Male population 45-64",
+      "name": "Male population 45-64",
       "description": "Number of males ages 45-64."
     },
     "male_population_65_plus": {
-      "measure": "Male population 65+",
+      "name": "Male population 65+",
       "description": "Number of males ages 65 and older."
     },
     "total_male_population": {
-      "measure": "Total male population",
+      "name": "Total male population",
       "description": "Total number of males."
     },
     "female_population_0_17": {
-      "measure": "Female population 0-17",
+      "name": "Female population 0-17",
       "description": "Number of females ages 0-17."
     },
     "female_population_18_44": {
-      "measure": "Female population 18-44",
+      "name": "Female population 18-44",
       "description": "Number of females ages 18-44."
     },
     "female_population_45_64": {
-      "measure": "Female population 45-64",
+      "name": "Female population 45-64",
       "description": "Number of females ages 45-64."
     },
     "female_population_65_plus": {
-      "measure": "Female population 65+",
+      "name": "Female population 65+",
       "description": "Number of females ages 65 and older."
     },
     "total_female_population": {
-      "measure": "Total female population",
+      "name": "Total female population",
       "description": "Total number of females."
     },
     "population_growth": {
-      "measure": "Population growth",
+      "name": "Population growth",
       "description": "Percentage change in population since the last decennial US Census."
     },
     "flu_vaccinations": {
-      "measure": "Flu vaccinations",
+      "name": "Flu vaccinations",
       "description": "Percentage of fee-for-service (FFS) Medicare enrollees that had an annual flu vaccination.",
       "unit": "Proportion"
     },
     "life_expectancy": {
-      "measure": "Life expectancy",
+      "name": "Life expectancy",
       "description": "Average number of years a person can expect to live.",
       "unit": "(years)"
     },
     "homeownership": {
-      "measure": "Homeownership",
+      "name": "Homeownership",
       "description": "Percentage of occupied housing units that are owned.",
       "unit": "Proportion"
     },
     "severe_housing_cost_burden": {
-      "measure": "Severe housing cost burden",
+      "name": "Severe housing cost burden",
       "description": "Percentage of households that spend 50% or more of their household income on housing.",
       "unit": "Proportion"
     },
     "coronary_heart_disease_hospitalizations": {
-      "measure": "Coronary heart disease hospitalizations",
+      "name": "Coronary heart disease hospitalizations",
       "description": "Coronary heart disease hospitalization rate per 1,000 population."
     },
     "cerebrovascular_disease_hospitalizations": {
-      "measure": "Cerebrovascular disease hospitalizations",
+      "name": "Cerebrovascular disease hospitalizations",
       "description": "Cerebrovascular disease hospitalization rate per 1,000 population."
     },
     "opioid_hospital_visits": {
-      "measure": "Opioid hospital visits",
+      "name": "Opioid hospital visits",
       "description": "Rate of opioid-related hospital visits per 100,000 population."
     },
     "alcohol_related_hospitalizations": {
-      "measure": "Alcohol-related hospitalizations",
+      "name": "Alcohol-related hospitalizations",
       "description": "Rate of alcohol-related hospitalization per 1,000 population."
     },
     "reading_scores": {
-      "measure": "Reading scores",
+      "name": "Reading scores",
       "description": "Average grade level performance for 3rd graders on English Language Arts standardized tests"
     },
     "math_scores": {
-      "measure": "Math scores",
+      "name": "Math scores",
       "description": "Average grade level performance for 3rd graders on math standardized tests"
     },
     "suicides": {
-      "measure": "Suicides",
+      "name": "Suicides",
       "description": "Number of deaths due to suicide per 100,000 population (age-adjusted)."
     },
     "juvenile_arrests": {
-      "measure": "Juvenile arrests",
+      "name": "Juvenile arrests",
       "description": "Rate of delinquency cases per 1,000 juveniles"
     },
     "traffic_volume": {
-      "measure": "Traffic volume",
+      "name": "Traffic volume",
       "description": "Average traffic volume per meter of major roadways in the county.",
       "unit": "(vehicles/meter)"
     },
     "percent_non_hispanic_black": {
-      "measure": "% Non-Hispanic Black",
+      "name": "% Non-Hispanic Black",
       "description": "Percentage of population that is non-Hispanic Black or African American.",
       "unit": "Proportion"
     },
     "percent_american_indian_alaska_native": {
-      "measure": "% American Indian & Alaska Native",
+      "name": "% American Indian & Alaska Native",
       "description": "Percentage of population that is American Indian or Alaska Native.",
       "unit": "Proportion"
     }

@@ -119,6 +119,7 @@ footer {
   border-right-color: #333b4d;
 }
 
+
 .grid-card-topbar i {
   cursor: pointer;
 }
@@ -346,8 +347,14 @@ footer {
   100% { transform: rotate(360deg); }
 }
 
+.popup-minor {
+  display: flex;
+  flex-direction: column;
+  pointer-events: all;
+}
+
 .popup {
-  position: fixed;
+  position: absolute;
   left: 50%;
   top: 50%;
   width: fit-content;
@@ -357,10 +364,15 @@ footer {
   display: flex;
   flex-direction: column;
   padding: 8px;
-  box-shadow: 0px 1px 6px 1px rgb(211, 211, 211);
+  box-shadow: 0px 1px 6px 1px rgb(0, 0, 0, .15);
+  left: 50%;
   transform: translate(-50%, -50%);
-  filter: blur(0px);
   z-index: 100;
+}
+
+.popup.popup-fill {
+  height: 90%;
+  width: 90%;
 }
 
 .popup-topbar {
@@ -372,13 +384,19 @@ footer {
 
 .popup-title {
   font-weight: bold;
-  margin-left:  10px;
+  margin-left:  5px;
+  margin-right: 20px;
 }
 
 .popup-content {
   height: 100%;
+  width: 100%;
   overflow-y: auto;
-  overflow-y: visible; /* Allow dropdowns to overflow without causing a scrollbar */
+  overflow-x: auto;
+}
+
+.popup-buttons {
+  margin-top: -8px;
 }
 
 #plot-card-config {
