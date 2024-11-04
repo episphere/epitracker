@@ -1195,7 +1195,14 @@ eventButtonDownloadData(format) {
 
     // Wait for all data promises to resolve
     Promise.all(dataPromises).then((resolvedDataArrays) => {
-        const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
+        const data = resolvedDataArrays.flat().map(item => {
+            // Combine county and state abbreviation into one field if both are present
+            if (item.county && item.state_abbreviation) {
+                item.county = `${item.county}, ${item.state_abbreviation}`;
+                delete item.state_abbreviation; // Remove the original abbreviation column
+            }
+            return item;
+        });
 
         // Handle download based on format
         if (format.toLowerCase() === 'csv') {
@@ -1253,19 +1260,27 @@ eventButtonDownloadData(format) {
     });
 }
 
-// Utility function to convert data array to CSV format
+// Utility function to convert data array to CSV format with comma handling
 convertToCSV(data) {
-    const headers = Object.keys(data[0]).join(","); // Get headers from keys of the first object
-    const rows = data.map(item => Object.values(item).join(",")); // Convert each object to a CSV row
-    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+    const headers = Object.keys(data[0]).join(",");
+
+    const rows = data.map(item => {
+        return Object.values(item).map(value => {
+            // Enclose in double quotes if the value contains a comma
+            return typeof value === "string" && value.includes(",") ? `"${value}"` : value;
+        }).join(",");
+    });
+
+    return [headers, ...rows].join("\n");
 }
 
 // Utility function to convert data array to TSV format
 convertToTSV(data) {
-    const headers = Object.keys(data[0]).join("\t"); // Get headers from keys of the first object, tab-separated
-    const rows = data.map(item => Object.values(item).join("\t")); // Convert each object to a TSV row
-    return [headers, ...rows].join("\n"); // Combine headers and rows into a single string
+    const headers = Object.keys(data[0]).join("\t");
+    const rows = data.map(item => Object.values(item).join("\t"));
+    return [headers, ...rows].join("\n");
 }
+
 
 
 

@@ -357,6 +357,9 @@ footer {
   position: absolute;
   left: 50%;
   top: 50%;
+  min-width: 600px; /* Ensure a minimum width for horizontal scrolls */
+  max-width: 90vw; /* Max width to fit smaller screens */
+  max-height: 90vh; /* Max height to fit within the viewport */
   width: fit-content;
   height: fit-content;
   background-color: white;
@@ -376,7 +379,7 @@ footer {
 }
 
 .popup-topbar {
-  display: flex; 
+  display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
@@ -398,6 +401,7 @@ footer {
 .popup-buttons {
   margin-top: -8px;
 }
+
 
 #plot-card-config {
   display: none;
