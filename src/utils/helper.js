@@ -861,6 +861,9 @@ export function createDropdownButton(button, options) {
 
   // Adding Bootstrap toggle attribute
   button.setAttribute("data-bs-toggle", "dropdown");
+  
+  // Add class for cursor change
+  button.classList.add("dropdown-toggle", "cursor-pointer");
 
   const list = document.createElement("ul");
   list.className = "dropdown-menu";
@@ -871,7 +874,7 @@ export function createDropdownButton(button, options) {
 
     const link = document.createElement("a");
     link.innerText = option.text;
-    link.classList.add("dropdown-item");
+    link.classList.add("dropdown-item", "cursor-pointer");
     item.appendChild(link);
 
     // Pass the event to the callback when the item is clicked
@@ -885,6 +888,7 @@ export function createDropdownButton(button, options) {
 
   return dropdownContainer;
 }
+
 
 
 export function createDropdownDownloadButton(
