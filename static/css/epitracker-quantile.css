@@ -1,0 +1,140 @@
+#ex-settings-card {
+  /* height: 60px; */
+}
+
+#ex-dashboard {
+ height: calc(100vh - 120px);
+}
+
+#content-container {
+  height: 100%;
+  padding: 0px 10px 10px 20px;
+  display: flex; 
+  gap: 10px;
+  min-height: 0;
+}
+
+#options-container {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  /* height: 300px; */
+  min-height: 0;
+}
+
+#options-container h2 {
+  font-size: 1.4em;
+  padding-left: 15px;
+  padding-top: 10px;
+}
+
+#quantile-container {
+  width: 100%;
+  padding: 20px;
+  padding-top: 30px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#sidebar-form {
+  overflow-y: auto;
+  max-height: 100%;
+  padding-top: 0px;
+}
+
+#sidebar-form h2 {
+  font-size: 1.5em;
+  color: var(--color-gray-dark);
+}
+
+#sidebar-form h4 {
+  font-size: 1.1em;
+  color: var(--color-gray-dark);
+  margin-bottom: 20px;
+}
+
+#right-container {
+  display: flex; 
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
+
+#legend-container {
+  height: fit-content;
+}
+
+#plot-quantiles {
+  width: 100%;
+  min-height: fit-content;
+  height: 100%;
+  overflow: hidden;
+}
+
+#plot-quantiles svg {
+  margin-bottom: 0px;
+}
+
+#plot-legend {
+  margin-block: 15px;
+  margin-inline: 20px;
+}
+
+.table-popup-content {
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  height: calc(100% - 50px);
+  border: 1px solid rgb(194, 194, 194);
+  padding: 0px;
+
+}
+
+.table-title {
+  padding-bottom: 20px;
+}
+
+.table-topbar {
+  display: flex; 
+  justify-content: space-between;
+}
+
+#dashboard-container {
+  position: relative;
+}
+
+#img-template {
+  display: flex; 
+  flex-direction: column;
+  width: fit-content;
+  height: 800px;
+  background-color: white;
+  gap: 10px;
+  padding: 30px;
+}
+
+#img-title {
+  font-weight: bold;
+  font-size: .9em;
+}
+
+#img-legend {
+  width: 100%;
+}
+
+#img-plot {
+  height: 800px;
+}
+
+#img-source {
+  font-size: .8em;
+  font-style: italic;
+}
+
+#img-legend .legend-check path {
+  visibility: hidden;
+}

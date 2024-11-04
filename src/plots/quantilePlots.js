@@ -30,8 +30,10 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
+  container.innerHTML = `` 
+
   //const containerWidth = container.getBoundingClientRect().width
-  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.95) // The .95 multiplier is needed 
+  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.98) // The multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
                                                                                            
@@ -119,20 +121,19 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   const plot = Plot.plot(plotOptions)
   plot.style.minWidth = '900px'
 
-  container.innerHTML = `` 
   container.appendChild(plot) 
 
   addInteractivity(container, plot, data, options.valueField, options.tooltipFields, options.nameMappings)
 
   plot.removeAttribute("viewBox")
 
-  const settingsButton = document.createElement("i");
-  settingsButton.className = "fa-solid fa-gear";
+  // const settingsButton = document.createElement("i");
+  // settingsButton.className = "fa-solid fa-gear";
 
-  settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
+  // settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
 
-  settingLegend.innerHTML = ``;
-  settingLegend.appendChild(settingsButton);
+  // settingLegend.innerHTML = ``;
+  // settingLegend.appendChild(settingsButton);
 
 
   return {plot}
@@ -160,7 +161,7 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
         const fieldLabel = formatName("fields", field)
         return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${row[field]}</div>`})
 
-      const measureLabel = formatName("measures", measure)
+      const measureLabel = formatName("measures", measure, "short")
       text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`
       tooltip.show(element, text)
     }
