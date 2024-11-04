@@ -564,30 +564,50 @@ class MapApplication {
    * LISTENER. 
    * Called when the plot grid receives any type of update. 
    */
-  async gridUpdated() {
-
+async gridUpdated() {
     if (!this.batchMode) {
-      this.state.nRows = this.plotGrid.nRows;
-      this.state.nCols = this.plotGrid.nCols;
-      this.sharedState = this.#calcSharedState(); 
-      this.dFields = [];
-      for (const field of CONSTANTS.CARD_STATE_FIELDS) {
-        if (!this.sharedState.hasOwnProperty(field)) {
-          this.dFields.push(field);
+        this.state.nRows = this.plotGrid.nRows;
+        this.state.nCols = this.plotGrid.nCols;
+        this.sharedState = this.#calcSharedState(); 
+        this.dFields = [];
+        for (const field of CONSTANTS.CARD_STATE_FIELDS) {
+            if (!this.sharedState.hasOwnProperty(field)) {
+                this.dFields.push(field);
+            }
         }
-      }
-      await this.updateAllValueArray();
-      this.updateTooltipHistogram();
-      this.updateColors();
-      this.updateTitles();
-      this.updateUrl();
+        await this.updateAllValueArray();
+        this.updateTooltipHistogram();
+        this.updateColors();
+        this.updateTitles();
+        this.updateUrl();
     }
 
-    // * Update the URL
-    // * Update the title
-    // * Update the color legend
-  }
+    // Ensure the legend and title visibility is correct after grid updates
+    this.checkAndUpdateTitleLegendVisibility();
+}
+  checkAndUpdateTitleLegendVisibility() {
+    const allCardsEmpty = this.plotGrid.getCards().every(card => {
+        return !card || !card.data || card.data.length === 0;
+    });
 
+    // Update the selectors to your actual title and legend identifiers
+    const titleElement = document.querySelector('#dashboard-title'); // Replace with the correct selector
+    const legendElement = document.querySelector('.map-legend');     // Replace with the correct selector
+    const subtitleElement = document.querySelector('.dashboard-subtitle'); // If there's a subtitle, select it as well
+
+    if (allCardsEmpty) {
+        if (titleElement) titleElement.style.display = 'none';
+        if (legendElement) legendElement.style.display = 'none';
+        if (subtitleElement) subtitleElement.style.display = 'none';
+    } else {
+        if (titleElement) titleElement.style.display = 'block';
+        if (legendElement) legendElement.style.display = 'block';
+        if (subtitleElement) subtitleElement.style.display = 'block';
+    }
+}
+
+
+    
   async updateAllValueArray() {
     const allValues = []
     for (const card of this.plotGrid.getCards()) {
@@ -615,48 +635,69 @@ class MapApplication {
     this.elems.mapTooltipPlot.appendChild(this.mapTooltipPlot);
   }
 
-  async updateColors() {
+ async updateColors() {
     if (!this.plotGrid) return;
 
     this.getColorConfig();
-
     this.colorConfig.scheme = this.state.scheme;
     this.colorConfig.reverse = this.state.colorReverse;
     if (this.state.colorExcludeOutliers) {
-      this.colorConfig.outlierThreshold = this.state.outlierCutoff;
+        this.colorConfig.outlierThreshold = this.state.outlierCutoff;
     } else {
-      this.colorConfig.outlierThreshold = null;
+        this.colorConfig.outlierThreshold = null;
     }
 
-    const mean = d3.mean(this.allValues);
+    // Check for valid numeric data
+    const validValues = this.allValues.filter(value => !isNaN(value) && value !== null);
+    if (validValues.length === 0) {
+        // No data: hide title and legend
+        this.elems.colorLegend.innerHTML = '';
+        this.elems.colorLegend.style.display = 'none';
+        const titleElement = document.getElementById('title');
+        if (titleElement) titleElement.style.display = 'none'; // Hide the title container
+        return;
+    } else {
+        // Data exists: ensure both containers are displayed
+        this.elems.colorLegend.style.display = 'block';
+        const titleElement = document.getElementById('title');
+        if (titleElement) titleElement.style.display = 'block';
+    }
+
+    const mean = d3.mean(validValues);
 
     if (this.state.colorCenterMean) {
-      this.colorConfig.pivot = mean;
+        this.colorConfig.pivot = mean;
     } else {
-      this.colorConfig.pivot = null;
+        this.colorConfig.pivot = null;
     }
 
-    const domain = d3.extent(this.allValues);
-    if (this.colorConfig.outlierThreshold != null && this.allValues.length > 1) {
-      const std = d3.deviation(this.allValues);
-      const clipDomain = [-this.colorConfig.outlierThreshold, this.colorConfig.outlierThreshold].map(d => d*std+mean)
-      this.colorConfig.domain = [
-        Math.max(domain[0], clipDomain[0]),
-        Math.min(domain[1], clipDomain[1]),
-      ]
+    const domain = d3.extent(validValues);
+    if (this.colorConfig.outlierThreshold != null && validValues.length > 1) {
+        const std = d3.deviation(validValues);
+        const clipDomain = [
+            -this.colorConfig.outlierThreshold, 
+            this.colorConfig.outlierThreshold
+        ].map(d => d * std + mean);
+        
+        this.colorConfig.domain = [
+            Math.max(domain[0], clipDomain[0]),
+            Math.min(domain[1], clipDomain[1])
+        ];
     } else {
-      this.colorConfig.domain = domain
+        this.colorConfig.domain = domain;
     }
 
-    const measureName = this.sharedState.measure ? formatName( "measures", this.sharedState.measure) : "Measure"
-    const sharedColorLegend = colorRampLegendPivot(await this.getColorConfig(), {label: measureName});
+    const measureName = this.sharedState.measure ? formatName("measures", this.sharedState.measure) : "Measure";
+    const sharedColorLegend = colorRampLegendPivot(await this.getColorConfig(), { label: measureName });
 
     this.elems.colorLegend.innerHTML = '';
     this.elems.colorLegend.appendChild(sharedColorLegend);
 
-    // TODO: We don't need to re-render the full card on color scheme changes. Make more efficient.
-    this.plotGrid.renderCards(); 
-  }
+    this.plotGrid.renderCards();
+}
+
+
+
 
 
   async getColorConfig() {
