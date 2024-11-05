@@ -453,16 +453,10 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
 
   const measureDetails =  formatName("quantile_fields", plotConfig.query.quantileField, "all");
 
+  const scaleFactor = measureDetails.unit == "Proportion" ? 100 : 1;
   const xTickFormat = (_, i) => {
-    return state["quantileRanges"][i]
-  };
-
-  const quantileFieldUnit = () => {
-    const quantileField = state["quantileField"];
-    return (
-      state["quantileFieldOptions"].find((i) => i.value === quantileField)
-        .unit ?? ""
-    );
+    return state["quantileRanges"][i].split(" - ").map(
+      d => parseFloat((parseFloat(d)*scaleFactor).toPrecision(2))).join(" - ")
   };
 
   let data = plotConfig.mortalityData;
@@ -538,7 +532,6 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
     plotContainer.innerHTML =
       "<i> There is no data for this selection. </i>";
   } else {
-    console.log(data, plotConfig.measure)
     plotQuantileScatter(plotContainer, legendContainer, data, {
       valueField: plotConfig.measure,
       facet:
@@ -560,7 +553,7 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
       yLabel: formatName("measures", plotConfig.measure),
       facetLabel:  formatName("fields", state.compareFacet),
       xTickFormat: xTickFormat,
-      quantileFieldUnit: quantileFieldUnit(),
+      quantileFieldUnit: measureDetails.unit,
       tooltipFields: [
         plotConfig.query.compareFacet,
         plotConfig.query.compareColor,

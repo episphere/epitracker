@@ -57,9 +57,21 @@ function downloadImage(image, fileName) {
 }
 
 export function downloadElementAsImage(element, filename, format="png") {
-  const scale = 2
+  const scale = 1.5;
 
   const toImage = format == "png" ? domToImage.toPng : domToImage.toSvg;
+
+  // Open image in new tab
+  // toImage(element, { 
+  //   width: element.clientWidth * scale,
+  //   height: element.clientHeight * scale,
+  //   style: {
+  //    transform: 'scale('+scale+')',
+  //    transformOrigin: 'top left'
+  //  }}).then((dataUrl) => {
+  //   const newTab = window.open();
+  //   newTab.document.write('<img src="' + dataUrl + '" alt="Image">');
+  // })
 
   toImage(element, { 
     width: element.clientWidth * scale,
@@ -79,10 +91,6 @@ export function downloadElementAsImage(element, filename, format="png") {
         a.click();
         a.remove();
       });
-    // var img = new Image();
-    // img.src = dataUrl;
-    // downloadImage(img, filename);
-    // document.body.appendChild(img);
   })
 }
 
@@ -94,7 +102,6 @@ export function downloadGraph(graphId, fileName) {
 }
 
 const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) => {
-  console.log({fileName});
   e.stopPropagation();
   toggleLoading('table-loading', 'download-dropdown-btn', true)
   setTimeout(() => {

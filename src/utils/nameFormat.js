@@ -514,12 +514,12 @@ const names = {
     "uninsured_adults": {
       "name": "Uninsured adults",
       "description": "Percentage of adults under age 65 without health insurance.",
-      "unit": "uninsured_adults"
+      "unit": "Proportion"
     },
     "uninsured_children": {
       "name": "Uninsured children",
       "description": "Percentage of children under age 19 without health insurance.",
-      "unit": "uninsured_adults"
+      "unit": "Proportion"
     },
     "health_care_costs": {
       "name": "Health care costs"
@@ -536,7 +536,7 @@ const names = {
     "median_household_income": {
       "name": "Median household income",
       "description": "The income where half of households in a county earn more and half of households earn less.",
-      "unit": "(USD)"
+      "unit": "1,000s USD"
     },
     "children_eligible_for_free_or_reduced_price_lunch": {
       "name": "Children eligible for free or reduced price lunch raw value",

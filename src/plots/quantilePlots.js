@@ -36,8 +36,6 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.98) // The multiplier is needed 
                                                                                            // to prevent the SVG from resizing 
                                                                                            // the flex box incorrectly.
-                                                                                           
-
   
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
@@ -90,24 +88,20 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   }
   sizePerFacet = Math.min(900, sizePerFacet)
 
+
   const plotOptions = {
     width: (sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets) || 900,
     height,
-    style: {fontSize: "14px"},
+    style: {fontSize: "16px"},
     color: colorOpt,
-    x: {type: "point", label: options.xLabel, tickFormat: d => {
-      const xTickFormat = options.xTickFormat(undefined, d - 1)
-      const {quantileFieldUnit} = options
-      const isPercentOrProportion = quantileFieldUnit.toLowerCase() === 'percent' || quantileFieldUnit.toLowerCase() === 'proportion' 
-      
-      return xTickFormat.split(' - ').map(i => {
-        return (i.trim().replaceAll(',', '') * (isPercentOrProportion ? 100 : 1)).toFixed(2)}).join(' - ')
-    }, tickRotate: -45},
-    y: {ticks: 8, grid: true, label: options.yLabel, domain: yDomain, nice: true},
+    x: {type: "point", label: options.xLabel,tickFormat: options.xTickFormat, tickRotate: -45},
+    y: {ticks: 8, grid: true, label: options.yLabel, 
+      domain: yDomain, nice: true, labelAnchor: "center", labelArrow: "none",
+    },
     fx: {tickFormat: options.facetTickFormat},
     marginLeft: 80,
     marginTop: 80,
-    marginBottom: 110,
+    marginBottom: 120,
     marks: marks
   }
 
@@ -126,14 +120,6 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   addInteractivity(container, plot, data, options.valueField, options.tooltipFields, options.nameMappings)
 
   plot.removeAttribute("viewBox")
-
-  // const settingsButton = document.createElement("i");
-  // settingsButton.className = "fa-solid fa-gear";
-
-  // settingsButton.addEventListener("click", () => options.onSettingsClick(settingsButton))
-
-  // settingLegend.innerHTML = ``;
-  // settingLegend.appendChild(settingsButton);
 
 
   return {plot}
@@ -159,7 +145,11 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
       let text = ``
       tooltipFields.forEach(field => {
         const fieldLabel = formatName("fields", field)
-        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${row[field]}</div>`})
+        let fieldValue = row[field];
+        if (field == "race") {
+          fieldValue = formatName("race", fieldValue, "short");
+        } 
+        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${fieldValue}</div>`})
 
       const measureLabel = formatName("measures", measure, "short")
       text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`

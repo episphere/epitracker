@@ -3168,3 +3168,18 @@ g[aria-label="geo"]:first-of-type > path:not(:first-of-type) {
   width: 50px;
   height: 50px;
 }
+
+g[aria-label="x-axis label"] {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+g[aria-label="y-axis label"] {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+g[aria-label="fx-axis label"] {
+  font-weight: bold;
+  font-size: 14px;
+}
