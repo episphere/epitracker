@@ -144,3 +144,7 @@
 #img-legend .legend-check {
   font-size: .9em;
 }
+
+#title {
+  display: block;
+}
