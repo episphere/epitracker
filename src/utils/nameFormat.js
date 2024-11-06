@@ -283,175 +283,211 @@ const names = {
     "premature_death": {
       "name": "Premature death",
       "description": "Years of potential life lost before age 75 per 100,000 population (age-adjusted).",
-      "unit": "Year"
+      "unit": "Year",
+      "group": "Health Outcomes",
     },
     "poor_or_fair_health": {
       "name": "Poor or fair health",
       "description": "Percentage of adults reporting fair or poor health (age-adjusted).",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Outcomes",
     },
     "poor_physical_health_days": {
       "name": "Poor physical health days",
       "description": "Average number of physically unhealthy days reported in past 30 days (age-adjusted).",
-      "unit": "Days"
+      "unit": "Days",
+      "group": "Health Outcomes",
     },
     "poor_mental_health_days": {
       "name": "Poor mental health days",
       "description": "Average number of mentally unhealthy days reported in past 30 days (age-adjusted).",
-      "unit": "Days"
+      "unit": "Days",
+      "group": "Health Outcomes",
     },
     "low_birthweight": {
       "name": "Low birthweight",
       "description": "Percentage of live births with low birthweight (&lt; 2,500 grams).",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "adult_smoking": {
       "name": "Adult smoking",
       "description": "Percentage of adults who are current smokers.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "adult_obesity": {
       "name": "Adult obesity",
       "description": "Percentage of the adult population (age 20 and older) that reports a body mass index (BMI) greater than or equal to 30 kg/m2.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "food_environment_index": {
       "name": "Food environment index",
       "description": "Index of factors that contribute to a healthy food environment, from 0 (worst) to 10 (best).",
-      "unit": "Food Environment Index (0-10)"
+      "unit": "Food Environment Index (0-10)",
+      "group": "Health Behaviors",
+
     },
     "physical_inactivity": {
       "name": "Physical inactivity",
       "description": "Percentage of adults age 20 and over reporting no leisure-time physical activity.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "access_to_exercise_opportunities": {
       "name": "Access to exercise opportunities",
       "description": "Percentage of population with adequate access to locations for physical activity.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "excessive_drinking": {
       "name": "Excessive drinking",
       "description": "Percentage of adults reporting binge or heavy drinking.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "alcohol_impaired_driving_deaths": {
       "name": "Alcohol-impaired driving deaths",
       "description": "Percentage of driving deaths with alcohol involvement.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "sexually_transmitted_infections": {
       "name": "Sexually transmitted infections",
       "description": "Number of newly diagnosed chlamydia cases per 100,000 population.",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Health Behaviors",
     },
     "teen_births": {
       "name": "Teen births",
       "description": "Number of births per 1,000 female population ages 15-19.",
-      "unit": "per 1,000"
+      "unit": "per 1,000",
+      "group": "Health Behaviors",
     },
     "uninsured": {
       "name": "Uninsured",
       "description": "Percentage of population under age 65 without health insurance.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Clinical Care",
     },
     "primary_care_physicians": {
       "name": "Primary care physicians",
       "description": "Number of primary care physicians per 100,000 population",
-      "unit": "Rate per 100,000"
+      "unit": "Rate per 100,000",
+      "group": "Clinical Care",
     },
     "dentists": {
       "name": "Dentists",
       "description": "Number of dentists per 100,000 population",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Clinical Care",
     },
     "mental_health_providers": {
       "name": "Mental health providers",
       "description": "Number of mental health care providers per 100,000 population",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Clinical Care",
     },
     "preventable_hospital_stays": {
       "name": "Preventable hospital stays",
       "description": "Rate of hospital stays for ambulatory-care sensitive conditions per 100,000 Medicare enrollees.",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Clinical Care",
     },
     "diabetes_monitoring": {
-      "name": "Diabetes monitoring"
+      "name": "Diabetes monitoring",
+      "group": "Clinical Care",
     },
     "mammography_screening": {
       "name": "Mammography screening",
       "description": "Percentage of female Medicare enrollees ages 65-74 that received an annual mammography screening.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Clinical Care",
     },
     "high_school_completion": {
       "name": "High school graduation",
       "description": "Percentage of ninth-grade cohort that graduates in four years.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Social & Economic Factors",
     },
     "some_college": {
       "name": "Some college",
       "description": "Percentage of adults ages 25-44 with some post-secondary education.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Social & Economic Factors"
     },
     "unemployment": {
       "name": "Unemployment",
       "description": "Percentage of population ages 16 and older unemployed but seeking work.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Social & Economic Factors"
     },
     "children_in_poverty": {
       "name": "Children in poverty",
       "description": "Percentage of people under age 18 in poverty.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Social & Economic Factors"
     },
     "income_inequality": {
       "name": "Income inequality",
       "description": "Ratio of household income at the 80th percentile to income at the 20th percentile.",
-      "unit": "Ratio (80th/20th)"
+      "unit": "Ratio (80th/20th)",
+      "group": "Social & Economic Factors"
     },
     "children_in_single_parent_households": {
       "name": "Children in single-parent households",
       "description": "Percentage of children that live in a household headed by single parent.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Social & Economic Factors"
     },
     "social_associations": {
       "name": "Social associations",
       "description": "Number of membership associations per 10,000 population.",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Social & Economic Factors"
     },
     "violent_crime": {
       "name": "Violent crime",
       "description": "Number of reported violent crime offenses per 100,000 population.",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Social & Economic Factors"
     },
     "injury_deaths": {
       "name": "Injury deaths",
       "description": "Number of deaths due to injury per 100,000 population.",
-      "unit": "per 100,000"
+      "unit": "per 100,000",
+      "group": "Social & Economic Factors"
     },
     "air_pollution_particulate_matter": {
       "name": "Air pollution - particulate matter",
       "description": "Average daily density of fine particulate matter in micrograms per cubic meter (PM2.5).",
-      "unit": "PM2.5 Concentration (µg/m³)"
+      "unit": "PM2.5 Concentration (µg/m³)",
+      "group": "Physcial Environment",
     },
     "drinking_water_violations": {
       "name": "Drinking water violations",
       "description": "Indicator of the presence of health-related drinking water violations. 0=No, 1=Yes",
-      "unit": "Violation Indicator (0/1)"
+      "unit": "Violation Indicator (0/1)",
+      "group": "Physcial Environment"
     },
     "severe_housing_problems": {
       "name": "Severe housing problems",
       "description": "Percentage of households with at least 1 of 4 housing problems: overcrowding, high housing costs, lack of kitchen facilities, or lack of plumbing facilities.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Physcial Environment",
     },
     "driving_alone_to_work": {
       "name": "Driving alone to work",
       "description": "Percentage of the workforce that drives alone to work.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Physcial Environment"
     },
     "long_commute_driving_alone": {
       "name": "Long commute - driving alone",
       "description": "Among workers who commute in their car alone, the percentage that commute more than 30 minutes.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Physcial Environment"
     },
     "premature_age_adjusted_mortality": {
       "name": "Premature age-adjusted mortality",
@@ -479,7 +515,8 @@ const names = {
     "diabetes_prevalence": {
       "name": "Diabetes prevalence",
       "description": "Percentage of adults aged 20 and above with diagnosed diabetes.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Outcomes",
     },
     "hiv_prevalence": {
       "name": "HIV prevalence",
@@ -488,12 +525,14 @@ const names = {
     "food_insecurity": {
       "name": "Food insecurity",
       "description": "Percentage of population who lack adequate access to food.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors"
     },
     "limited_access_to_healthy_foods": {
       "name": "Limited access to healthy foods",
       "description": "Percentage of population who are low-income and do not live close to a grocery store.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors"
     },
     "drug_overdose_deaths": {
       "name": "Drug overdose deaths",
@@ -509,17 +548,22 @@ const names = {
     "insufficient_sleep": {
       "name": "Insufficient sleep",
       "description": "Percentage of adults who report fewer than 7 hours of sleep on average.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Health Behaviors",
     },
     "uninsured_adults": {
       "name": "Uninsured adults",
       "description": "Percentage of adults under age 65 without health insurance.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Clinical Care",
+
     },
     "uninsured_children": {
       "name": "Uninsured children",
       "description": "Percentage of children under age 19 without health insurance.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Clinical Care",
+
     },
     "health_care_costs": {
       "name": "Health care costs"
@@ -536,7 +580,8 @@ const names = {
     "median_household_income": {
       "name": "Median household income",
       "description": "The income where half of households in a county earn more and half of households earn less.",
-      "unit": "1,000s USD"
+      "unit": "1,000s USD",
+      "group": "Social & Economic Factors",
     },
     "children_eligible_for_free_or_reduced_price_lunch": {
       "name": "Children eligible for free or reduced price lunch raw value",
@@ -567,53 +612,64 @@ const names = {
     "percent_below_18_years_of_age": {
       "name": "% below 18 years of age",
       "description": "Percentage of population below 18 years of age.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics",
     },
     "percent_65_and_older": {
       "name": "% 65 and older",
       "description": "Percentage of population ages 65 and older.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_non_hispanic_african_american": {
-      "name": "% Non-Hispanic African American"
+      "name": "% Non-Hispanic African American",
+      "group": "Demographics"
     },
     "percent_american_indian_and_alaskan_native": {
-      "name": "% American Indian and Alaskan Native"
+      "name": "% American Indian and Alaskan Native",
+      "group": "Demographics"
     },
     "percent_asian": {
       "name": "% Asian",
       "description": "Percentage of population that is Asian.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_native_hawaiian_other_pacific_islander": {
       "name": "% Native Hawaiian/Other Pacific Islander",
       "description": "Percentage of population that is Native Hawaiian or Other Pacific Islander.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_hispanic": {
       "name": "% Hispanic",
       "description": "Percentage of population that is Hispanic.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_non_hispanic_white": {
       "name": "% Non-Hispanic White",
       "description": "Percentage of population that is non-Hispanic White.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_not_proficient_in_english": {
       "name": "% not proficient in English",
       "description": "Percentage of population that is not proficient in English.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_females": {
       "name": "% Females",
       "description": "Percentage of population that is female.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_rural": {
       "name": "% Rural",
       "description": "Percentage of population living in a rural area.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "communicable_disease": {
       "name": "Communicable disease",
@@ -747,12 +803,14 @@ const names = {
     "homeownership": {
       "name": "Homeownership",
       "description": "Percentage of occupied housing units that are owned.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Physical Environment"
     },
     "severe_housing_cost_burden": {
       "name": "Severe housing cost burden",
       "description": "Percentage of households that spend 50% or more of their household income on housing.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Physical Environment"
     },
     "coronary_heart_disease_hospitalizations": {
       "name": "Coronary heart disease hospitalizations",
@@ -789,17 +847,20 @@ const names = {
     "traffic_volume": {
       "name": "Traffic volume",
       "description": "Average traffic volume per meter of major roadways in the county.",
-      "unit": "(vehicles/meter)"
+      "unit": "(vehicles/meter)",
+      "group": "Physical Environment"
     },
     "percent_non_hispanic_black": {
       "name": "% Non-Hispanic Black",
       "description": "Percentage of population that is non-Hispanic Black or African American.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     },
     "percent_american_indian_alaska_native": {
       "name": "% American Indian & Alaska Native",
       "description": "Percentage of population that is American Indian or Alaska Native.",
-      "unit": "Proportion"
+      "unit": "Proportion",
+      "group": "Demographics"
     }
   },
   "race": {

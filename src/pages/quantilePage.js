@@ -297,19 +297,30 @@ function initialDataLoad(mortalityData, quantileDetails) {
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
-  state.measureOptions = NUMERIC_MEASURES.map((field) => {
+  state.measureOptions = NUMERIC_MEASURES.map((field, i) => {
     let label =  formatName("measures", field)
     if (typeof label == "object") label = label.name
-    return { value: field, label } 
+    return { value: field, label }
   });
 
   state.quantileFieldOptions = [
     ...new Set(mortalityData.map((d) => d.quantile_field)),
-  ].map((field) => ({
-    value: field,
-    label:  formatName("quantile_fields", field, "measure"),
-    unit: formatName("quantile_fields", field, "unit"),
-  }));
+  ].map((field, i) => {
+    const fieldDetails = formatName("quantile_fields", field, "all");
+    return {
+      value: field, 
+      label: fieldDetails.name,
+      group: fieldDetails.group,
+    };
+  });
+
+    
+  //   ({
+  //   value: field,
+  //   label:  formatName("quantile_fields", field, "measure"),
+  //   unit: formatName("quantile_fields", field, "unit"),
+  //   group: formatName("quantile_fields", field, "group"),
+  // }));
   state.quantileNumberOptions = QUANTILE_NUMBERS;
 
   state.trigger("query");
@@ -456,7 +467,7 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
   const scaleFactor = measureDetails.unit == "Proportion" ? 100 : 1;
   const xTickFormat = (_, i) => {
     return state["quantileRanges"][i].split(" - ").map(
-      d => parseFloat((parseFloat(d)*scaleFactor).toPrecision(2))).join(" - ")
+      d => parseFloat((parseFloat(d)*scaleFactor).toPrecision(3))).join(" - ")
   };
 
   let data = plotConfig.mortalityData;
