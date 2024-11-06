@@ -1605,6 +1605,7 @@ class PlotGrid {
       this.listeners.gridUpdated();
     })
   }
+
   
   addCard(content, options) {
     this.grid.batchUpdate(true);
@@ -1727,7 +1728,7 @@ class PlotGrid {
   }
 
   // Blank card creation function
-#blankItemElement() {
+  #blankItemElement() {
     const gridItem = document.createElement("div");
     gridItem.classList.add("plot-grid-item");
 
@@ -1751,7 +1752,7 @@ class PlotGrid {
     const deleteButton = document.createElement("i");
     deleteButton.setAttribute("tip", "Delete card, row, or column");
     deleteButton.className = "fas fa-trash-alt blank-delete-button";
-    
+
     // Hover behavior for the delete button
     deleteButton.addEventListener("mouseover", (e) => {
         e.stopPropagation();
@@ -1776,7 +1777,15 @@ class PlotGrid {
             callback: (e) => {
                 e.preventDefault();  // Prevent default action
                 e.stopPropagation();  // Stop parent handlers
-                gridItem.remove();    // Remove the current blank card from the grid
+                // Properly remove the widget using GridStack
+                this.grid.removeWidget(gridItem);
+                // Update nodeMatrix
+                const x = parseInt(gridItem.getAttribute("gs-x"));
+                const y = parseInt(gridItem.getAttribute("gs-y"));
+                if (!isNaN(x) && !isNaN(y)) {
+                    this.nodeMatrix[x][y] = null;
+                }
+                this.listeners.gridUpdated();
             }
         },
         {
@@ -1784,22 +1793,44 @@ class PlotGrid {
             callback: (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                // Find the y position (row) from the current gridItem
-                const row = gridItem.getAttribute("gs-y");
 
-                if (row !== null) {
+                // Find the y position (row) from the current gridItem
+                const rowAttr = gridItem.getAttribute("gs-y");
+                const row = parseInt(rowAttr);
+
+                if (!isNaN(row)) {
+                    this.grid.batchUpdate();
+
                     // Remove all items in this row
                     for (let i = 0; i < this.nCols; i++) {
                         const node = this.nodeMatrix[i][row];
                         if (node && node.element) {
                             this.grid.removeWidget(node.element);
-                            this.nodeMatrix[i][row] = null;  // Remove from matrix
                         }
                     }
-                    console.log(`Row ${row} deleted`);
+
+                    // Remove the row from nodeMatrix
+                    this.nodeMatrix.forEach(column => {
+                        column.splice(row, 1);
+                    });
+
+                    // Adjust the positions (y) of nodes below the deleted row
+                    for (let i = 0; i < this.nCols; i++) {
+                        for (let j = row; j < this.nRows - 1; j++) {
+                            const node = this.nodeMatrix[i][j];
+                            if (node && node.element) {
+                                node.y -= 1;
+                                this.grid.update(node.element, { y: node.y });
+                            }
+                        }
+                    }
+
+                    // Decrease nRows
+                    this.nRows -= 1;
+
                     this.grid.batchUpdate(false);
                     this.listeners.gridUpdated();
+                    console.log(`Row ${row} deleted`);
                 } else {
                     console.error("Row not found!");
                 }
@@ -1812,20 +1843,40 @@ class PlotGrid {
                 e.stopPropagation();
 
                 // Find the x position (column) from the current gridItem
-                const column = gridItem.getAttribute("gs-x");
+                const columnAttr = gridItem.getAttribute("gs-x");
+                const column = parseInt(columnAttr);
 
-                if (column !== null) {
+                if (!isNaN(column)) {
+                    this.grid.batchUpdate();
+
                     // Remove all items in this column
                     for (let i = 0; i < this.nRows; i++) {
                         const node = this.nodeMatrix[column][i];
                         if (node && node.element) {
                             this.grid.removeWidget(node.element);
-                            this.nodeMatrix[column][i] = null;  // Remove from matrix
                         }
                     }
-                    console.log(`Column ${column} deleted`);
+
+                    // Remove the column from nodeMatrix
+                    this.nodeMatrix.splice(column, 1);
+
+                    // Adjust the positions (x) of nodes to the right of the deleted column
+                    for (let i = column; i < this.nCols - 1; i++) {
+                        for (let j = 0; j < this.nRows; j++) {
+                            const node = this.nodeMatrix[i][j];
+                            if (node && node.element) {
+                                node.x -= 1;
+                                this.grid.update(node.element, { x: node.x });
+                            }
+                        }
+                    }
+
+                    // Decrease nCols
+                    this.nCols -= 1;
+
                     this.grid.batchUpdate(false);
                     this.listeners.gridUpdated();
+                    console.log(`Column ${column} deleted`);
                 } else {
                     console.error("Column not found!");
                 }
@@ -1844,6 +1895,7 @@ class PlotGrid {
 
     return gridItem;
 }
+
 
 
 
