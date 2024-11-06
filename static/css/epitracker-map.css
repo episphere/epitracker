@@ -1,6 +1,7 @@
 footer {
   z-index: 1000;
   position: relative;
+  overflow: auto;
 }
 
 #ex-dashboard {
