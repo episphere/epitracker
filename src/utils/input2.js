@@ -1,3 +1,5 @@
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
 // export function hookSelect(select) {
 
 //   function setOptions(options) {
@@ -83,7 +85,30 @@ export function hookSelectChoices(
       const options = state[optionsProperty].map((d) =>
         typeof d == "string" ? { label: d, value: d } : d
       );
-      choices.setChoices(options, "value", "label", true);
+
+      let choicesInput = options;
+      // Handle groups (if they exist)
+      if (options.some(d => d.group)) {
+        choicesInput = [];
+
+        const grouped = d3.flatGroup(options, d => d.group);
+        for (const [group, options] of grouped) {
+          const groupOptions = [];
+          options.forEach(option => groupOptions.push(option));
+          choicesInput.push({
+            label: group ? group : "Other", 
+            choices: groupOptions,
+          })
+        }
+
+        choicesInput.sort((a, b) => 
+          (a.label === "Other" ? 1 : b.label === "Other" ? -1 : a.label.localeCompare(b.label))
+        );
+      }
+
+
+     
+      choices.setChoices(choicesInput, "value", "label", true);
       if (state[valueProperty]) {
         choices.setChoiceByValue([state[valueProperty]]);
       }
