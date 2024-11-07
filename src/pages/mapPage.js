@@ -1640,6 +1640,7 @@ class PlotGrid {
       this.listeners.gridUpdated();
     })
   }
+
   
   addCard(content, options) {
     this.grid.batchUpdate(true);
@@ -1875,6 +1876,7 @@ class PlotGrid {
 
     return gridItem;
   }
+
 
 
 
