@@ -117,8 +117,6 @@ export class EpiTrackerData {
       ...args,
     };
 
-    console.log('getCountyMortalityData: ', {query, args})
-
     query = {
       sex: "*",
       race: "*",
@@ -169,8 +167,6 @@ export class EpiTrackerData {
       //   }, []);
       //   countiesMap = d3.index(integratedCounties, (d) => d["value"]);
       // }
-
-      console.log({statesMap, countiesMap});
 
       return data.map((item) => ({
         ...item,

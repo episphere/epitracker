@@ -291,12 +291,12 @@ class MapApplication {
   showInitialHints() {
     // TODO: Make robust to variable loading time.
     setTimeout(() => {
-      this.tippyMap.get("fa-edit").forEach(d => d.show());
-      this.tippyMap.get("plot-grid-add").forEach(d => d.show());
+      this.tippyMap.get("fa-edit")?.forEach(d => d.show());
+      this.tippyMap.get("plot-grid-add")?.forEach(d => d.show());
     }, 2000)
     setTimeout(() => {
-      this.tippyMap.get("fa-edit").forEach(d => d.hide());
-      this.tippyMap.get("plot-grid-add").forEach(d => d.hide());
+      this.tippyMap.get("fa-edit")?.forEach(d => d.hide());
+      this.tippyMap.get("plot-grid-add")?.forEach(d => d.hide());
     }, 8000)
   }
 
@@ -512,7 +512,6 @@ class MapApplication {
    * Fully reset / update the plot grid, usually in response to a page load or undo operation.
    */
   updateGrid() {
-
     this.batchUpdate(true);
 
     // this.elems.dashboard.style.opacity = Math.random();
@@ -523,7 +522,6 @@ class MapApplication {
       nRows: this.state.nRows, 
       nCols: this.state.nCols,
     });
-
 
     for (let i = 0; i < this.state.nRows * this.state.nCols; i++) {
       const x = i % this.state.nCols;
@@ -536,6 +534,8 @@ class MapApplication {
     this.plotGrid.addListener("editCardClicked", (card) => this.editCardClicked(card));
     this.plotGrid.addListener("blankCardClicked", (x,y) => this.blankCardClicked(x,y));
     this.plotGrid.addListener("closeCardClicked", (card) => this.closeCardClicked(card));
+    this.plotGrid.addListener("deleteRow", (row) => this.deleteRowClicked(row));
+    this.plotGrid.addListener("deleteColumn", (row) => this.deleteColumnClicked(row));
 
     this.batchUpdate(false);
     //this.elems.dashboard.style.opacity = "1"
@@ -552,6 +552,37 @@ class MapApplication {
     this.createMapCard(card.x, card.y);
   }
 
+  deleteRowClicked(row) {
+    if (this.state.nRows > 1) {
+      this.cardStates = this.cardStates.filter((d,i) => Math.floor(i / this.state.nCols) != row);
+
+      this.state.nRows = this.state.nRows - 1;
+      this.updateGrid();
+    } else {
+      this.baseState();
+    }
+  }
+
+  deleteColumnClicked(col) {
+    if (this.state.nCols > 1) {
+      this.cardStates = this.cardStates.filter((d,i) => i % this.state.nCols != col);
+      this.state.nCols = this.state.nCols - 1;
+      this.updateGrid();
+    } else {
+      this.baseState();
+    }
+  }
+
+  baseState() {
+    // const cardState = {};
+    // CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field]);
+    this.cardStates = [];
+    this.plotGrid.addBlank({ y: 0 });
+    this.state.nRows = 1;
+    this.state.nCols = 1;
+    this.updateGrid();
+  }
+
   batchUpdate(bool) {
     this.batchMode = bool;
     if (!bool) {
@@ -563,30 +594,40 @@ class MapApplication {
    * LISTENER. 
    * Called when the plot grid receives any type of update. 
    */
-async gridUpdated() {
+  async gridUpdated() {
     if (!this.batchMode) {
-        this.state.nRows = this.plotGrid.nRows;
-        this.state.nCols = this.plotGrid.nCols;
-        this.sharedState = this.#calcSharedState(); 
-        this.dFields = [];
-        for (const field of CONSTANTS.CARD_STATE_FIELDS) {
-            if (!this.sharedState.hasOwnProperty(field)) {
-                this.dFields.push(field);
-            }
+      this.state.nRows = this.plotGrid.nRows;
+      this.state.nCols = this.plotGrid.nCols;
+      this.sharedState = this.#calcSharedState(); 
+      this.dFields = [];
+      for (const field of CONSTANTS.CARD_STATE_FIELDS) {
+        if (!this.sharedState.hasOwnProperty(field)) {
+          this.dFields.push(field);
         }
-        await this.updateAllValueArray();
-        this.updateTooltipHistogram();
-        this.updateColors();
-        this.updateTitles();
-        this.updateUrl();
+      }
+      await this.updateAllValueArray();
+      this.updateTooltipHistogram();
+      this.updateColors();
+      this.updateTitles();
+      this.updateUrl();
+
+      this.cardStates = this.plotGrid.getCards().map(card => card?.cardState)
+
+      // Hide delete buttons if in base state (single blank card)
+      if (this.state.nRows == 1 && this.state.nCols == 1 ) {
+        this.elems.dashboard.classList.add("deletes-hidden");
+      } else {
+        this.elems.dashboard.classList.remove("deletes-hidden");
+      }
     }
 
     // Ensure the legend and title visibility is correct after grid updates
     this.checkAndUpdateTitleLegendVisibility();
-}
+  }
+
   checkAndUpdateTitleLegendVisibility() {
     const allCardsEmpty = this.plotGrid.getCards().every(card => {
-        return !card || !card.data || card.data.length === 0;
+      return !card || !card.data || card.data.length === 0;
     });
 
     // Update the selectors to your actual title and legend identifiers
@@ -595,15 +636,15 @@ async gridUpdated() {
     const subtitleElement = document.querySelector('.dashboard-subtitle'); // If there's a subtitle, select it as well
 
     if (allCardsEmpty) {
-        if (titleElement) titleElement.style.display = 'none';
-        if (legendElement) legendElement.style.display = 'none';
-        if (subtitleElement) subtitleElement.style.display = 'none';
+      if (titleElement) titleElement.style.display = 'none';
+      if (legendElement) legendElement.style.display = 'none';
+      if (subtitleElement) subtitleElement.style.display = 'none';
     } else {
-        if (titleElement) titleElement.style.display = 'block';
-        if (legendElement) legendElement.style.display = 'block';
-        if (subtitleElement) subtitleElement.style.display = 'block';
+      if (titleElement) titleElement.style.display = 'block';
+      if (legendElement) legendElement.style.display = 'block';
+      if (subtitleElement) subtitleElement.style.display = 'block';
     }
-}
+  }
 
 
     
@@ -763,8 +804,6 @@ async gridUpdated() {
       areaCounty: d => `${this.countyNameMap.get(d)} (${formatName("states", d.slice(0,2), "short")})`
     }
 
-
-
     for (const card of this.plotGrid.getCards()) {
       if (card) {
         const titleElements = []
@@ -905,7 +944,6 @@ async gridUpdated() {
             type: "FeatureCollection", 
             features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaState))
           }
-          console.log(featureCollection)
         }
       } else {
         featureCollection = this.sData.stateGeoJSON;
@@ -1002,7 +1040,6 @@ async gridUpdated() {
   eventButtonColorSettingsClicked() {}
 
   eventButtonDownloadImage(format) {
-      console.log("Download button clicked");
 
       // Create and show loading overlay and message immediately
       const loadingOverlay = document.createElement("div");
@@ -1042,7 +1079,7 @@ async gridUpdated() {
       virtualContainer.style.top = '-9999px'; // Hide it offscreen
       virtualContainer.style.left = '-9999px';
       virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
-      virtualContainer.style.overflow = 'hidden'; // Hide overflow
+      // virtualContainer.style.overflow = 'hidden'; // Hide overflow
 
       const originalDashboard = document.getElementById('ex-dashboard');
       const gridContainer = originalDashboard.querySelector('#grid-container');
@@ -1109,7 +1146,7 @@ async gridUpdated() {
               if (mapContent) {
                   mapContent.style.width = '100%';
                   mapContent.style.height = '100%'; // Ensure it fits within the card
-                  mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+                  // mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
               }
           });
 
@@ -1322,11 +1359,6 @@ convertToTSV(data) {
     return [headers, ...rows].join("\n");
 }
 
-
-
-
-
-
  eventButtonTableClicked() {
     const { clientHeight: height } = document.body;
     const cardStates = this.getCardStates(this.url);
@@ -1501,11 +1533,14 @@ class PlotGrid {
     Object.assign(this, options)
 
     this.nodeMatrix = Array.from({length: this.nCols}, () => Array.from({length: this.nRows}, () => null));
+
     this.listeners = {
       gridUpdated: d => d, 
       editCardClicked: d => d,
       blankCardClicked: d => d,
       closeCardClicked: d => d,
+      deleteRow: d => d,
+      deleteColumn: d => d,
       downloadCardClicked: (card) => {
         // Download logic here
         console.log('Downloading card:', card);
@@ -1546,9 +1581,9 @@ class PlotGrid {
     const resizeObserver = new ResizeObserver(() => {
       this.grid.cellHeight(this.gridContainerElement.getBoundingClientRect().height / this.nRows - 5)
       this.gridElement.style.height = "100%"
-      this.gridContainerElement.style.minHeight = (this.nRows) * 300 + 'px'
-      const dashboardElement = document.getElementById('dashboard')
-      dashboardElement.style.minHeight = ((this.nRows) * 300) + 145 + 'px'
+      // this.gridContainerElement.style.minHeight = (this.nRows) * 300 + 'px'
+      // const dashboardElement = document.getElementById('dashboard')
+      // dashboardElement.style.minHeight = ((this.nRows) * 300) + 145 + 'px'
 })
     resizeObserver.observe(this.gridContainerElement)
 
@@ -1612,7 +1647,6 @@ class PlotGrid {
     if (this.nodeMatrix[options.x]?.[options.y]) {
       this.grid.removeWidget(this.nodeMatrix[options.x][options.y].element);
     }
-    console.log({card1: this.getCards(), options})
     const card = new PlotCard(content, options);
     card.addListener("editClicked", (card) =>
       this.listeners.editCardClicked(card)
@@ -1658,25 +1692,32 @@ class PlotGrid {
   }
 
   addRow() {
-    this.gridContainerElement.style.minHeight = (this.nRows + 1) * 300 + 'px'
-    const dashboardElement = document.getElementById('dashboard')
-    dashboardElement.style.minHeight = ((this.nRows + 1) * 300) + 145 + 'px'
+    // this.gridContainerElement.style.minHeight = (this.nRows + 1) * 300 + 'px'
+    // const dashboardElement = document.getElementById('dashboard')
+    // dashboardElement.style.minHeight = ((this.nRows + 1) * 300) + 145 + 'px'
+    
     this.grid.cellHeight(this.gridContainerElement.getBoundingClientRect().height / (this.nRows + 1));
     this.grid.batchUpdate();
     this.grid.engine.maxRow = this.nRows + 1;
     for (let i = 0; i < this.nCols; i++) {
-      // const blankElement = this.#blankItemElement()
-      // this.grid.addWidget(blankElement,  { x:i,  });
-      // const internalNode = this.grid.engine.addedNodes.at(-1);
-      // const node = {origX: internalNode.x, origY: internalNode.y,  x: internalNode.x, y: internalNode.y, element: blankElement };
-      // this.nodeMatrix[i][this.nRows] = node;
-      // blankElement.addEventListener("click", () => {
-      //   this.listeners.blankCardClicked(node.x, node.y)
-      // });
       this.addBlank({ x: i });
     }
     this.grid.batchUpdate(false);
     this.nRows = this.nRows + 1;
+    this.listeners.gridUpdated();
+  }
+
+  removeRow(x) {
+    this.grid.batchUpdate();
+    for (let i = 0; i < this.nodeMatrix.length; i++) {
+      const gridItem  = this.nodeMatrix[i][x];
+      this.grid.removeWidget(gridItem);
+      this.nodeMatrix[i] = this.nodeMatrix[i].filter((d,j) => j != x);
+    }
+    this.grid.engine.maxRow = this.nRows - 1;
+   
+    this.grid.batchUpdate(false);
+    this.nRows = this.nRows - 1; 
     this.listeners.gridUpdated();
   }
 
@@ -1703,6 +1744,17 @@ class PlotGrid {
     blankElement.addEventListener("mouseleave", () => {
       blankElement.classList.remove("hover")
     })
+    
+    blankElement.querySelector("#delete-row")?.addEventListener("click", e => {
+      e.stopPropagation();
+      this.listeners.deleteRow(node.y);
+    })
+
+    blankElement.querySelector("#delete-column")?.addEventListener("click", e => {
+      e.stopPropagation();
+      this.listeners.deleteColumn(node.x);
+    })
+
     if (openedBatch) {
       this.grid.batchUpdate(false);
     }
@@ -1724,11 +1776,11 @@ class PlotGrid {
   }
 
   addListener(type, listener) {
-    this.listeners[type] = listener
+    this.listeners[type] = listener;
   }
 
-  // Blank card creation function
   #blankItemElement() {
+
     const gridItem = document.createElement("div");
     gridItem.classList.add("plot-grid-item");
 
@@ -1752,141 +1804,70 @@ class PlotGrid {
     const deleteButton = document.createElement("i");
     deleteButton.setAttribute("tip", "Delete card, row, or column");
     deleteButton.className = "fas fa-trash-alt blank-delete-button";
-
-    // Hover behavior for the delete button
+    
     deleteButton.addEventListener("mouseover", (e) => {
-        e.stopPropagation();
-        gridItem.classList.remove("hover");
-        deleteButton.classList.add("hover");
+      e.stopPropagation();
+      gridItem.classList.remove("hover");
+      deleteButton.classList.add("hover");
     });
 
     deleteButton.addEventListener("mouseleave", () => {
-        deleteButton.classList.remove("hover");
+      deleteButton.classList.remove("hover");
     });
 
     deleteButton.addEventListener("click", e => {
-        e.stopPropagation(); // Stop event propagation to avoid triggering other events
+      e.stopPropagation(); 
     });
 
     blankItem.appendChild(deleteButton);
 
-    // Use the updated createDropdownButton function and pass the event to callbacks
     const dropdown = createDropdownButton(deleteButton, [
-        {
-            text: "Delete blank card",
-            callback: (e) => {
-                e.preventDefault();  // Prevent default action
-                e.stopPropagation();  // Stop parent handlers
-                // Properly remove the widget using GridStack
-                this.grid.removeWidget(gridItem);
-                // Update nodeMatrix
-                const x = parseInt(gridItem.getAttribute("gs-x"));
-                const y = parseInt(gridItem.getAttribute("gs-y"));
-                if (!isNaN(x) && !isNaN(y)) {
-                    this.nodeMatrix[x][y] = null;
-                }
-                this.listeners.gridUpdated();
-            }
-        },
-        {
-            text: "Delete card row",
-            callback: (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Find the y position (row) from the current gridItem
-                const rowAttr = gridItem.getAttribute("gs-y");
-                const row = parseInt(rowAttr);
-
-                if (!isNaN(row)) {
-                    this.grid.batchUpdate();
-
-                    // Remove all items in this row
-                    for (let i = 0; i < this.nCols; i++) {
-                        const node = this.nodeMatrix[i][row];
-                        if (node && node.element) {
-                            this.grid.removeWidget(node.element);
-                        }
-                    }
-
-                    // Remove the row from nodeMatrix
-                    this.nodeMatrix.forEach(column => {
-                        column.splice(row, 1);
-                    });
-
-                    // Adjust the positions (y) of nodes below the deleted row
-                    for (let i = 0; i < this.nCols; i++) {
-                        for (let j = row; j < this.nRows - 1; j++) {
-                            const node = this.nodeMatrix[i][j];
-                            if (node && node.element) {
-                                node.y -= 1;
-                                this.grid.update(node.element, { y: node.y });
-                            }
-                        }
-                    }
-
-                    // Decrease nRows
-                    this.nRows -= 1;
-
-                    this.grid.batchUpdate(false);
-                    this.listeners.gridUpdated();
-                    console.log(`Row ${row} deleted`);
-                } else {
-                    console.error("Row not found!");
-                }
-            }
-        },
-        {
-            text: "Delete card column",
-            callback: (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Find the x position (column) from the current gridItem
-                const columnAttr = gridItem.getAttribute("gs-x");
-                const column = parseInt(columnAttr);
-
-                if (!isNaN(column)) {
-                    this.grid.batchUpdate();
-
-                    // Remove all items in this column
-                    for (let i = 0; i < this.nRows; i++) {
-                        const node = this.nodeMatrix[column][i];
-                        if (node && node.element) {
-                            this.grid.removeWidget(node.element);
-                        }
-                    }
-
-                    // Remove the column from nodeMatrix
-                    this.nodeMatrix.splice(column, 1);
-
-                    // Adjust the positions (x) of nodes to the right of the deleted column
-                    for (let i = column; i < this.nCols - 1; i++) {
-                        for (let j = 0; j < this.nRows; j++) {
-                            const node = this.nodeMatrix[i][j];
-                            if (node && node.element) {
-                                node.x -= 1;
-                                this.grid.update(node.element, { x: node.x });
-                            }
-                        }
-                    }
-
-                    // Decrease nCols
-                    this.nCols -= 1;
-
-                    this.grid.batchUpdate(false);
-                    this.listeners.gridUpdated();
-                    console.log(`Column ${column} deleted`);
-                } else {
-                    console.error("Column not found!");
-                }
-            }
-        }
+      // {
+      //   text: "Delete blank card", id: "delete-blank-card"
+      // },
+      {
+        text: "Delete card row",  id: "delete-row" 
+      },
+      {
+        text: "Delete card column", id: "delete-column"
+      }
     ]);
 
     // Add dropdown to the delete button
     dropdown.classList.add("blank-delete-button");
     dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button");
+    
+   
+
+    // Use the updated createDropdownButton function and pass the event to callbacks
+    // const dropdown = createDropdownButton(deleteButton, [
+    //   {
+    //     text: "Delete blank card",
+    //     callback: (e) => {
+    //       e.preventDefault();  // Prevent default action
+    //       e.stopPropagation();  // Stop parent handlers
+    //       gridItem.remove();    // Remove the current blank card from the grid
+    //     }
+    //   },
+    //   {
+    //     text: "Delete card row",
+    //     callback: (e) => {
+    //       e.preventDefault();
+    //       e.stopPropagation();
+    //       console.log("[EVENT] delete card row: ", pos)
+    //       this.removeRow(pos.y);
+    //     }
+    //   },
+    //   {
+    //     text: "Delete card column",
+    //     callback: (e) => {
+    //       e.preventDefault();
+    //       e.stopPropagation();
+    //       this.removeColumn(pos.x);
+    //     }
+    //   }
+    // ]);
+
 
     this.tippyMap = addTippys();  // Assuming this adds tooltips or additional functionality
 
@@ -1894,7 +1875,7 @@ class PlotGrid {
     gridItem.options = { data: Promise.resolve([]) };
 
     return gridItem;
-}
+  }
 
 
 
@@ -1914,7 +1895,6 @@ class PlotCard {
       content = () => this.content;
     }
     this.content = content;
-    console.log({card: this.plotGrid})
     this.#createElement(options);
 
     this.listeners = {
@@ -1963,8 +1943,6 @@ class PlotCard {
   }
 // TODO: Remove redundant codes
 eventButtonDownloadClicked(cardTitle) { 
-    console.log("Download button clicked", { cardTitle });
-
     // Create loading overlay
     const loadingOverlay = document.createElement("div");
     Object.assign(loadingOverlay.style, {
@@ -2169,7 +2147,6 @@ createDropdownDownloadButton() {
     const isExpand = e.target.classList.contains("fa-expand");
     const titleElement = document.getElementById('title')
     const cardTitle = `${titleElement.innerText}, ${this.titleElement.innerText}`
-    console.log({options, this: this, title: this.titleElement.innerText    })
     if (isExpand) {
       openFullscreen(this.content, cardTitle);
     }
@@ -2276,9 +2253,8 @@ createDropdownDownloadButton() {
 
 async function openFullscreen(content, title) {
   const {clientHeight: height, clientWidth: width} = document.body
-  document.body.style.overflow = 'hidden'
+  // document.body.style.overflow = 'hidden'
   const mapElement = await content(width * .9, height * .8)
-  console.log({this: this})
   popup(document.body, mapElement, {
     title: title,
     backdrop: true,
