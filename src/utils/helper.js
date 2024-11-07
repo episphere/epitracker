@@ -844,7 +844,13 @@ export function createDropdownButton(button, options) {
     item.appendChild(link);
 
     // Pass the event to the callback when the item is clicked
-    item.addEventListener("click", (event) => option.callback(event));
+    if (option.callback) {
+      item.addEventListener("click", (event) => option.callback(event));
+    }
+
+    if (option.id) {
+      item.setAttribute("id", option.id);
+    }
 
     list.appendChild(item);
   }
@@ -1090,7 +1096,7 @@ export function popup(container, content, options) {
   };
 
   container.classList.add("unfocused");
-  document.body.style.overflow = 'hidden';
+  // document.body.style.overflow = 'hidden';
 
   let popupTemplate = "";
   if (options.closable || options.title) {
