@@ -50,16 +50,17 @@ const INITIAL_STATE = {
   areaState: "All",
   startZero: true,
 };
-
 let state, dataManager;
 let elements, url, names;
-
 export function init() {
+  // Initialize state and data manager
   state = new State();
   dataManager = new EpiTrackerData();
 
+  // Set up the initial state
   initializeState();
 
+  // Cache references to frequently used DOM elements
   elements = {
     barContainer: document.getElementById("demographic-container"),
     sidebar: document.getElementById("sidebar"),
@@ -69,28 +70,36 @@ export function init() {
     tableNavLink: document.getElementById("table-nav-link"),
   };
 
+  // Adjust the bar container's height
   elements.barContainer.style.height = elements.barContainer.style.maxHeight;
 
+  // Handle the 'select-sex' dropdown element
   const selectSexElement = document.getElementById("select-select-sex");
 
   if (selectSexElement) {
+    // Access the sibling's last child for choices list
     elements.selectChoicesListSex =
       selectSexElement.parentNode.nextSibling.lastChild;
   }
 
-  elements.selectSex = document.getElementById("select-select-sex");
+  // Store the select-sex element reference
+  elements.selectSex = selectSexElement;
+
+  // Add event listeners for navigation links
   elements.tableNavLink.addEventListener("click", () => changeView("table"));
   elements.graphNavLink.addEventListener("click", () => changeView("plot"));
 }
-
 function initializeState() {
+  // Clone the initial state
   const initialState = { ...INITIAL_STATE };
 
+  // Parse URL parameters and update the initial state
   url = new URL(window.location.href);
   for (const [paramName, paramValue] of url.searchParams) {
     initialState[paramName] = paramValue;
   }
 
+  // Define initial state properties
   state.defineProperty("compareBar", initialState.compareBar);
   state.defineProperty("compareBarOptions", null);
   state.defineProperty("compareFacet", initialState.compareFacet);
@@ -105,63 +114,60 @@ function initializeState() {
   state.defineProperty("areaStateOptions", null);
   state.defineProperty("nameMappings", null);
 
-  // The compareBar and compareFacet properties can't be the same value (unless they are 'none'), handle that logic here.
+  // Ensure compareBar and compareFacet are not equal unless set to 'none'
   for (const [childProperty, parentProperty] of [
     ["compareBar", "compareFacet"],
     ["compareFacet", "compareBar"],
   ]) {
     state.linkProperties(childProperty, parentProperty);
-    state.subscribe(parentProperty, () => {
-      // if (
-      //   state[parentProperty] == state[childProperty] &&
-      //   state[childProperty] != "none"
-      // ) {
-      //   state[childProperty] = "none";
-      // }
 
-      state.compareBarOptions = state.compareBarOptions.map((field) => {
-        console.log('sssss: 1', field)
-        return {
-          ...field,
-          disabled: field.value === 'none' || state['compareFacet'] === field.value
-        }
-      });
+    state.subscribe(parentProperty, () => {
+      state.compareBarOptions = state.compareBarOptions.map((field) => ({
+        ...field,
+        disabled: field.value === "none" || state["compareFacet"] === field.value,
+      }));
+
       state.compareFacetOptions = state.compareFacetOptions.map((field) => ({
         ...field,
-        disabled: state['compareBar'] === field.value
+        disabled: state["compareBar"] === field.value,
       }));
     });
   }
 
-  // The values for the selections are dependent on the compares (e.g. if we are comparing by race, then the race select
-  // must be equal to "all").
-  state.defineProperty("race", initialState.race, [
-    "compareBar",
-    "compareFacet",
-  ]);
+  // Handle dependent selections (e.g., 'race' and 'sex') based on comparisons
+  state.defineProperty("race", initialState.race, ["compareBar", "compareFacet"]);
   state.defineProperty("raceOptions", []);
   state.defineProperty("sex", initialState.sex, ["compareBar", "compareFacet"]);
   state.defineProperty("sexOptions", []);
+
   for (const compareProperty of ["compareBar", "compareFacet"]) {
     state.subscribe(compareProperty, () => {
       if (COMPARABLE_FIELDS.includes(state[compareProperty])) {
-        const compareValue = state[compareProperty] === 'age_group' ? 'ageGroup' : state[compareProperty]
+        const compareValue =
+          state[compareProperty] === "age_group" ? "ageGroup" : state[compareProperty];
         state[compareValue] = "All";
       }
     });
   }
 
+  // Define measure options and synchronize with related properties
   state.defineProperty("measureOptions", null, ["compareBar", "compareFacet"]);
   for (const compareProperty of ["compareBar", "compareFacet", "ageGroup"]) {
     state.subscribe(compareProperty, () => {
       let measureOptions = null;
       let measure = state.measure;
-      if (["compareBar", "compareFacet"].some((d) => state[d] == "age_group" || state["ageGroup"] != 'All')) {
+
+      if (
+        ["compareBar", "compareFacet"].some(
+          (d) => state[d] === "age_group" || state["ageGroup"] !== "All"
+        )
+      ) {
         measureOptions = ["crude_rate"];
         measure = "crude_rate";
       } else {
         measureOptions = NUMERIC_MEASURES;
       }
+
       state.measureOptions = measureOptions.map((field) => ({
         value: field,
         label: formatName("measures", field),
@@ -170,9 +176,9 @@ function initializeState() {
     });
   }
   state.defineProperty("measure", initialState.measure, ["measureOptions"]);
-
   state.defineProperty("startZero", initialState.startZero);
 
+  // Define a joint query property dependent on multiple fields
   state.defineJointProperty("query", [
     "compareBar",
     "compareFacet",
@@ -182,7 +188,7 @@ function initializeState() {
     "sex",
     "year",
     "ageGroup",
-    "measure"
+    "measure",
   ]);
   state.defineProperty("legendCheckValues", null, "query");
   state.defineProperty("mortalityData", null, ["query"]);
@@ -194,31 +200,34 @@ function initializeState() {
     "legendCheckValues",
   ]);
 
+  // Update URL parameters when state properties change
   for (const param of Object.keys(initialState)) {
     if (state.hasProperty(param)) {
       state.subscribe(param, updateURLParam);
     }
   }
-const causeFormat = (d) => ({ 
-    label: d === 'All' ? 'All cancers' : d, 
-    value: d 
-  })
+
+  // Configure dropdowns and selections
+  const causeFormat = (d) => ({
+    label: d === "All" ? "All cancers" : d,
+    value: d,
+  });
+
   for (const inputSelectConfig of [
     { id: "#select-compare-bar", propertyName: "compareBar" },
     { id: "#select-compare-facet", propertyName: "compareFacet" },
     { id: "#select-select-race", propertyName: "race" },
     { id: "#select-select-sex", propertyName: "sex" },
     { id: "#select-select-state", propertyName: "areaState", searchable: true },
-    { id: "#select-select-cause", propertyName: "cause", searchable: true, format: causeFormat  },
+    { id: "#select-select-cause", propertyName: "cause", searchable: true, format: causeFormat },
     { id: "#select-select-year", propertyName: "year", forceEnd: "2018-2022" },
     { id: "#select-select-age", propertyName: "ageGroup" },
     { id: "#select-measure", propertyName: "measure" },
   ]) {
     const sorter = createOptionSorter(
       ["All", "None"],
-      inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
+      inputSelectConfig.propertyName === "year" ? ["2018-2022"] : []
     );
-
     choices[inputSelectConfig.id] = hookSelectChoices(
       inputSelectConfig.id,
       state,
@@ -230,171 +239,159 @@ const causeFormat = (d) => ({
     );
   }
 
+  // Hook the start-zero checkbox
   hookCheckbox("#check-start-zero", state, "startZero");
 
+  // Subscribe to query and plot configuration updates
   state.subscribe("query", queryUpdated);
   state.subscribe("plotConfig", plotConfigUpdated);
 
-  // Load the data
+  // Load initial data
   Promise.all([
     dataManager.getDemographicMortalityData({ year: state.year }),
   ]).then(([mortalityData]) => {
     initialDataLoad(mortalityData);
   });
 }
-
 function initialDataLoad(mortalityData) {
-
-  // Initialise the input state from the data
+  // Initialize state options from the data
   state.compareBarOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
     label: formatName("fields", field),
-    disabled: field === 'none' || state['compareFacet'] === field
+    disabled: field === "none" || state.compareFacet === field,
   }));
+
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
     label: formatName("fields", field),
-    disabled: state['compareBar'] === field
+    disabled: state.compareBar === field,
   }));
+
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
+
   state.areaStateOptions = [
     ...new Set(mortalityData.map((d) => d.state_fips)),
   ].map((stateCode) => ({
     value: stateCode,
-    label: formatName("states", stateCode) //nameMappings.states[stateCode]?.name,
+    label: formatName("states", stateCode),
   }));
-  state.nameMappings = names
+
+  state.nameMappings = names;
+
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.ageGroupOptions = [...new Set(mortalityData.map((d) => d.age_group))];
+
   state.measureOptions = NUMERIC_MEASURES.map((field) => ({
     value: field,
-    label: formatName("measures", field)
+    label: formatName("measures", field),
   }));
 
+  // Enable input controls and trigger initial updates
   setInputsEnabled();
   state.trigger("race");
 
+  // Add resize observer to handle plot resizing
   let resizeTimeout;
-  const resizeObserver = new ResizeObserver((resizeWrapper) => {
-    if (resizeTimeout) {
-      clearTimeout(resizeTimeout);
-    }
-
-    resizeTimeout = setTimeout(() => {
-      state.trigger("plotConfig");
-    }, 25);
+  const resizeObserver = new ResizeObserver(() => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => state.trigger("plotConfig"), 25);
   });
   resizeObserver.observe(elements.barContainer);
 
+  // Add a download button for the data visualization
   addDownloadButton();
 }
-
 async function queryUpdated(query) {
-  if (query.compareBar == "race" || query.compareFacet == "race") {
+  // Disable or enable race, sex, and age selection based on compareBar and compareFacet
+  if (query.compareBar === "race" || query.compareFacet === "race") {
     choices["#select-select-race"].disable();
   } else {
     choices["#select-select-race"].enable();
   }
-  if (query.compareBar == "sex" || query.compareFacet == "sex") {
+
+  if (query.compareBar === "sex" || query.compareFacet === "sex") {
     choices["#select-select-sex"].disable();
   } else {
     choices["#select-select-sex"].enable();
   }
 
-  if (query.compareBar == "age_group" || query.compareFacet == "age_group") {
+  if (query.compareBar === "age_group" || query.compareFacet === "age_group") {
     choices["#select-select-age"].disable();
   } else {
     choices["#select-select-age"].enable();
   }
 
-  // if ((query.compareBar !== "age_group" && query.compareFacet !== "age_group") && state.measure == "age_adjusted_rate" ) {
-  //   choices["#select-select-age"].disable();
-  // } else {
-  //   choices["#select-select-age"].enable();
-  // }
-
+  // Prepare the data query based on the provided query parameters
   const dataQuery = {
     year: query.year,
     cause: query.cause,
     race: query.race,
-    sex:  query.sex,
+    sex: query.sex,
     age_group: query.ageGroup,
     state_fips: query.areaState,
   };
 
-  if (query.compareBar != "none") dataQuery[query.compareBar] = "*";
-  if (query.compareFacet != "none") dataQuery[query.compareFacet] = "*";
+  // Add compareBar and compareFacet to dataQuery if not 'none'
+  if (query.compareBar !== "none") dataQuery[query.compareBar] = "*";
+  if (query.compareFacet !== "none") dataQuery[query.compareFacet] = "*";
 
-  let mortalityData = await dataManager.getDemographicMortalityData(dataQuery, {
+  // Fetch mortality data asynchronously
+  const mortalityData = await dataManager.getDemographicMortalityData(dataQuery, {
     includeTotals: false,
   });
 
-  grayOutSexSelectionBasedOnCause(query, elements)
-
+  // Update the UI and state with the fetched mortality data
+  grayOutSexSelectionBasedOnCause(query, elements);
   state.mortalityData = mortalityData;
   updateTitle();
-
   updateLegend(mortalityData, query);
 }
-
 function sortAgeGroups(ageGroups) {
-  const groups = ageGroups.map((d) => ({
-    raw: d,
-    first: parseInt(d.split("-")[0]),
-  }));
-  groups.sort((a, b) => a.first - b.first);
-  return groups.map((d) => d.raw);
+  return ageGroups
+    .map(d => ({
+      raw: d,
+      first: parseInt(d.split("-")[0], 10),  // Ensure it's parsed as a decimal number
+    }))
+    .sort((a, b) => a.first - b.first)  // Sort by the first part of the age range
+    .map(d => d.raw);  // Return the original age group values
 }
-
 function plotConfigUpdated() {
-  if (!state.mortalityData) {
-    return;
-  }
+  if (!state.mortalityData) return;
 
   const xFormat = (d) => formatName(state.compareBar, d, "short");
   const tickFormat = (d) => formatName(state.compareFacet, d, "short");
 
-  const xOptions = {
-    tickFormat: xFormat,
-    label: '',
-  };
-  const fxOptions = {
-    tickFormat: tickFormat,
-    label: '',
-  };
+  const xOptions = { tickFormat: xFormat, label: '' };
+  const fxOptions = { tickFormat: tickFormat, label: '' };
 
+  // Determine age domain if age_group is selected
   let ageDomain = null;
-  if (state.compareBar == "age_group" || state.compareFacet == "age_group") {
-    const ageGroups = [...new Set(state.mortalityData)].map((d) => d.age_group);
+  if (state.compareBar === "age_group" || state.compareFacet === "age_group") {
+    const ageGroups = [...new Set(state.mortalityData.map(d => d.age_group))];
     ageDomain = sortAgeGroups(ageGroups);
-    // const options = state.compareBar == "age_group" ? xOptions : fxOptions;
-    // options.domain = ageDomain;
   }
 
+  // Filter data based on legend check values
   let data = state.mortalityData;
   if (state.query.compareBar !== "none") {
     const legendCheckSet = new Set(state.legendCheckValues);
-    data = state.mortalityData.filter((d) =>
-      legendCheckSet.has(d[state.query.compareBar])
-    );
+    data = state.mortalityData.filter(d => legendCheckSet.has(d[state.query.compareBar]));
   }
 
-  if (state.mortalityData.length == 0) {
-    elements.barContainer.innerHTML =
-      "<i> There is no data for this selection. </i>";
-    elements.tableContainer.innerHTML =
-      "<i> There is no data for this selection. </i>";
+  // Handle case where no data is available
+  if (state.mortalityData.length === 0) {
+    elements.barContainer.innerHTML = "<i> There is no data for this selection. </i>";
+    elements.tableContainer.innerHTML = "<i> There is no data for this selection. </i>";
   } else {
-    const barContainer = elements.barContainer;
     const isActiveTable = elements.tableNavLink.classList.contains("active");
-    if (isActiveTable) {
-      plotTable()
 
+    if (isActiveTable) {
+      plotTable();
     } else {
-      plotDemographicPlots(barContainer, data, {
-        compareBar: state.compareBar != "none" ? state.compareBar : null,
-        compareFacet: state.compareFacet != "none" ? state.compareFacet : null,
+      plotDemographicPlots(elements.barContainer, data, {
+        compareBar: state.compareBar !== "none" ? state.compareBar : null,
+        compareFacet: state.compareFacet !== "none" ? state.compareFacet : null,
         measure: state.measure,
         plotOptions: {
           x: xOptions,
@@ -403,36 +400,35 @@ function plotConfigUpdated() {
         },
         yStartZero: state.startZero,
         valueField: state.measure,
-        tooltipFields: [
-          state.compareFacet,
-          state.compareBar,
-        ].filter((d) => d != "none"),
+        tooltipFields: [state.compareFacet, state.compareBar].filter(d => d !== "none"),
         nameMappings: state.nameMappings
       });
     }
   }
-
-  
 }
-
 function updateURLParam(value, param) {
-  if (INITIAL_STATE[param] != value) {
+  // Update URL parameter if the value differs from the initial state
+  if (INITIAL_STATE[param] !== value) {
     url.searchParams.set(param, value);
   } else {
     url.searchParams.delete(param);
-    if (param === 'measure' && value == INITIAL_STATE["measure"]) {
-      state.ageGroup = 'All'
+    // Reset age group if the measure is reverted to its initial state
+    if (param === 'measure' && value === INITIAL_STATE["measure"]) {
+      state.ageGroup = 'All';
     }
   }
 
+  // Update sex based on the value if a matching mapping exists
   if (CAUSE_SEX_MAP[value]) {
-    state.sex = CAUSE_SEX_MAP[value]
+    state.sex = CAUSE_SEX_MAP[value];
   }
+
+  // Replace the current history state with the updated URL
   history.replaceState({}, "", url.toString());
 }
-
-function setInputsEnabled(enabled) {
-  for (const input of [
+function setInputsEnabled(enabled) { 
+  // List of input element IDs to enable or disable
+  const inputIds = [
     "select-compare-bar",
     "select-compare-facet",
     "select-select-race",
@@ -441,110 +437,89 @@ function setInputsEnabled(enabled) {
     "select-select-year",
     "select-select-age",
     "select-measure",
-  ]) {
-    const element = document.getElementById(input);
-    if (enabled) {
-      element.removeAttribute("disabled");
-    } else {
-      element.setAttribute("disabled", "");
-    }
-  }
+  ];
 
-  for (const choice of Object.values(choices)) {
-    choice.enable();
-  }
+  // Loop through the input IDs and enable or disable elements accordingly
+  inputIds.forEach((inputId) => {
+    const element = document.getElementById(inputId);
+    element.disabled = !enabled; // Simplified toggling of the 'disabled' attribute
+  });
+
+  // Enable all choices using the choices object
+  Object.values(choices).forEach((choice) => choice.enable());
 }
-
 function addDownloadButton() {
   const baseFilename = "epitracker_data";
 
+  const downloadOptions = [
+    { label: "Download data (CSV)", format: "csv" },
+    { label: "Download data (TSV)", format: "tsv" },
+    { label: "Download data (JSON)", format: "json" },
+    { label: "Download plot (PNG)", format: "png" },
+    { label: "Download plot (SVG)", format: "svg" }
+  ];
+
   const groupDownloadContainer = document.getElementById("download-container");
-  const downloadButton = createDropdownDownloadButton(false, [
-    {
-      label: "Download data (CSV)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "csv"),
-    },
-    {
-      label: "Download data (TSV)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "tsv"),
-    },
-    {
-      label: "Download data (JSON)",
-      listener: () =>
-        downloadMortalityData(state.mortalityData, baseFilename, "json"),
-    },
-    { label: "Download plot (PNG)", listener: downloadGraph },
-    { label: "Download plot (SVG)", listener: downloadGraphSVG },
-  ]);
+
+  const downloadButton = createDropdownDownloadButton(false, downloadOptions.map(({ label, format }) => ({
+    label,
+    listener: format ? () => downloadMortalityData(state.mortalityData, baseFilename, format) : (format === 'png' || format === 'svg') ? downloadGraph : downloadGraphSVG
+  })));
+
   groupDownloadContainer.appendChild(downloadButton);
 }
-
 function downloadGraphSVG() {
-  const sourceElement = document.getElementById('plot-source')
+  const sourceElement = document.getElementById('plot-source');
+  const plotElement = document.getElementById('plots');
+  
   if (sourceElement) {
-    sourceElement.style.display = 'block'
+    sourceElement.style.display = 'block';
   }
-  return toSvg(document.getElementById("plots")).then((data) => {
+
+  return toSvg(plotElement).then((data) => {
     if (sourceElement) {
-      sourceElement.style.display = 'none'
+      sourceElement.style.display = 'none';
     }
-    const link = document.createElement('a')
+    
+    const link = document.createElement('a');
     link.download = 'plot-svg';
     link.href = data;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  })
+  });
 }
-
 function downloadGraph() {
   const temporaryContainer = elements.barContainer.cloneNode(true);
-  // const temporaryLegend = elements.plotLegend.cloneNode(true);
   const temporaryTitle = elements.title.cloneNode(true);
 
-  // const legendChecks = temporaryLegend.querySelectorAll(".legend-check");
-  // legendChecks.forEach((check) => {
-  //   if (!check.hasAttribute("checked")) {
-  //     check.style.display = "none";
-  //   }
-  // });
-
-  // const checkPaths = temporaryLegend.querySelectorAll(".legend-check path");
-  // checkPaths.forEach((path) => (path.style.visibility = "hidden"));
-
   const wrapperElement = document.createElement("div");
-  // wrapperElement.appendChild(temporaryLegend);
   wrapperElement.appendChild(temporaryTitle);
   wrapperElement.appendChild(temporaryContainer);
-  const sourceDiv = document.createElement('div')
-  sourceDiv.innerText = 'the source...'
-  wrapperElement.appendChild(sourceDiv);
-  return downloadElementAsImage(wrapperElement, "demograpic-plot");
-}
 
+  const sourceDiv = document.createElement('div');
+  sourceDiv.innerText = 'the source...';
+  wrapperElement.appendChild(sourceDiv);
+
+  return downloadElementAsImage(wrapperElement, "demographic-plot");
+}
 function updateTitle() {
-  const level =
-    state.spatialLevel == "county" ? "US county-level" : "US state-level";
+  const level = state.spatialLevel === "county" ? "US county-level" : "US state-level";
+  
   let compareString = [state.compareBar, state.compareFacet]
-    .filter((d) => d != "none")
+    .filter((d) => d !== "none")
     .map((d) => formatName("fields", d))
     .join(" and ");
 
-  if (compareString != "") {
-    compareString = " by " + compareString;
-  }
+  compareString = compareString ? ` by ${compareString}` : "";
+
   const compareSet = new Set([state.compareBar, state.compareFacet]);
+  
   const selects = [
     { name: "Year", value: state.year },
     {
       name: "Location",
-      value: (() => {
-        return state.areaState == "All"
-          ? "US"
-          : formatName("states", state.areaState)
-      })(),
+      value: state.areaState === "All" ? "US" : formatName("states", state.areaState),
     },
     { name: "Cause of death", value: formatCauseName(state.cause) },
     {
@@ -563,15 +538,15 @@ function updateTitle() {
       exclude: compareSet.has("age_group"),
     },
   ];
+
   const selectsString = selects
     .filter((d) => !d.exclude)
     .map((d) => `${d.name}: ${d.value}`)
     .join("&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp");
 
-  const title = `${level} ${formatName("measures", state.measure)} ${compareString}. <br /> ${selectsString}`;
+  const title = `${level} ${formatName("measures", state.measure)}${compareString}. <br /> ${selectsString}`;
   elements.title.innerHTML = title;
 }
-
 export function downloadStringAsFile(content, filename, contentType) {
   const blob = new Blob([content], { type: contentType });
   const url = window.URL.createObjectURL(blob);
@@ -582,47 +557,44 @@ export function downloadStringAsFile(content, filename, contentType) {
   a.click();
   window.URL.revokeObjectURL(url);
 }
-
 function downloadMortalityData(mortalityData, filename, format) {
-  const data = mortalityData; //prepareMortalityDataForDownload(mortalityData)
-  let str = null;
-  if (format == "csv") {
+  const data = mortalityData; // Prepare the data if needed
+  let str;
+
+  if (format === "csv") {
     str = d3.csvFormat(data);
-  } else if (format == "tsv") {
+  } else if (format === "tsv") {
     str = d3.tsvFormat(data);
   } else {
     str = JSON.stringify(data, null, 2);
   }
-  downloadStringAsFile(str, filename + "." + format, "text/" + format);
-}
 
+  downloadStringAsFile(str, `${filename}.${format}`, `text/${format}`);
+}
 function plotTable() {
-  // const pin = ["state_fips", "race", "sex", "cause", "age_group"].map(d => ({field: d, frozen: true, formatter: "plaintext", minWidth: 100}))
-  const {compareBar, compareFacet, ageGroup} = state.query
+  const { compareBar, compareFacet, ageGroup } = state.query;
 
-  let tableColumns = [...demographicTableColumns]
+  let tableColumns = [...demographicTableColumns];
 
-  if (compareBar == "age_group" || compareFacet == "age_group" || ageGroup !== 'All') {
-    tableColumns = demographicTableColumns.filter(column => column.field !== 'age_adjusted_rate')
+  if (compareBar === "age_group" || compareFacet === "age_group" || ageGroup !== "All") {
+    tableColumns = tableColumns.filter(column => column.field !== "age_adjusted_rate");
   }
-  
-  plotDataTable(state.mortalityData, elements.tableContainer, {
-    columns: tableColumns
-  })
+
+  plotDataTable(state.mortalityData, elements.tableContainer, { columns: tableColumns });
 }
-
 function changeView(view) {
-  // toggleLoading(true);
+  const isPlotView = view === "plot";
+  const isTableView = view === "table";
 
-  if (view == "plot") {
+  if (isPlotView) {
     elements.tableNavLink.classList.remove("active");
     elements.graphNavLink.classList.add("active");
     elements.barContainer.style.display = "block";
     elements.tableContainer.style.display = "none";
     elements.title.style.display = "block";
 
-    state.trigger("plotConfig"); // Trigger a redraw so sizing is correct.
-  } else if (view == "table") {
+    state.trigger("plotConfig"); // Trigger a redraw for correct sizing.
+  } else if (isTableView) {
     elements.graphNavLink.classList.remove("active");
     elements.tableNavLink.classList.add("active");
     elements.barContainer.style.display = "none";
@@ -633,29 +605,23 @@ function changeView(view) {
       plotTable();
     }
   }
-
-  // toggleLoading(false);
 }
-
 function updateLegend(data, query) {
   const legendContainer = document.getElementById("plot-legend");
-  legendContainer.innerHTML = ``;
+  legendContainer.innerHTML = "";
 
   if (query.compareBar !== "none") {
-    const colorDomainValues = [
-      ...new Set(data.map((d) => d[query.compareBar])),
-    ].sort();
-
+    const colorDomainValues = [...new Set(data.map(d => d[query.compareBar]))].sort();
     const checkedValueSet = new Set(state.legendCheckValues);
+    let selectedValues = colorDomainValues.filter(d => checkedValueSet.has(d));
 
-    let selectedValues = colorDomainValues.filter((d) =>
-      checkedValueSet.has(d)
-    );
-    if (selectedValues.length == 0) selectedValues = colorDomainValues;
+    if (selectedValues.length === 0) {
+      selectedValues = colorDomainValues;
+    }
 
-    const formatRace = (d) => formatName("race", d);
-    const colorTickFormat =
-      query.compareColor == "race" ? formatRace : (d) => d;
+    const colorTickFormat = query.compareColor === "race" 
+      ? (d) => formatName("race", d) 
+      : (d) => d;
 
     const legend = checkableLegend(
       colorDomainValues,
@@ -664,6 +630,7 @@ function updateLegend(data, query) {
       colorTickFormat,
       false
     );
+
     legendContainer.appendChild(legend);
 
     legend.addEventListener("change", () => {
