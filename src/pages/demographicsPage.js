@@ -452,11 +452,11 @@ function addDownloadButton() {
   const baseFilename = "epitracker_data";
 
   const downloadOptions = [
-    { label: "Download data (CSV)", format: "csv" },
-    { label: "Download data (TSV)", format: "tsv" },
-    { label: "Download data (JSON)", format: "json" },
-    { label: "Download plot (PNG)", format: "png" },
-    { label: "Download plot (SVG)", format: "svg" }
+    { label: "Download CSV", format: "csv" },
+    { label: "Download TSV", format: "tsv" },
+    { label: "Download JSON", format: "json" },
+    { label: "Download PNG)", format: "png" },
+    { label: "Download SVG", format: "svg" }
   ];
 
   const groupDownloadContainer = document.getElementById("download-container");
