@@ -606,8 +606,8 @@ class MapApplication {
         }
       }
       await this.updateAllValueArray();
+      await this.updateColors();
       this.updateTooltipHistogram();
-      this.updateColors();
       this.updateTitles();
       this.updateUrl();
 
@@ -660,15 +660,17 @@ class MapApplication {
   }
 
   async updateTooltipHistogram() {
+    const inRangeValues = this.allValues.filter(d => d >= this.colorConfig.domain[0] && d <= this.colorConfig.domain[1]);
+
     this.mapTooltipPlot = Plot.plot({
       style: { fontSize: "12px" },
       width: 150,
       height: 60,
       marginBottom: 18,
-      x: { ticks: d3.extent(this.allValues), tickSize: 0 },
+      x: { ticks: d3.extent(inRangeValues), tickSize: 0 },
       y: { axis: null },
       marks: [
-        Plot.rectY(this.allValues, Plot.binX({ y: "count" }, { x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20 })),
+        Plot.rectY(inRangeValues, Plot.binX({ y: "count" }, { x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20 })),
       ]
     })
     this.elems.mapTooltipPlot.innerHTML = '';
@@ -678,56 +680,12 @@ class MapApplication {
   async updateColors() {
     if (!this.plotGrid) return;
 
-    this.getColorConfig();
-    this.colorConfig.scheme = this.state.scheme;
-    this.colorConfig.reverse = this.state.colorReverse;
-    if (this.state.colorExcludeOutliers) {
-      this.colorConfig.outlierThreshold = this.state.outlierCutoff;
-    } else {
-      this.colorConfig.outlierThreshold = null;
-    }
+    this.colorConfig = await this.getColorConfig();
 
-    // Check for valid numeric data
-    const validValues = this.allValues.filter(value => !isNaN(value) && value !== null);
-    if (validValues.length === 0) {
-      // No data: hide title and legend
-      this.elems.colorLegend.innerHTML = '';
-      this.elems.colorLegend.style.display = 'none';
-      const titleElement = document.getElementById('title');
-      if (titleElement) titleElement.style.display = 'none'; // Hide the title container
-      return;
-    } else {
-      // Data exists: ensure both containers are displayed
+    if (this.colorConfig.valid) {
       this.elems.colorLegend.style.display = 'block';
-      const titleElement = document.getElementById('title');
-      if (titleElement) titleElement.style.display = 'block';
-    }
-
-    const mean = d3.mean(validValues);
-
-    if (this.state.colorCenterMean) {
-      this.colorConfig.pivot = mean;
     } else {
-      this.colorConfig.pivot = null;
-    }
-
-    const domain = d3.extent(validValues);
-    if (this.colorConfig.outlierThreshold != null && validValues.length > 1) {
-      const std = d3.deviation(validValues);
-
-      const clipDomain = [
-        -this.colorConfig.outlierThreshold,
-        this.colorConfig.outlierThreshold
-      ].map(d => d * std + mean);
-      console.log(mean, domain, std, clipDomain);
-
-
-      this.colorConfig.domain = [
-        Math.max(domain[0], clipDomain[0]),
-        Math.min(domain[1], clipDomain[1])
-      ];
-    } else {
-      this.colorConfig.domain = domain;
+      this.elems.colorLegend.style.display = 'none';
     }
 
     const measureName = this.sharedState.measure ? formatName("measures", this.sharedState.measure) : "Measure";
@@ -739,24 +697,29 @@ class MapApplication {
     this.plotGrid.renderCards();
   }
 
-
-
-
-
   async getColorConfig() {
     const colorConfig = {
       scheme: this.state.scheme,
       reverse: this.state.colorReverse,
     };
 
-    const allValues = []
+    let allValues = []
     for (const card of this.plotGrid.getCards()) {
       if (card) {
         const data = await card.data;
         data.forEach(row => allValues.push(row[card.cardState.measure]));
       }
     }
-    const mean = d3.mean(allValues);
+
+    const median = d3.median(allValues);
+    const deviations = allValues.map(d => Math.abs(d - median));
+    const MAD = 1.4826 * d3.median(deviations);
+    const initialClipDomain = [ median - 5 * MAD, median + 5 * MAD];
+    allValues = allValues.filter(d => d > initialClipDomain[0] && d < initialClipDomain[1]);
+
+    const mean = d3.mean(allValues)
+
+    // const mean = d3.mean(allValues);
     let domain = d3.extent(allValues);
 
     if (this.state.colorCenterMean) {
@@ -767,7 +730,8 @@ class MapApplication {
 
     if (this.state.outlierCutoff && allValues.length > 1) {
       const std = d3.deviation(allValues);
-      const clipDomain = [-this.state.outlierCutoff, this.state.outlierCutoff].map(d => d * std + mean)
+     
+      const clipDomain = [-this.state.outlierCutoff, this.state.outlierCutoff].map(d => mean + d*std);
       colorConfig.domain = [
         Math.max(domain[0], clipDomain[0]),
         Math.min(domain[1], clipDomain[1]),
@@ -776,11 +740,67 @@ class MapApplication {
       colorConfig.domain = domain
     }
 
+    if (Number.isFinite(mean) && domain.every(d => Number.isFinite(d))) {
+      colorConfig.valid = true;
+    }
+
     return colorConfig;
   }
 
+
+  // Using MAB exclusively
+  // async getColorConfig() {
+  //   const colorConfig = {
+  //     scheme: this.state.scheme,
+  //     reverse: this.state.colorReverse,
+  //   };
+
+  //   const allValues = []
+  //   for (const card of this.plotGrid.getCards()) {
+  //     if (card) {
+  //       const data = await card.data;
+  //       data.forEach(row => allValues.push(row[card.cardState.measure]));
+  //     }
+  //   }
+  //   // const mean = d3.mean(allValues);
+  //   const median = d3.median(allValues);
+  //   let domain = d3.extent(allValues);
+
+
+  //   if (this.state.colorCenterMean) {
+  //     colorConfig.pivot = median;
+  //   } else {
+  //     colorConfig.pivot = null;
+  //   }
+
+  //   if (this.state.outlierCutoff && allValues.length > 1) {
+  //     const deviations = allValues.map(d => Math.abs(d - median));
+  //     const MAD = 1.4826 * d3.median(deviations);
+      
+  //     const clipDomain = [-this.state.outlierCutoff, this.state.outlierCutoff].map(d => d * MAD + median)
+  //     colorConfig.domain = [
+  //       Math.max(domain[0], clipDomain[0]),
+  //       Math.min(domain[1], clipDomain[1]),
+  //     ]
+  //   } else {
+  //     colorConfig.domain = domain
+  //   }
+
+  //   if (Number.isFinite(median) && domain.every(d => Number.isFinite(d))) {
+  //     colorConfig.valid = true;
+  //   }
+
+  //   return colorConfig;
+  // }
+
   updateTitles() {
     const state = this.sharedState
+
+    if (this.plotGrid.getCards().filter(d => d).length > 0) {
+      this.elems.title.style.display = "block";
+    } else {
+      this.elems.title.style.display = "none";
+    }
 
     const baseElements = [
       state.measure ? formatName("measures", state.measure) : "Data"

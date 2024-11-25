@@ -452,6 +452,76 @@ export function formatCauseName(causeName) {
   return causeName + " Cancer";
 }
 
+// export function colorRampLegendMeanDivergeOld(
+//   values,
+//   schemeName,
+//   label = null,
+//   size = null,
+//   reverse = false,
+//   outlierColors = null,
+//   centerMean = true,
+// ) {
+//   //if (!values.length) return;
+
+//   let domainValues = values
+
+//   const extent = d3.extent(domainValues);
+//   const mean = d3.mean(domainValues);
+
+
+//   let colorDomain = extent
+//   if (centerMean) {
+//     const maxSide = Math.max(mean - extent[0], extent[1] - mean);
+//     colorDomain = [mean - maxSide, mean + maxSide]
+//   }
+
+//   if (reverse) {
+//     colorDomain = [colorDomain[1], colorDomain[0]]
+//   }
+
+//   const colorScale = d3
+//     .scaleSequential(d3["interpolate" + schemeName])
+//     .domain(colorDomain);
+
+//   const ticks = centerMean ? [extent[0], mean, extent[1]] : extent
+
+//   return colorRampLegend(
+//     colorScale,
+//     extent,
+//     label,
+//     ticks,
+//     size,
+//     outlierColors
+//   );
+// }
+
+export function colorRampLegendPivot(colorConfig, options = {}) {
+  const { scheme, domain, pivot, reverse } = colorConfig;
+  const { label = null, size, outlierColors } = options;
+
+
+  let colorDomain = [...domain];
+  if (pivot) {
+    const maxSide = Math.max(pivot - colorDomain[0], colorDomain[1] - pivot);
+    colorDomain = [pivot - maxSide, pivot + maxSide];
+  }
+
+  const colorScale = d3
+    .scaleSequential(d3["interpolate" + scheme])
+    .domain(reverse ? [colorDomain[1], colorDomain[0]] : colorDomain);
+
+  const ticks = pivot ? [domain[0], pivot, domain[1]] : domain;
+
+  return colorRampLegend(
+    colorScale,
+    domain,
+    label,
+    ticks,
+    size,
+    outlierColors
+  );
+}
+
 export function colorRampLegend(
   colorScale,
   valueExtent,
@@ -585,75 +655,6 @@ export function colorRampLegend(
 
   legendDiv.classList.add("color-scale")
   return legendDiv;
-}
-
-export function colorRampLegendMeanDivergeOld(
-  values,
-  schemeName,
-  label = null,
-  size = null,
-  reverse = false,
-  outlierColors = null,
-  centerMean = true,
-) {
-  //if (!values.length) return;
-
-  let domainValues = values
-
-  const extent = d3.extent(domainValues);
-  const mean = d3.mean(domainValues);
-
-
-  let colorDomain = extent
-  if (centerMean) {
-    const maxSide = Math.max(mean - extent[0], extent[1] - mean);
-    colorDomain = [mean - maxSide, mean + maxSide]
-  }
-
-  if (reverse) {
-    colorDomain = [colorDomain[1], colorDomain[0]]
-  }
-
-  const colorScale = d3
-    .scaleSequential(d3["interpolate" + schemeName])
-    .domain(colorDomain);
-
-  const ticks = centerMean ? [extent[0], mean, extent[1]] : extent
-
-  return colorRampLegend(
-    colorScale,
-    extent,
-    label,
-    ticks,
-    size,
-    outlierColors
-  );
-}
-
-export function colorRampLegendPivot(colorConfig, options = {}) {
-  const { scheme, domain, pivot, reverse } = colorConfig;
-  const { label = null, size, outlierColors } = options;
-
-  const colorScale = d3
-    .scaleSequential(d3["interpolate" + scheme])
-    .domain(reverse ? [domain[1], domain[0]] : domain);
-
-  let colorDomain = [...domain];
-  if (pivot) {
-    const maxSide = Math.max(pivot - colorDomain[0], colorDomain[1] - pivot);
-    colorDomain = [pivot - maxSide, pivot + maxSide];
-  }
-
-  const ticks = pivot ? [colorDomain[0], pivot, colorDomain[1]] : colorDomain;
-
-  return colorRampLegend(
-    colorScale,
-    colorDomain,
-    label,
-    ticks,
-    size,
-    outlierColors
-  );
 }
 
 function outlierLabel(color) {
