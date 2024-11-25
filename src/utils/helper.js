@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Popper from "https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/+esm";
-import { Tabulator, FrozenColumnsModule, SortModule, FormatModule} from 'https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm'
-Tabulator.registerModule( [FrozenColumnsModule, SortModule, FormatModule])
+import { Tabulator, FrozenColumnsModule, SortModule, FormatModule } from 'https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/+esm'
+Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule])
 
 
 export const CAUSE_SEX_MAP = {
@@ -46,12 +46,12 @@ export function addTippys(parentElement) {
   return tippyMap;
 }
 
-export function plotDataTable(data, container, options={}) {
+export function plotDataTable(data, container, options = {}) {
   const {
     order = [],
     colDefinitions = new Map(),
     columns = [],
-  } = options 
+  } = options
 
   columns.forEach(col => {
     if (!col.title) col.title = col.field
@@ -117,28 +117,28 @@ export function dataToTableData(data) {
   return { headings: keys, data: array };
 }
 
-export function addProximityHover(elementsSelect, plotSelect, listener, minDistance=30) {
-  let delauney = null 
+export function addProximityHover(elementsSelect, plotSelect, listener, minDistance = 30) {
+  let delauney = null
   let points = []
-  let plotRect = null 
+  let plotRect = null
   const observer = new ResizeObserver(() => {
     plotRect = plotSelect.node().getBoundingClientRect()
     points = []
-    elementsSelect.each((_,i,nodes) => {
+    elementsSelect.each((_, i, nodes) => {
       const elemRect = nodes[i].getBoundingClientRect()
-      const centroid = [elemRect.x + elemRect.width/2, elemRect.y+elemRect.height/2]
-      const relCentroid = [centroid[0]-plotRect.x, centroid[1]-plotRect.y]
+      const centroid = [elemRect.x + elemRect.width / 2, elemRect.y + elemRect.height / 2]
+      const relCentroid = [centroid[0] - plotRect.x, centroid[1] - plotRect.y]
       points.push(relCentroid)
     })
     delauney = d3.Delaunay.from(points, d => d[0], d => d[1])
   })
   observer.observe(plotSelect.node())
-  
-  const distSqr = minDistance**2
+
+  const distSqr = minDistance ** 2
 
   let previousHover = null
 
-  plotSelect.on("mousemove.interact", (e,d) => {
+  plotSelect.on("mousemove.interact", (e, d) => {
     // Someday I'll understand this. Today is not that day. 
     // To account for elements rescaled by CSS
     //const domPoint = new DOMPointReadOnly(e.clientX, e.clientY)
@@ -148,16 +148,16 @@ export function addProximityHover(elementsSelect, plotSelect, listener, minDista
     const mousePoint = [e.offsetX, e.offsetY]
 
     const pointIndex = delauney.find(mousePoint[0], mousePoint[1])
-    const point = points[pointIndex] 
+    const point = points[pointIndex]
 
     if (minDistance != null && point) {
-      const distance = (mousePoint[0]-point[0])**2 + (mousePoint[1]-point[1])**2
+      const distance = (mousePoint[0] - point[0]) ** 2 + (mousePoint[1] - point[1]) ** 2
 
-      let newHover = distance < distSqr ? pointIndex : null 
+      let newHover = distance < distSqr ? pointIndex : null
       if (newHover != previousHover) {
         listener(newHover, elementsSelect.nodes()[newHover], previousHover, elementsSelect.nodes()[previousHover])
         previousHover = newHover
-      } 
+      }
     }
   })
 }
@@ -220,13 +220,13 @@ export function addProximityHover(elementsSelect, plotSelect, listener, minDista
 //   });
 // }
 
-export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
+export function scaleGradient(colorScale, nStops = 5, width = 140, height = 10) {
   const svg = d3.create("svg")
     .attr("width", width)
     .attr("height", height)
 
   // This is a terrible way to generate a unique ID, but it's unlikely to cause a problem.
-  const gradientId = "ramp-gradient-"+Math.floor(Math.random()*10000000)
+  const gradientId = "ramp-gradient-" + Math.floor(Math.random() * 10000000)
 
   const defs = svg.append("defs")
   const gradient = defs.append("linearGradient")
@@ -234,22 +234,22 @@ export function scaleGradient(colorScale, nStops=5, width=140, height=10) {
     .attr("x1", "0%")
     .attr("x2", "100%")
 
-   gradient.append("stop")
+  gradient.append("stop")
     .attr("class", "start")
     .attr("offset", `0%`)
     .attr("stop-color", colorScale(0))
 
-  for (let i = 1; i < nStops+1; i++) {
+  for (let i = 1; i < nStops + 1; i++) {
     gradient.append("stop")
-      .attr("offset", `${100*i/nStops}%`)
-      .attr("stop-color", colorScale(i/nStops))
+      .attr("offset", `${100 * i / nStops}%`)
+      .attr("stop-color", colorScale(i / nStops))
   }
 
   const margin = 10
   svg.append("rect")
     .attr("x", margin)
     .attr("y", 0)
-    .attr("width", width-margin*2)
+    .attr("width", width - margin * 2)
     .attr("height", height)
     .attr("fill", `url(#${gradientId})`)
 
@@ -261,7 +261,7 @@ export function createOptionSorter(forceStart = [], forceEnd = [], compare = nul
   const forceEndSet = new Set(forceEnd);
 
   if (!compare) {
-    compare = (a,b) => a.localeCompare(b);
+    compare = (a, b) => a.localeCompare(b);
   }
 
   return (a, b) => {
@@ -275,7 +275,7 @@ export function createOptionSorter(forceStart = [], forceEnd = [], compare = nul
       return compare(aLabel, bLabel);
     } else {
       return compare(a, b);
-     
+
     }
   };
 }
@@ -464,7 +464,7 @@ export function colorRampLegend(
   const margin = 20;
 
   if (size == null) {
-    size = label ? [370 - (outlierColors ? outlierColors.length : 0)*45, 50] : [370 - outlierColors.length*45, 30];
+    size = label ? [370 - (outlierColors ? outlierColors.length : 0) * 45, 50] : [370 - outlierColors.length * 45, 30];
   }
   const startY = label ? 20 : 0;
 
@@ -511,7 +511,7 @@ export function colorRampLegend(
     .attr("height", size[1] - 19 - startY)
     .attr("fill", `url(#${gradientId})`)
 
- // Ticks
+  // Ticks
 
   const scale = d3
     .scaleLinear()
@@ -575,7 +575,7 @@ export function colorRampLegend(
   if (outlierColors && outlierColors.length > 1) {
     legendDiv.appendChild(outlierLabel(outlierColors[0]))
   }
-  
+
   legendDiv.appendChild(svg.node())
 
   if (outlierColors) {
@@ -598,7 +598,7 @@ export function colorRampLegendMeanDivergeOld(
 ) {
   //if (!values.length) return;
 
-  let domainValues = values 
+  let domainValues = values
 
   const extent = d3.extent(domainValues);
   const mean = d3.mean(domainValues);
@@ -657,25 +657,25 @@ export function colorRampLegendPivot(colorConfig, options = {}) {
 }
 
 function outlierLabel(color) {
-  const svg = d3.create("svg") 
+  const svg = d3.create("svg")
     .attr("width", 45)
     .attr("height", 40)
 
   var rectWidth = 16
   var rectHeight = 12
   var rectColor = color
-  
+
   var textLabel = "Extreme";
-  
+
   svg.append("rect")
-     .attr("x", 22-rectWidth/2) 
-     .attr("y", 10)           
-     .attr("width", rectWidth)
-     .attr("height", rectHeight)
-     .attr("fill", rectColor)
-     .attr("rx", 3)
-     .attr("ry", 3)
-  
+    .attr("x", 22 - rectWidth / 2)
+    .attr("y", 10)
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .attr("fill", rectColor)
+    .attr("rx", 3)
+    .attr("ry", 3)
+
   svg.append("text")
     .attr("x", 22)
     .attr("y", 37)
@@ -774,7 +774,7 @@ export function downloadDataWithPopup(container, data, filename, contentType) {
   spinner.className = "spinner-border text-primary";
   contentContainer.appendChild(spinner);
 
-  const {close} = popup(container, contentContainer, {
+  const { close } = popup(container, contentContainer, {
     closable: false,
   });
 
@@ -822,12 +822,12 @@ export function capitalizeFirstWord(str) {
 export function createDropdownButton(button, options) {
   const dropdownContainer = document.createElement("div");
   dropdownContainer.className = "dropdown";
-  
+
   button.replaceWith(dropdownContainer);
 
   // Adding Bootstrap toggle attribute
   button.setAttribute("data-bs-toggle", "dropdown");
-  
+
   // Add class for cursor change
   // button.classList.add("dropdown-toggle", "cursor-pointer");
 
@@ -1009,7 +1009,7 @@ export function createNestedDropdown(buttonElement, items) {
     if (item.items) {
       const subDropdown = document.createElement("div")
       subDropdown.classList.add("dropend")
-      dropdownList.appendChild(subDropdown) 
+      dropdownList.appendChild(subDropdown)
 
       const subDropdownItem = document.createElement("li")
       subDropdownItem.className = "dropdown-item dropdown-toggle"
@@ -1027,7 +1027,7 @@ export function createNestedDropdown(buttonElement, items) {
         dropdownItem.innerText = subItem.text
         subDropdownMenu.appendChild(dropdownItem)
       }
-      
+
     } else {
       const dropdownItem = document.createElement("li")
       dropdownItem.classList.add("dropdown-item")
@@ -1169,7 +1169,7 @@ export function popup(container, content, options) {
     // if (options.stopEvents && options.backdrop) {
     //   options.backdrop.style.pointerEvents = "auto";
     // }
-    
+
     popup.remove();
     openPopups.delete(content);
     if (openPopups.size == 0) {
@@ -1185,7 +1185,7 @@ export function popup(container, content, options) {
   }
 
   if (typeof content == "function") {
-    
+
     let timeout = null;
     let previousSize = [-1, -1];
     const resizeObserver = new ResizeObserver(() => {
@@ -1200,11 +1200,11 @@ export function popup(container, content, options) {
           popupContent.appendChild(content(bbox.width, bbox.height));
         }, 200);
       }
-     
+
     });
     resizeObserver.observe(popup);
   }
- 
+
 
   return { close };
 }

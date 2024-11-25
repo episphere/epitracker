@@ -5,7 +5,7 @@ export const SELECTABLE_FIELDS = ["cause", "sex", "race"]
 
 function initSearchSelectInputs(selectInputQueries = [], state) {
   state.choicesInstances = {}
-  selectInputQueries.forEach(({key, options}) => {
+  selectInputQueries.forEach(({ key, options }) => {
     const choicesInstance = new Choices(key, {
       ...options,
       searchEnabled: true, // Enable search functionality
@@ -26,7 +26,7 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
   state.defineDynamicProperty("selectYear", "2020")
   state.defineDynamicProperty("selectCause", "All")
   state.defineDynamicProperty("selectRace", "All")
-  state.defineDynamicProperty("selectSex", "All")  
+  state.defineDynamicProperty("selectSex", "All")
 
   hookSelect("#comparePrimarySelect", state, "comparePrimaryOptions", "comparePrimary")
   hookSelect("#compareSecondarySelect", state, "compareSecondaryOptions", "compareSecondary")
@@ -52,12 +52,12 @@ export function hookDemographicInputs(state, searchSelectInputQueries) {
 }
 
 export function syncDataDependentInputs(state) {
-  state.selectCauseOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.race == state.selectRace),
-    d => d.cause).sort().map(d => ({text: d, value: d}))
-  state.selectSexOptions = unique(state.data.filter(d => d.cause == state.selectCause &&  d.race == state.selectRace),
-    d => d.sex) 
-  state.selectRaceOptions = unique(state.data.filter(d => d.sex == state.selectSex &&  d.cause == state.selectCause),
-    d => d.race) 
+  state.selectCauseOptions = unique(state.data.filter(d => d.sex == state.selectSex && d.race == state.selectRace),
+    d => d.cause).sort().map(d => ({ text: d, value: d }))
+  state.selectSexOptions = unique(state.data.filter(d => d.cause == state.selectCause && d.race == state.selectRace),
+    d => d.sex)
+  state.selectRaceOptions = unique(state.data.filter(d => d.sex == state.selectSex && d.cause == state.selectCause),
+    d => d.race)
 
   if (state.comparePrimary == "race") state.selectRace = "All"
   if (state.comparePrimary == "sex") state.compareSex = "All"
@@ -65,17 +65,17 @@ export function syncDataDependentInputs(state) {
 }
 
 
-function unique(data, accessor=d=>d) {
+function unique(data, accessor = d => d) {
   return [...new Set(data.map(accessor))]
 }
 
 export function mapStateAndCounty(stateFips, countyFips, state) {
-  const {features: stateFeatures} = state.stateGeo
-  const {features: countyFeatures} = state.countyGeo
+  const { features: stateFeatures } = state.stateGeo
+  const { features: countyFeatures } = state.countyGeo
   const foundedState = stateFeatures.find(item => item.id === stateFips)
   const foundedCounty = countyFeatures.find(item => item.id === countyFips)
   const stateName = foundedState ? foundedState.properties.name : 'All'
   const countyName = foundedCounty ? foundedCounty.properties.name : 'All'
 
-  return {stateName, countyName}
+  return { stateName, countyName }
 }

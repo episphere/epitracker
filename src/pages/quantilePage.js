@@ -8,7 +8,7 @@ import { start } from "../../main.js";
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
 import { checkableLegend } from "../utils/checkableLegend.js";
-import {  downloadElementAsImage } from "../utils/download.js";
+import { downloadElementAsImage } from "../utils/download.js";
 import {
   createDropdownDownloadButton,
   createOptionSorter,
@@ -227,9 +227,9 @@ function initializeState() {
     }
   }
 
-  const causeFormat = (d) => ({ 
-    label: d === 'All' ? 'All cancers' : d, 
-    value: d 
+  const causeFormat = (d) => ({
+    label: d === 'All' ? 'All cancers' : d,
+    value: d
   })
 
   for (const inputSelectConfig of [
@@ -250,9 +250,9 @@ function initializeState() {
     const sorter =
       inputSelectConfig.propertyName !== "measure"
         ? createOptionSorter(
-            ["All", "None"],
-            inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
-          )
+          ["All", "None"],
+          inputSelectConfig.propertyName == "year" ? ["2018-2022"] : []
+        )
         : undefined;
 
     choices[inputSelectConfig.id] = hookSelectChoices(
@@ -292,13 +292,13 @@ function initialDataLoad(mortalityData, quantileDetails) {
   }));
   state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
     value: field,
-    label:  formatName("fields", field)
+    label: formatName("fields", field)
   }));
   state.causeOptions = [...new Set(mortalityData.map((d) => d.cause))];
   state.sexOptions = [...new Set(mortalityData.map((d) => d.sex))];
   state.raceOptions = [...new Set(mortalityData.map((d) => d.race))];
   state.measureOptions = NUMERIC_MEASURES.map((field, i) => {
-    let label =  formatName("measures", field)
+    let label = formatName("measures", field)
     if (typeof label == "object") label = label.name
     return { value: field, label }
   });
@@ -308,13 +308,13 @@ function initialDataLoad(mortalityData, quantileDetails) {
   ].map((field, i) => {
     const fieldDetails = formatName("quantile_fields", field, "all");
     return {
-      value: field, 
+      value: field,
       label: fieldDetails.name,
       group: fieldDetails.group,
     };
   });
 
-    
+
   //   ({
   //   value: field,
   //   label:  formatName("quantile_fields", field, "measure"),
@@ -326,9 +326,9 @@ function initialDataLoad(mortalityData, quantileDetails) {
   state.trigger("query");
 
   let resizeTimeout;
-  let previousSize = [-1,-1];
+  let previousSize = [-1, -1];
   const resizeObserver = new ResizeObserver(() => {
-    const rect = elements.quantileContainer.getBoundingClientRect();    
+    const rect = elements.quantileContainer.getBoundingClientRect();
 
     if (resizeTimeout) {
       clearTimeout(resizeTimeout);
@@ -394,26 +394,26 @@ async function queryUpdated(query) {
       query.compareFacet !== "none"
         ? query.compareFacet
         : query.compareColor !== "none"
-        ? query.compareColor
-        : "sex";
+          ? query.compareColor
+          : "sex";
     if (query.compareColor === "sex") {
       const filteredData =
         query.compareFacet === "race"
           ? data.filter(
-              (i) =>
-                i.race.toLowerCase() === row.race.toLowerCase() &&
-                i.sex.toLowerCase() === row.sex.toLowerCase()
-            )
+            (i) =>
+              i.race.toLowerCase() === row.race.toLowerCase() &&
+              i.sex.toLowerCase() === row.sex.toLowerCase()
+          )
           : data;
       getAgeAdjustedRateData(filteredData, row, key);
     } else if (query.compareColor === "race") {
       const filteredData =
         query.compareFacet === "sex"
           ? data.filter(
-              (i) =>
-                i.race.toLowerCase() === row.race.toLowerCase() &&
-                i.sex.toLowerCase() === row.sex.toLowerCase()
-            )
+            (i) =>
+              i.race.toLowerCase() === row.race.toLowerCase() &&
+              i.sex.toLowerCase() === row.sex.toLowerCase()
+          )
           : data;
       getAgeAdjustedRateData(filteredData, row, key);
     } else {
@@ -454,7 +454,7 @@ async function queryUpdated(query) {
 
   updateLegend(data, query);
 }
-function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null) {
+function plotConfigUpdated(plotConfig, plotContainer = null, legendContainer = null) {
   if (!plotContainer) {
     plotContainer = elements.plotContainer;
   }
@@ -462,12 +462,12 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
     legendContainer = elements.legendContainer;
   }
 
-  const measureDetails =  formatName("quantile_fields", plotConfig.query.quantileField, "all");
+  const measureDetails = formatName("quantile_fields", plotConfig.query.quantileField, "all");
 
   const scaleFactor = measureDetails.unit == "Proportion" ? 100 : 1;
   const xTickFormat = (_, i) => {
     return state["quantileRanges"][i].split(" - ").map(
-      d => parseFloat((parseFloat(d)*scaleFactor).toPrecision(3))).join(" - ")
+      d => parseFloat((parseFloat(d) * scaleFactor).toPrecision(3))).join(" - ")
   };
 
   let data = plotConfig.mortalityData;
@@ -508,7 +508,7 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
     colorDomainValues.sort();
   }
 
-  const formatRace = (d) =>  formatName("race", d, "formatted");
+  const formatRace = (d) => formatName("race", d, "formatted");
   const facetTickFormat =
     plotConfig.query.compareFacet == "race" ? formatRace : (d) => d;
   const colorTickFormat =
@@ -556,13 +556,12 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
       color: colorFunction,
       drawLines: state.showLines,
       yStartZero: state.startZero,
-      xLabel: `${measureDetails.name} (${
-        measureDetails.unit === "Proportion"
+      xLabel: `${measureDetails.name} (${measureDetails.unit === "Proportion"
           ? "Percentage"
           : measureDetails.unit
-      })`,
+        })`,
       yLabel: formatName("measures", plotConfig.measure),
-      facetLabel:  formatName("fields", state.compareFacet),
+      facetLabel: formatName("fields", state.compareFacet),
       xTickFormat: xTickFormat,
       quantileFieldUnit: measureDetails.unit,
       tooltipFields: [
@@ -586,7 +585,7 @@ function plotConfigUpdated(plotConfig, plotContainer=null, legendContainer=null)
 // Other inputs
 // =================================
 
-function updateLegend(data, query, legendContainer=null) {
+function updateLegend(data, query, legendContainer = null) {
   if (!legendContainer) {
     legendContainer = document.getElementById("plot-legend");
     elements.legendContainer.style.display = query.compareColor == "none" ? "none" : "flex";
@@ -594,7 +593,7 @@ function updateLegend(data, query, legendContainer=null) {
 
   legendContainer.innerHTML = ``;
 
-  
+
   if (query.compareColor != "none") {
     const colorDomainValues = [
       ...new Set(data.map((d) => d[query.compareColor])),
@@ -625,7 +624,7 @@ function updateLegend(data, query, legendContainer=null) {
       true
     );
     legendContainer.appendChild(legend);
- 
+
     legend.addEventListener("change", () => {
       state.legendCheckValues = legend.getValues();
     });
@@ -652,7 +651,7 @@ function addControlsLogic() {
 
     const tableTopbar = document.createElement("div");
     tableTopbar.classList.add("table-topbar");
-     
+
     const tableTitle = document.createElement("div");
     tableTitle.classList.add("table-title");
     tableTitle.innerText = elements.title.innerText;
@@ -675,9 +674,9 @@ function addControlsLogic() {
     content.appendChild(tableContainer);
 
     const fields = ["race", "sex", "cause", "quantile_field", "quantile", "quantile_range"]
-      .map(d => ({field: d, title: formatName("fields", d)}));
+      .map(d => ({ field: d, title: formatName("fields", d) }));
     const measureFields = NUMERIC_MEASURES
-      .map(d => ({field: d, title: formatName("measures", d)}))
+      .map(d => ({ field: d, title: formatName("measures", d) }))
 
     const contentRender = (width, height) => {
       plotDataTable(currentData, tableContainer, {
@@ -685,9 +684,9 @@ function addControlsLogic() {
       });
       return content
     }
-  
+
     popup(elements.dashboardContainer, contentRender, {
-      title: "Data Table", 
+      title: "Data Table",
       fillScreen: true,
     });
   })
@@ -701,13 +700,13 @@ function addControlsLogic() {
 
   createDropdownButton(elements.buttonDownloadImage, [
     { text: "Download PNG", callback: () => eventButtonDownloadImage("png") },
-    { text: "Download SVG", callback: () =>eventButtonDownloadImage("svg") },
+    { text: "Download SVG", callback: () => eventButtonDownloadImage("svg") },
   ]);
 
 }
 
 function eventButtonDownloadData(format) {
-  downloadDataWithPopup(elements.dashboardContainer,currentData, "epitracker_quantile_data", format);
+  downloadDataWithPopup(elements.dashboardContainer, currentData, "epitracker_quantile_data", format);
 }
 
 function eventButtonDownloadImage(format) {
@@ -827,10 +826,10 @@ function toggleLoading(loading, soft = false) {
 }
 function updateTitle() {
 
-  const quantileNames = {"3": "tertile", "4": "quartile", "5": "quintile", "10": "decile"};
+  const quantileNames = { "3": "tertile", "4": "quartile", "5": "quintile", "10": "decile" };
 
-  let title = `US ${formatName( "measures", state.measure, "verbose").toLowerCase()} by ${quantileNames[state.quantileNumber]} of county-level ${ formatName("quantile_fields", state.quantileField).toLowerCase()}`;
-  
+  let title = `US ${formatName("measures", state.measure, "verbose").toLowerCase()} by ${quantileNames[state.quantileNumber]} of county-level ${formatName("quantile_fields", state.quantileField).toLowerCase()}`;
+
   let filterElements = [
     state.year,
     state.cause == "All" ? null : state.cause,
@@ -840,9 +839,9 @@ function updateTitle() {
 
   if (filterElements.length > 0) {
     title += `, ${filterElements.join(", ")}`;
-    
 
-  elements.title.innerText = title;
+
+    elements.title.innerText = title;
 
   }
   // TODO: Reimplement 

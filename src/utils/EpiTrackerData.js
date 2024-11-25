@@ -15,7 +15,7 @@ export class EpiTrackerData {
       this.args.postProcessCountyMortalityData;
   }
 
-  async getPopulationData(query, args={}) {
+  async getPopulationData(query, args = {}) {
     query = {
       sex: "*",
       race: "*",
@@ -104,7 +104,7 @@ export class EpiTrackerData {
         age_adjusted_rate: (d) => aq.op.parse_float(d.age_adjusted_rate),
         quantile: d => aq.op.parse_int(d.quantile)
       })
-      .orderby("quantile")
+        .orderby("quantile")
     ).objects();
   }
 

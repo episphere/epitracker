@@ -5,7 +5,7 @@ import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7.8.5/+esm';
 import { formatName } from "../utils/nameFormat.js";
 
 
-export function plotQuantileScatter(container, settingLegend, data, options={}) {
+export function plotQuantileScatter(container, settingLegend, data, options = {}) {
   options = {
     valueField: null,
     intervalFields: null,
@@ -21,7 +21,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
     facetTickFormat: d => d,
     colorTickFormat: d => d,
     minHeight: 400,
-    ...options 
+    ...options
   }
 
   if (options.color == null) {
@@ -30,17 +30,17 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
 
   options.yLabel = options.yLabel != null ? options.yLabel : options.valueField
 
-  container.innerHTML = `` 
+  container.innerHTML = ``
 
   //const containerWidth = container.getBoundingClientRect().width
-  const height = Math.max(options.minHeight, container.getBoundingClientRect().height*.98) // The multiplier is needed 
-                                                                                           // to prevent the SVG from resizing 
-                                                                                           // the flex box incorrectly.
-  
+  const height = Math.max(options.minHeight, container.getBoundingClientRect().height * .98) // The multiplier is needed 
+  // to prevent the SVG from resizing 
+  // the flex box incorrectly.
+
   const marks = []
   if (options.valueFieldLow != null && options.valueFieldHigh != null) {
     marks.push(Plot.link(data, {
-      x: "quantile", y1: options.valueFieldLow, y2: options.valueFieldHigh, 
+      x: "quantile", y1: options.valueFieldLow, y2: options.valueFieldHigh,
       stroke: options.color, strokeWidth: 2
     }))
   }
@@ -51,20 +51,20 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
       stroke: options.color, strokeDasharray: "2,6"
     }))
   }
-  
+
 
   marks.push(Plot.dot(data, {
-    x: "quantile", y: options.valueField, 
-    stroke: options.color, fill: options.color, r:4, strokeWidth:3,
+    x: "quantile", y: options.valueField,
+    stroke: options.color, fill: options.color, r: 4, strokeWidth: 3,
   }))
 
   if (options.intervalFields) {
     marks.push(Plot.link(data, {
-      x: "quantile", y1: options.intervalFields[0], y2: options.intervalFields[1], 
+      x: "quantile", y1: options.intervalFields[0], y2: options.intervalFields[1],
       stroke: options.color, strokeWidth: 2
     }))
   }
-  
+
   const colorOpt = {
     colorTickFormat: options.colorTickFormat,
     type: "categorical",
@@ -92,13 +92,14 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   const plotOptions = {
     width: (sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets) || 900,
     height,
-    style: {fontSize: "16px"},
+    style: { fontSize: "16px" },
     color: colorOpt,
-    x: {type: "point", label: options.xLabel,tickFormat: options.xTickFormat, tickRotate: -45},
-    y: {ticks: 8, grid: true, label: options.yLabel, 
+    x: { type: "point", label: options.xLabel, tickFormat: options.xTickFormat, tickRotate: -45 },
+    y: {
+      ticks: 8, grid: true, label: options.yLabel,
       domain: yDomain, nice: true, labelAnchor: "center", labelArrow: "none",
     },
-    fx: {tickFormat: options.facetTickFormat},
+    fx: { tickFormat: options.facetTickFormat },
     marginLeft: 80,
     marginTop: 80,
     marginBottom: 120,
@@ -106,7 +107,7 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   }
 
   if (options.facet) {
-    plotOptions.facet = {data, x: options.facet}
+    plotOptions.facet = { data, x: options.facet }
     if (options.facetLabel) {
       plotOptions.facet.label = options.facetLabel
     }
@@ -115,24 +116,24 @@ export function plotQuantileScatter(container, settingLegend, data, options={}) 
   const plot = Plot.plot(plotOptions)
   plot.style.minWidth = '900px'
 
-  container.appendChild(plot) 
+  container.appendChild(plot)
 
   addInteractivity(container, plot, data, options.valueField, options.tooltipFields, options.nameMappings)
 
   plot.removeAttribute("viewBox")
 
 
-  return {plot}
+  return { plot }
 }
 
 function addInteractivity(container, plot, plotData, measure, tooltipFields) {
-  
+
   const tooltip = addPopperTooltip(container)
   tooltip.tooltipElement.setAttribute("id", "map-tooltip")
 
   const plotSelect = d3.select(plot)
   const dotSelect = plotSelect.selectAll("circle")
-  addProximityHover(dotSelect, plotSelect, (i,element,j,prevElement) => {
+  addProximityHover(dotSelect, plotSelect, (i, element, j, prevElement) => {
     if (i == null) {
       tooltip.hide()
     } else {
@@ -141,15 +142,16 @@ function addInteractivity(container, plot, plotData, measure, tooltipFields) {
 
       d3.select(element).attr("r", 6)
 
-     
+
       let text = ``
       tooltipFields.forEach(field => {
         const fieldLabel = formatName("fields", field)
         let fieldValue = row[field];
         if (field == "race") {
           fieldValue = formatName("race", fieldValue, "short");
-        } 
-        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${fieldValue}</div>`})
+        }
+        return text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${fieldValue}</div>`
+      })
 
       const measureLabel = formatName("measures", measure, "short")
       text += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${row[measure]}</div>`

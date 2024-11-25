@@ -1,4 +1,4 @@
-import {json2other} from "./../shared.js";
+import { json2other } from "./../shared.js";
 import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm'
 import domToImage from 'https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/+esm'
 
@@ -7,7 +7,7 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
   const downloadButton = document.getElementById(downloadId)
   const downloadIcon = downloadButton.querySelector('.download-icon')
   if (downloadIcon) {
-    isShow 
+    isShow
       ? downloadIcon.classList.add('fade-in')
       : downloadIcon.classList.remove('fade-in')
   }
@@ -39,7 +39,7 @@ export function toggleLoading(spinnerId, downloadId, isShow) {
 //   })
 // }
 
-  
+
 function downloadImage(image, fileName) {
   // var dataUrl = image.toDataURL();
   // var link = document.createElement("a");
@@ -56,7 +56,7 @@ function downloadImage(image, fileName) {
   URL.revokeObjectURL(imageURL);
 }
 
-export function downloadElementAsImage(element, filename, format="png") {
+export function downloadElementAsImage(element, filename, format = "png") {
   const scale = 1.5;
 
   const toImage = format == "png" ? domToImage.toPng : domToImage.toSvg;
@@ -73,13 +73,14 @@ export function downloadElementAsImage(element, filename, format="png") {
   //   newTab.document.write('<img src="' + dataUrl + '" alt="Image">');
   // })
 
-  toImage(element, { 
+  toImage(element, {
     width: element.clientWidth * scale,
     height: element.clientHeight * scale,
     style: {
-     transform: 'scale('+scale+')',
-     transformOrigin: 'top left'
-   }}).then((dataUrl) => {
+      transform: 'scale(' + scale + ')',
+      transformOrigin: 'top left'
+    }
+  }).then((dataUrl) => {
     fetch(dataUrl)
       .then(res => res.blob())
       .then(blob => {
@@ -107,7 +108,7 @@ const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) =>
   setTimeout(() => {
     const type = isTsv ? 'tsv' : 'csv';
     const content =
-      `data:text/${type};charset=utf-8,`+
+      `data:text/${type};charset=utf-8,` +
       json2other(data, headers, isTsv).replace(/(<b>)|(<\/b>)/g, "");
     const encodedUri = encodeURI(content);
     const link = document.createElement("a");
@@ -118,13 +119,13 @@ const downloadTableCallback = (e) => (data, headers, fileName, isTsv = false) =>
     document.body.removeChild(link);
     toggleLoading('table-loading', 'download-dropdown-btn', false)
   }, 1000)
-  
+
 }
 
 const downloadFileRef = {
-  csvButton: null, 
+  csvButton: null,
   csvCallback: null,
-  tsvButton: null, 
+  tsvButton: null,
   tsvCallback: null,
 }
 
@@ -143,7 +144,7 @@ export const downloadFiles = (data, fileName) => {
 
   if (!data.length) return;
   const headers = Object.keys(data[0])
-  
+
   const downloadTableCSV = (e) => downloadTableCallback(e)(data, headers, fileName, false)
   const downloadTableTSV = (e) => downloadTableCallback(e)(data, headers, fileName, true)
 
@@ -157,7 +158,7 @@ export const downloadFiles = (data, fileName) => {
     downloadFileRef.csvButton = downloadCSVButton
     downloadFileRef.csvCallback = downloadTableCSV
   }
-  
+
 
   const downloadTSVButton = document.getElementById(
     "download-table-tsv"

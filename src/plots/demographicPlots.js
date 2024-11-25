@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
 import { addPopperTooltip, deepMerge } from "../utils/helper.js";
-import {COLORS} from '../utils/color.js'
+import { COLORS } from '../utils/color.js'
 import { formatName } from "../utils/nameFormat.js";
 
 export function plotDemographicPlots(container, mortalityData, options = {}) {
@@ -9,10 +9,10 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
   const height = container.getBoundingClientRect().height
   options = deepMerge(options, {
     targetWidth: containerWidth,
-    plotOptions: {height,  ...options.plotOptions},
+    plotOptions: { height, ...options.plotOptions },
   })
   const mappedMortalityData = mortalityData.map(row => {
-    return {...row, shortRace: formatName("race", row.race) || 'All'}
+    return { ...row, shortRace: formatName("race", row.race) || 'All' }
   })
   const plot = plotBar(mappedMortalityData, options)
 
@@ -39,7 +39,7 @@ export function plotDemographicPlots(container, mortalityData, options = {}) {
   return plot
 }
 
-function plotBar(data, options={}) {
+function plotBar(data, options = {}) {
 
   options = {
     targetWidth: 640,
@@ -49,7 +49,7 @@ function plotBar(data, options={}) {
     yStartZero: true, // TODO: Finish implenting.
     ...options
   }
-  
+
   const CHAR_SIZE = 6.6
   const BASE_LABEL_WIDTH = 70
 
@@ -57,16 +57,16 @@ function plotBar(data, options={}) {
   const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
 
   if (options.compareBar == "age_group") {
-    barDomain.sort((a,b) => {
+    barDomain.sort((a, b) => {
       return parseInt(a.split("-")[0]) - parseInt(b.split("-")[0])
     })
-  } 
-  if (options.compareFacet == "age_group") {
-    facetDomain.sort((a,b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
   }
-  
+  if (options.compareFacet == "age_group") {
+    facetDomain.sort((a, b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]))
+  }
+
   let nBars = 1
-  let nFacets = 1 
+  let nFacets = 1
   if (options.compareBar) nBars = barDomain.length
   if (options.compareFacet) nFacets = facetDomain.length
 
@@ -81,13 +81,13 @@ function plotBar(data, options={}) {
 
 
   // Estimate label width
-  const labelWidth = options.compareBar ? 
-    d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
-  const facetLabelWidth = options.compareFacet ? 
-    d3.max([...new Set(data.map(d => d[options.compareFacet]))].map(d => facetFormat(d).length))*CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
+  const labelWidth = options.compareBar ?
+    d3.max([...new Set(data.map(d => d[options.compareBar]))].map(d => xFormat(d).length)) * CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
+  const facetLabelWidth = options.compareFacet ?
+    d3.max([...new Set(data.map(d => d[options.compareFacet]))].map(d => facetFormat(d).length)) * CHAR_SIZE + BASE_LABEL_WIDTH : BASE_LABEL_WIDTH
   // Label box size
-  const labelBox = labelWidth * Math.sin(Math.PI/4)
-  const facetLabelBox = facetLabelWidth * Math.sin(Math.PI/4)
+  const labelBox = labelWidth * Math.sin(Math.PI / 4)
+  const facetLabelBox = facetLabelWidth * Math.sin(Math.PI / 4)
 
   // Estimate the bar width at the target plot width.
   const marginWidth = labelBox + 50
@@ -119,7 +119,7 @@ function plotBar(data, options={}) {
     style: {
       fontSize: 15,
     },
-    fx: {tickRotate: 45, domain: facetDomain},
+    fx: { tickRotate: 45, domain: facetDomain },
     height: 640,
     width: plotWidth,
     marginBottom: labelBox,
@@ -127,13 +127,13 @@ function plotBar(data, options={}) {
     marginLeft: 50,
     marginTop: facetLabelBox,
     y: {
-      domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice:true,
+      domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice: true,
     }
   }
 
   const rule = options.yStartZero ? 0 : domain[0]
 
-  plotOptions.x = {tickRotate: 45, type: "band", domain: barDomain}
+  plotOptions.x = { tickRotate: 45, type: "band", domain: barDomain }
   plotOptions.marks = [
     Plot.frame({ strokeOpacity: 0.1 }),
     Plot.barY(data, barOptions),
@@ -149,7 +149,7 @@ function plotBar(data, options={}) {
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
   // plot.style.minWidth = `${900}px`
-  
+
   return plot
 }
 
@@ -190,13 +190,13 @@ function addChoroplethInteractivity(
       infoDiv.style.alignItems = "flex-start";
       infoDiv.style.flexDirection = "column";
       infoDiv.style.gap = "10px";
-      const measureLabel =  formatName("measures", measure)
+      const measureLabel = formatName("measures", measure)
       infoDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${measureLabel}</b>${mortalityData[d][measure]}</div>
       `;
 
-      if (compareBar)  {
-        const fieldLabel =  formatName("fields", compareBar)
+      if (compareBar) {
+        const fieldLabel = formatName("fields", compareBar)
         infoDiv.innerHTML += `<div style="display: flex; justify-content: space-between;"><b style="margin-right: 10px">${fieldLabel}</b>${mortalityData[d][compareBar]}</div>`
       }
 

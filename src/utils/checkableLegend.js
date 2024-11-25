@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
-import { LightenDarkenColor as recolor } from  'https://cdn.skypack.dev/lighten-darken-color@1.0.0?min'
+import { LightenDarkenColor as recolor } from 'https://cdn.skypack.dev/lighten-darken-color@1.0.0?min'
 
-export function checkableLegend(values, colors, checkedList=null, labelFormat=d=>d, isQuantile=true) {
+export function checkableLegend(values, colors, checkedList = null, labelFormat = d => d, isQuantile = true) {
   const div = document.createElement("div")
   div.style.display = "flex"
   div.style.gap = "25px"
@@ -22,9 +22,9 @@ export function checkableLegend(values, colors, checkedList=null, labelFormat=d=
   }
 
   const checks = []
-  values.forEach((value,i) => {
+  values.forEach((value, i) => {
     const color = colors[isQuantile ? i : value]
-    const check = legendCheck(color, labelFormat(value),checkedList.includes(value), 25)
+    const check = legendCheck(color, labelFormat(value), checkedList.includes(value), 25)
     check.setAttribute("value", value)
     check.addEventListener("change", e => {
       const checked = []
@@ -37,28 +37,28 @@ export function checkableLegend(values, colors, checkedList=null, labelFormat=d=
 
   setValue()
 
-  div.getValues = () => value 
-  
+  div.getValues = () => value
+
   return div
 }
 
-function legendCheck(color, label, checked=true, size=25) {
+function legendCheck(color, label, checked = true, size = 25) {
   const svg = d3.create("svg")
     .attr("width", size)
-    .attr("height", size) 
+    .attr("height", size)
 
   const rect = svg.append("rect")
-    .attr("width", size-4) 
-    .attr("height", size-4)
-    .attr("rx", size/7)
+    .attr("width", size - 4)
+    .attr("height", size - 4)
+    .attr("rx", size / 7)
     .attr("fill", checked ? color : "white")
     .attr("stroke", color)
     .attr("stroke-width", 2)
     .style("cursor", "pointer")
     .attr("transform", "translate(2 2)")
 
-  const scale = (3/5)*(size/78)
-  const translate = 78/3
+  const scale = (3 / 5) * (size / 78)
+  const translate = 78 / 3
 
   const check = svg.append("path")
     .attr("d", `M78.049,19.015L29.458,67.606c-0.428,0.428-1.121,0.428-1.548,0L0.32,40.015c-0.427-0.426-0.427-1.119,0-1.547l6.704-6.704
@@ -75,11 +75,11 @@ function legendCheck(color, label, checked=true, size=25) {
   } else {
     div.removeAttribute("checked")
   }
-  
+
   const lighterColor = recolor(color, 20)
   svg.on("mouseover", () => {
-    rect.attr("fill",  checked ? lighterColor : "white")
-    rect.attr("stroke",  lighterColor)
+    rect.attr("fill", checked ? lighterColor : "white")
+    rect.attr("stroke", lighterColor)
   })
   svg.on("mouseleave", () => {
     rect.attr("fill", checked ? color : "white")
@@ -87,19 +87,19 @@ function legendCheck(color, label, checked=true, size=25) {
   })
   svg.on("click", (e) => {
     e.preventDefault()
-    checked = !checked 
+    checked = !checked
 
     if (checked) {
       div.setAttribute("checked", "")
     } else {
       div.removeAttribute("checked")
     }
-    
+
     check.attr("visibility", checked ? "visible" : "hidden")
     rect.attr("fill", checked ? lighterColor : "white")
     div.dispatchEvent(new Event("change"))
   })
-  
+
   svg.style.userSelect = "none"
 
   div.style.display = "inline-flex"
@@ -114,8 +114,8 @@ function legendCheck(color, label, checked=true, size=25) {
   labelElement.style.maxWidth = "140px"
   labelElement.style.textAlign = "center"
   labelElement.style.flex = "1"
-  
-  
+
+
   div.appendChild(svg.node())
   div.appendChild(labelElement)
 

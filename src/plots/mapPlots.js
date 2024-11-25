@@ -49,14 +49,14 @@ export function createChoroplethPlot(
     color.scheme = "RdYlBu";
   }
 
-  let colorDomain = color.domain 
+  let colorDomain = color.domain
   if (color.pivot != null) {
     const maxSide = Math.max(
       color.pivot - color.domain[0],
       color.domain[1] - color.pivot
     );
-    colorDomain = [color.pivot - maxSide, color.pivot + maxSide] 
-  } 
+    colorDomain = [color.pivot - maxSide, color.pivot + maxSide]
+  }
 
   if (color.reverse) {
     colorDomain = [colorDomain[1], colorDomain[0]]
@@ -109,10 +109,10 @@ export function createChoroplethPlot(
   }
 
   const plotOptions = {
-    projection: { 
-      type: "albers-usa", 
+    projection: {
+      type: "albers-usa",
       //domain: featureCollection,
-      domain: options.overlayFeatureCollection ? options.overlayFeatureCollection : featureCollection 
+      domain: options.overlayFeatureCollection ? options.overlayFeatureCollection : featureCollection
     },
     //color: color,
     marks: marks,
@@ -222,9 +222,8 @@ export function plotMortalityMapGrid(
   options.minMapHeight = Math.floor(550 / nColumns)
   mapsContainer.innerHTML = ``;
   //mapsContainer.style.display = 'grid';
-  mapsContainer.style.gridTemplateRows = `repeat(${
-    options.rowField ? nRows + 1 : nRows
-  }, auto)`;
+  mapsContainer.style.gridTemplateRows = `repeat(${options.rowField ? nRows + 1 : nRows
+    }, auto)`;
   //mapsContainer.style.gridTemplateColumns = `repeat(${options.columnField ? nColumns + 1 : nColumns}, auto)`;
   const columns = options.columnField ? nColumns + 1 : nColumns;
   mapsContainer.style.gridTemplateColumns = `auto ${Array.from(
@@ -276,7 +275,7 @@ export function plotMortalityMapGrid(
   const baseHistogramConfig = {
     options: {
       width: 300,
-      height: 100, 
+      height: 100,
       // width: 140,
       // height: 60,
       // margin: 15,
@@ -316,8 +315,10 @@ export function plotMortalityMapGrid(
     mapDiv.style.gridRow = `${(config.rowIndex ?? 1) + 1} `;
     mapDiv.style.gridColumn = `${(config.columnIndex ?? 1) + 1}`;
 
-    const color = { pivot: options.centerColorMean ? mean : null, 
-      domain, scheme: options.scheme, reverse: options.reverseColorScheme }
+    const color = {
+      pivot: options.centerColorMean ? mean : null,
+      domain, scheme: options.scheme, reverse: options.reverseColorScheme
+    }
 
     const { plot, colorLegend } = createChoroplethPlot(
       config.data,
@@ -403,7 +404,7 @@ export function plotMortalityMapGrid(
 }
 
 function createColorSettings() {
- 
+
 }
 
 function zoomOnMap(featureCollection, state) {
@@ -417,7 +418,7 @@ function zoomOnMap(featureCollection, state) {
 
       geoSelect.on("click", (e, d) => {
         const feature = featureCollection.features[d];
-        const areaState = feature.id.slice(0,2)
+        const areaState = feature.id.slice(0, 2)
         if (!state["areaState"] || state["areaState"] == "All") {
           state["areaState"] = areaState;
         } else if (!state["areaCounty"] || state["areaCounty"] == "All") {

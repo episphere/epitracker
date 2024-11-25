@@ -17,17 +17,17 @@ const CONSTANTS = {
   DEFAULT_STATE: {
     nRows: 1,
     nCols: 1,
-  
+
     sex: "All",
     race: "All",
     year: "2018-2022",
     cause: "All",
     areaState: "All",
     areaCounty: "All",
-  
+
     measure: "age_adjusted_rate",
     spatialLevel: "county",
-  
+
     scheme: "RdYlBu",
     colorReverse: true,
     colorCenterMean: true,
@@ -36,7 +36,7 @@ const CONSTANTS = {
   },
   CARD_STATE_FIELDS: ["sex", "race", "year", "cause", "areaState", "areaCounty", "measure", "spatialLevel"],
   DATA_YEARS: ["2018", "2019", "2020", "2021", "2022", "2018-2022"],
-  NUMERIC_MEASURES: ["crude_rate", "age_adjusted_rate","deaths", "population"],
+  NUMERIC_MEASURES: ["crude_rate", "age_adjusted_rate", "deaths", "population"],
   SPATIAL_LEVELS: ["county", "state"],
   STATE_URL_FIELDS: ["scheme", "colorReverse", "colorExcludeOutliers", "outlierCutoff"]
 }
@@ -61,7 +61,7 @@ class MapApplication {
     this.url = new URL(window.location.href);
     this.pastStates = [];
 
-    this.dataManager = new EpiTrackerData(); 
+    this.dataManager = new EpiTrackerData();
 
     await this.initState();
     this.parseUrl();
@@ -81,12 +81,12 @@ class MapApplication {
       buttonDownloadImage: document.getElementById("button-download-image"), // Image download button
       buttonEditGrid: document.getElementById("button-edit-grid"),
       title: document.getElementById("title"),
-      
+
       // Color settings popup
       colorLegend: document.getElementById("color-legend"),
       colorSettings: document.getElementById("color-settings"),
       buttonColorSettingsClose: document.getElementById("color-settings-close"),
-      
+
       // Map tooltip
       mapTooltipContent: document.getElementById("map-tooltip"),
       mapTooltipName: document.getElementById("map-tooltip-name"),
@@ -94,59 +94,59 @@ class MapApplication {
       mapTooltipPlot: document.getElementById("map-tooltip-plot")
     };
 
-  this.tippyMap = addTippys();
+    this.tippyMap = addTippys();
 
-  this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
+    this.cardConfigPopup = new CardConfigPopup(this.elems.dashboardContainer, this.elems.dashboard, this.state);
 
-  this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
-  this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
+    this.colorConfig = { scheme: "RdYlBu", reverse: true, outlierThreshold: 3 };
+    this.colorConfig.domain = [0, 500]; // TODO: Implement properly.
 
-  // Non query data.
-  this.sData = {
-    stateGeoJSON: await d3.json("../data/states.json"),
-    countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
-  };
+    // Non query data.
+    this.sData = {
+      stateGeoJSON: await d3.json("../data/states.json"),
+      countyGeoJSON: await d3.json("../data/geograpy/us_counties_simplified_more.json"),
+    };
 
-  // Set the county names after the GeoJSON is loaded.
-  this.countyNameMap = new Map(this.sData.countyGeoJSON.features.map(d => [d.id, d.properties.name]));
-  // d3.index(this.sData.countyGeoJSON.features, d => d.id);
+    // Set the county names after the GeoJSON is loaded.
+    this.countyNameMap = new Map(this.sData.countyGeoJSON.features.map(d => [d.id, d.properties.name]));
+    // d3.index(this.sData.countyGeoJSON.features, d => d.id);
 
-  const countyOptions =  this.state.areaCountyOptions.map(d => {
-    let name = d == "All" ? "All" : this.countyNameMap.get(d) + ", " + formatName("states", d.slice(0, 2), "short");
-    return { value: d, label: name }
-  });
-  this.state.areaCountyOptions = countyOptions.filter(d => d.label);
+    const countyOptions = this.state.areaCountyOptions.map(d => {
+      let name = d == "All" ? "All" : this.countyNameMap.get(d) + ", " + formatName("states", d.slice(0, 2), "short");
+      return { value: d, label: name }
+    });
+    this.state.areaCountyOptions = countyOptions.filter(d => d.label);
 
-  // Make a subscriber to filter counties based on the selected state
-  this.state.subscribe("areaState", async(event) => {
-    if (event != "All") {
-      // this.state.areaCounty = "All";
-      this.state.areaCountyOptions = countyOptions.filter(d => d.value.startsWith(event) || d.value === "All");
-    } else {
-      this.state.areaCountyOptions = countyOptions.filter(d => d.value == "All");
-    }
-  });
+    // Make a subscriber to filter counties based on the selected state
+    this.state.subscribe("areaState", async (event) => {
+      if (event != "All") {
+        // this.state.areaCounty = "All";
+        this.state.areaCountyOptions = countyOptions.filter(d => d.value.startsWith(event) || d.value === "All");
+      } else {
+        this.state.areaCountyOptions = countyOptions.filter(d => d.value == "All");
+      }
+    });
 
-  this.addColorSettingsPopup(); 
+    this.addColorSettingsPopup();
 
-  // Initialize the grid, and update it with the starting state.
-  this.updateGrid();
-  this.toggleLoading(false);
+    // Initialize the grid, and update it with the starting state.
+    this.updateGrid();
+    this.toggleLoading(false);
 
-  this.showInitialHints();
+    this.showInitialHints();
 
-  this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
-  this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
-  this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
+    this.elems.buttonUndo.addEventListener("click", () => this.eventButtonUndoClicked());
+    this.elems.buttonColorSettings.addEventListener("click", () => this.eventButtonColorSettingsClicked());
+    this.elems.buttonTable.addEventListener("click", () => this.eventButtonTableClicked());
 
-  // Create a dropdown for data download (JSON/CSV)
-  createDropdownButton(this.elems.buttonDownload, [
-    { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
-    { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
-    { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
-  ]);
+    // Create a dropdown for data download (JSON/CSV)
+    createDropdownButton(this.elems.buttonDownload, [
+      { text: "Download data (JSON)", callback: () => this.eventButtonDownloadData("JSON") },
+      { text: "Download data (CSV)", callback: () => this.eventButtonDownloadData("CSV") },
+      { text: "Download data (TSV)", callback: () => this.eventButtonDownloadData("TSV") }
+    ]);
 
-  // Create a separate dropdown for image download (PNG/SVG)
+    // Create a separate dropdown for image download (PNG/SVG)
     createDropdownButton(this.elems.buttonDownloadImage, [
       { text: "Download as PNG", callback: () => this.eventButtonDownloadImage("PNG") },
       { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
@@ -156,12 +156,12 @@ class MapApplication {
     createDropdownButton(this.elems.buttonEditGrid, [
       { text: "Add map row", callback: () => this.plotGrid.addRow() },
       { text: "Add map column", callback: () => this.plotGrid.addColumn() }
-  ]);
+    ]);
 
 
     createDropdownButton(this.elems.buttonEditGrid, [
-      {text: "Add map row", callback: () => this.plotGrid.addRow()},
-      {text: "Add map column", callback: () => this.plotGrid.addColumn()}
+      { text: "Add map row", callback: () => this.plotGrid.addRow() },
+      { text: "Add map column", callback: () => this.plotGrid.addColumn() }
     ]);
 
     this.createMapTooltip();
@@ -197,7 +197,7 @@ class MapApplication {
       } else {
         choices["#select-select-county"].enable();
       }
-      
+
     })
 
     this.state.subscribe('cause', (event) => {
@@ -222,7 +222,7 @@ class MapApplication {
           }
         })
       }
-      
+
     })
   }
 
@@ -273,7 +273,7 @@ class MapApplication {
     this.state.defineProperty("colorExcludeOutliers", initialState.colorExcludeOutliers);
     this.state.defineProperty("outlierCutoff", initialState.outlierCutoff);
 
-    this.state.defineJointProperty("colorSettings", 
+    this.state.defineJointProperty("colorSettings",
       ["scheme", "colorReverse", "colorCenterMean", "colorExcludeOutliers", "outlierCutoff"]);
     this.state.subscribe("colorSettings", () => {
       this.updateColors();
@@ -358,13 +358,13 @@ class MapApplication {
 
     geoSelect.on("mouseover.interact", (e, d) => {
       const feature = featureCollection.features[d];
-      
+
       let name = feature.properties.name;
       if (feature.id.length == 5) {
-        name += ", " + formatName("states",feature.id.slice(0,2), "short")
+        name += ", " + formatName("states", feature.id.slice(0, 2), "short")
       }
-      this.elems.mapTooltipName.innerText = name; 
-      
+      this.elems.mapTooltipName.innerText = name;
+
       const value = valueIndex.get(feature.id);
       this.elems.mapTooltipValue.innerText = value != null ? value : "N/A";
 
@@ -373,10 +373,10 @@ class MapApplication {
 
       d3.select(this.mapTooltipPlot)
         .selectAll("circle").data(Number.isFinite(value) ? [value] : []).join("circle")
-          .attr("cx", d => xScale.apply(d))
-          .attr("cy", yScale.apply(0))
-          .attr("r", 3)
-          .attr("fill", "red")
+        .attr("cx", d => xScale.apply(d))
+        .attr("cy", yScale.apply(0))
+        .attr("r", 3)
+        .attr("fill", "red")
 
       this.mapTooltip.show(e.target, this.elems.mapTooltipContent);
       d3.select(e.target).raise();
@@ -400,15 +400,15 @@ class MapApplication {
       { id: "#select-color-scheme", propertyName: "scheme", searchable: true },
     ]) {
 
-      let sorter = d => d 
+      let sorter = d => d
       if (inputSelectConfig.propertyName == "areaCounty") {
         sorter = createOptionSorter(
           ["All", "None"],
           inputSelectConfig.propertyName == "year" ? ["2018-2022"] : [],
-          (a,b) => {
+          (a, b) => {
             const [aCounty, aState] = a.split(",");
             const [bCounty, bState] = b.split(",");
-            
+
             if (!aState || !bState) return 0;
 
             const stateComparison = aState.localeCompare(bState);
@@ -444,8 +444,8 @@ class MapApplication {
 
 
   async getOptionValues() {
-    const data = await this.dataManager.getCountyMortalityData({year: "2018-2022"})
-    const valueObj = {} 
+    const data = await this.dataManager.getCountyMortalityData({ year: "2018-2022" })
+    const valueObj = {}
     for (const field of ["race", "sex", "cause", "county_fips", "state_fips"]) {
       valueObj[field] = [...new Set(data.map(d => d[field]))].map(d => d)//({value: d, label: d}))
     }
@@ -465,7 +465,7 @@ class MapApplication {
           const cardState = {};
           CONSTANTS.CARD_STATE_FIELDS.forEach(field => cardState[field] = this.state[field])
           const dFieldValues = dValueString.split(",");
-          dFields.forEach((field,i) => cardState[field] = dFieldValues[i])
+          dFields.forEach((field, i) => cardState[field] = dFieldValues[i])
           cardStates.push(cardState);
         } else {
           cardStates.push(null);
@@ -519,7 +519,7 @@ class MapApplication {
     this.plotGrid = new PlotGrid({
       gridContainerElement: this.elems.gridContainer,
       // gridElement: this.elems.grid,
-      nRows: this.state.nRows, 
+      nRows: this.state.nRows,
       nCols: this.state.nCols,
     });
 
@@ -532,7 +532,7 @@ class MapApplication {
 
     this.plotGrid.addListener("gridUpdated", () => this.gridUpdated());
     this.plotGrid.addListener("editCardClicked", (card) => this.editCardClicked(card));
-    this.plotGrid.addListener("blankCardClicked", (x,y) => this.blankCardClicked(x,y));
+    this.plotGrid.addListener("blankCardClicked", (x, y) => this.blankCardClicked(x, y));
     this.plotGrid.addListener("closeCardClicked", (card) => this.closeCardClicked(card));
     this.plotGrid.addListener("deleteRow", (row) => this.deleteRowClicked(row));
     this.plotGrid.addListener("deleteColumn", (row) => this.deleteColumnClicked(row));
@@ -554,7 +554,7 @@ class MapApplication {
 
   deleteRowClicked(row) {
     if (this.state.nRows > 1) {
-      this.cardStates = this.cardStates.filter((d,i) => Math.floor(i / this.state.nCols) != row);
+      this.cardStates = this.cardStates.filter((d, i) => Math.floor(i / this.state.nCols) != row);
 
       this.state.nRows = this.state.nRows - 1;
       this.updateGrid();
@@ -565,7 +565,7 @@ class MapApplication {
 
   deleteColumnClicked(col) {
     if (this.state.nCols > 1) {
-      this.cardStates = this.cardStates.filter((d,i) => i % this.state.nCols != col);
+      this.cardStates = this.cardStates.filter((d, i) => i % this.state.nCols != col);
       this.state.nCols = this.state.nCols - 1;
       this.updateGrid();
     } else {
@@ -598,7 +598,7 @@ class MapApplication {
     if (!this.batchMode) {
       this.state.nRows = this.plotGrid.nRows;
       this.state.nCols = this.plotGrid.nCols;
-      this.sharedState = this.#calcSharedState(); 
+      this.sharedState = this.#calcSharedState();
       this.dFields = [];
       for (const field of CONSTANTS.CARD_STATE_FIELDS) {
         if (!this.sharedState.hasOwnProperty(field)) {
@@ -614,7 +614,7 @@ class MapApplication {
       this.cardStates = this.plotGrid.getCards().map(card => card?.cardState)
 
       // Hide delete buttons if in base state (single blank card)
-      if (this.state.nRows == 1 && this.state.nCols == 1 ) {
+      if (this.state.nRows == 1 && this.state.nCols == 1) {
         this.elems.dashboard.classList.add("deletes-hidden");
       } else {
         this.elems.dashboard.classList.remove("deletes-hidden");
@@ -647,7 +647,7 @@ class MapApplication {
   }
 
 
-    
+
   async updateAllValueArray() {
     const allValues = []
     for (const card of this.plotGrid.getCards()) {
@@ -666,65 +666,68 @@ class MapApplication {
       height: 60,
       marginBottom: 18,
       x: { ticks: d3.extent(this.allValues), tickSize: 0 },
-      y: {axis: null},
+      y: { axis: null },
       marks: [
-        Plot.rectY(this.allValues, Plot.binX({y: "count"}, {x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20})),
+        Plot.rectY(this.allValues, Plot.binX({ y: "count" }, { x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20 })),
       ]
     })
     this.elems.mapTooltipPlot.innerHTML = '';
     this.elems.mapTooltipPlot.appendChild(this.mapTooltipPlot);
   }
 
- async updateColors() {
+  async updateColors() {
     if (!this.plotGrid) return;
 
     this.getColorConfig();
     this.colorConfig.scheme = this.state.scheme;
     this.colorConfig.reverse = this.state.colorReverse;
     if (this.state.colorExcludeOutliers) {
-        this.colorConfig.outlierThreshold = this.state.outlierCutoff;
+      this.colorConfig.outlierThreshold = this.state.outlierCutoff;
     } else {
-        this.colorConfig.outlierThreshold = null;
+      this.colorConfig.outlierThreshold = null;
     }
 
     // Check for valid numeric data
     const validValues = this.allValues.filter(value => !isNaN(value) && value !== null);
     if (validValues.length === 0) {
-        // No data: hide title and legend
-        this.elems.colorLegend.innerHTML = '';
-        this.elems.colorLegend.style.display = 'none';
-        const titleElement = document.getElementById('title');
-        if (titleElement) titleElement.style.display = 'none'; // Hide the title container
-        return;
+      // No data: hide title and legend
+      this.elems.colorLegend.innerHTML = '';
+      this.elems.colorLegend.style.display = 'none';
+      const titleElement = document.getElementById('title');
+      if (titleElement) titleElement.style.display = 'none'; // Hide the title container
+      return;
     } else {
-        // Data exists: ensure both containers are displayed
-        this.elems.colorLegend.style.display = 'block';
-        const titleElement = document.getElementById('title');
-        if (titleElement) titleElement.style.display = 'block';
+      // Data exists: ensure both containers are displayed
+      this.elems.colorLegend.style.display = 'block';
+      const titleElement = document.getElementById('title');
+      if (titleElement) titleElement.style.display = 'block';
     }
 
     const mean = d3.mean(validValues);
 
     if (this.state.colorCenterMean) {
-        this.colorConfig.pivot = mean;
+      this.colorConfig.pivot = mean;
     } else {
-        this.colorConfig.pivot = null;
+      this.colorConfig.pivot = null;
     }
 
     const domain = d3.extent(validValues);
     if (this.colorConfig.outlierThreshold != null && validValues.length > 1) {
-        const std = d3.deviation(validValues);
-        const clipDomain = [
-            -this.colorConfig.outlierThreshold, 
-            this.colorConfig.outlierThreshold
-        ].map(d => d * std + mean);
-        
-        this.colorConfig.domain = [
-            Math.max(domain[0], clipDomain[0]),
-            Math.min(domain[1], clipDomain[1])
-        ];
+      const std = d3.deviation(validValues);
+
+      const clipDomain = [
+        -this.colorConfig.outlierThreshold,
+        this.colorConfig.outlierThreshold
+      ].map(d => d * std + mean);
+      console.log(mean, domain, std, clipDomain);
+
+
+      this.colorConfig.domain = [
+        Math.max(domain[0], clipDomain[0]),
+        Math.min(domain[1], clipDomain[1])
+      ];
     } else {
-        this.colorConfig.domain = domain;
+      this.colorConfig.domain = domain;
     }
 
     const measureName = this.sharedState.measure ? formatName("measures", this.sharedState.measure) : "Measure";
@@ -734,7 +737,7 @@ class MapApplication {
     this.elems.colorLegend.appendChild(sharedColorLegend);
 
     this.plotGrid.renderCards();
-}
+  }
 
 
 
@@ -764,7 +767,7 @@ class MapApplication {
 
     if (this.state.outlierCutoff && allValues.length > 1) {
       const std = d3.deviation(allValues);
-      const clipDomain = [-this.state.outlierCutoff , this.state.outlierCutoff ].map(d => d*std+mean)
+      const clipDomain = [-this.state.outlierCutoff, this.state.outlierCutoff].map(d => d * std + mean)
       colorConfig.domain = [
         Math.max(domain[0], clipDomain[0]),
         Math.min(domain[1], clipDomain[1]),
@@ -779,8 +782,8 @@ class MapApplication {
   updateTitles() {
     const state = this.sharedState
 
-    const baseElements = [ 
-      state.measure ? formatName( "measures", state.measure) : "Data" 
+    const baseElements = [
+      state.measure ? formatName("measures", state.measure) : "Data"
     ]
     let filterElements = [
       state.year,
@@ -801,7 +804,7 @@ class MapApplication {
       race: d => d == "All" ? "All races" : d,
       cause: d => d == "All" ? "All cancers" : d,
       areaState: d => d == "All" ? "US" : formatName("states", d),
-      areaCounty: d => `${this.countyNameMap.get(d)} (${formatName("states", d.slice(0,2), "short")})`
+      areaCounty: d => `${this.countyNameMap.get(d)} (${formatName("states", d.slice(0, 2), "short")})`
     }
 
     for (const card of this.plotGrid.getCards()) {
@@ -812,9 +815,9 @@ class MapApplication {
             const value = card.cardState[field];
             titleElements.push(cardTitleFormatters[field](value));
           }
-          
+
           // if (cardTitleFormatters[field]) {
-         
+
           // } else {
           //   return value;
           // }
@@ -831,7 +834,7 @@ class MapApplication {
 
 
         // const cardTitle = this.dFields.filter(d => d != "spatialLevel").map(field => {
-         
+
         // }).join(", ");
         card.setTitle(titleElements.join(", "));
       }
@@ -858,7 +861,7 @@ class MapApplication {
     promise.then((newCardState) => {
       this.createMapCard(card.x, card.y, newCardState);
     })
-  }  
+  }
 
 
   createMapCard(x, y, cardState) {
@@ -872,24 +875,24 @@ class MapApplication {
       if (cardState.areaCounty && cardState.areaCounty != "All") {
         query.county_fips = cardState.areaCounty
       }
-      if (cardState.areaState && cardState.areaState  != "All") {
+      if (cardState.areaState && cardState.areaState != "All") {
         query.state_fips = cardState.areaState
       }
       if (cardState.spatialLevel == "state") {
         query.county_fips = "All";
       }
-  
+
       let data = null;
       if (cardState.measure == "population") {
-        const populationQuery = {...query};
+        const populationQuery = { ...query };
         delete populationQuery.cause;
-        data = this.dataManager.getPopulationData(populationQuery, {includeTotals: false});
+        data = this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
       } else {
         data = this.dataManager.getCountyMortalityData(query, {
-          includeTotals: false, 
-          states: this.state.areaStateOptions, 
+          includeTotals: false,
+          states: this.state.areaStateOptions,
           counties: this.state.areaCountyOptions
-          });
+        });
       }
 
       // NOTE: DRAW
@@ -898,7 +901,7 @@ class MapApplication {
 
 
         return data.then(data => {
-          const indexField =  cardState.spatialLevel + "_fips";
+          const indexField = cardState.spatialLevel + "_fips";
 
           let overlayFeatureCollection = null;
           if (cardState.spatialLevel == "county" && cardState.areaCounty == "All") {
@@ -913,35 +916,35 @@ class MapApplication {
 
           const { plot } = createChoroplethPlot(data, featureCollection, {
             indexField,
-            measureField: cardState.measure, 
+            measureField: cardState.measure,
             overlayFeatureCollection,
             width: width,
             height: height,
-            color: this.colorConfig, 
+            color: this.colorConfig,
           })
 
           const valueIndex = new Map(data.map(d => [d[indexField], d[cardState.measure]]))
           this.hookMapTooltip(plot, featureCollection, valueIndex);
-    
+
           // this.plot = plot 
           // this.postRender(this)
-          return plot 
+          return plot
         })
       }
-  
+
       let featureCollection = null;
       if (cardState.spatialLevel == "county") {
         featureCollection = this.sData.countyGeoJSON;
 
         if (cardState.areaCounty != "All") {
           featureCollection = {
-            type: "FeatureCollection", 
+            type: "FeatureCollection",
             features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaCounty))
           }
         }
         if (cardState.areaState != "All") {
           featureCollection = {
-            type: "FeatureCollection", 
+            type: "FeatureCollection",
             features: featureCollection.features.filter(d => d.id.startsWith(cardState.areaState))
           }
         }
@@ -949,15 +952,15 @@ class MapApplication {
         featureCollection = this.sData.stateGeoJSON;
         if (cardState.areaState != "All") {
           featureCollection = {
-            type: "FeatureCollection", 
+            type: "FeatureCollection",
             features: featureCollection.features.filter(d => d.id == cardState.areaState)
           }
         }
       }
 
-      this.plotGrid.addCard(drawMap, {x, y, cardState, data, url: this.url, state: this.state});
+      this.plotGrid.addCard(drawMap, { x, y, cardState, data, url: this.url, state: this.state });
     } else {
-      this.plotGrid.addBlank({x, y});
+      this.plotGrid.addBlank({ x, y });
     }
 
     this.gridUpdated();
@@ -972,9 +975,9 @@ class MapApplication {
 
     const newParams = new URLSearchParams();
 
-    for (const [k,v] of Object.entries(this.sharedState)) {
+    for (const [k, v] of Object.entries(this.sharedState)) {
       if (CONSTANTS.DEFAULT_STATE[k] != v) {
-        newParams.append(k,v);
+        newParams.append(k, v);
       }
     }
 
@@ -991,7 +994,7 @@ class MapApplication {
       newParams.append("nCols", this.state.nCols);
     }
 
-    
+
     if (this.dFields.length > 0) {
       newParams.append("dFields", this.dFields.join(","));
 
@@ -1037,165 +1040,165 @@ class MapApplication {
 
   }
 
-  eventButtonColorSettingsClicked() {}
+  eventButtonColorSettingsClicked() { }
 
   eventButtonDownloadImage(format) {
 
-      // Create and show loading overlay and message immediately
-      const loadingOverlay = document.createElement("div");
-      loadingOverlay.style.position = 'fixed';
-      loadingOverlay.style.top = '0';
-      loadingOverlay.style.left = '0';
-      loadingOverlay.style.width = '100vw';
-      loadingOverlay.style.height = '100vh';
-      loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
-      loadingOverlay.style.zIndex = '10000';
-      loadingOverlay.style.display = 'flex';
-      loadingOverlay.style.justifyContent = 'center';
-      loadingOverlay.style.alignItems = 'center';
-      loadingOverlay.style.flexDirection = 'column';
+    // Create and show loading overlay and message immediately
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.style.position = 'fixed';
+    loadingOverlay.style.top = '0';
+    loadingOverlay.style.left = '0';
+    loadingOverlay.style.width = '100vw';
+    loadingOverlay.style.height = '100vh';
+    loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    loadingOverlay.style.zIndex = '10000';
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.justifyContent = 'center';
+    loadingOverlay.style.alignItems = 'center';
+    loadingOverlay.style.flexDirection = 'column';
 
-      // Create spinner
-      const spinner = document.createElement("div");
-      spinner.className = "spinner"; // CSS class for spinner
+    // Create spinner
+    const spinner = document.createElement("div");
+    spinner.className = "spinner"; // CSS class for spinner
 
-      // Create loading message
-      const loadingMessage = document.createElement("div");
-      loadingMessage.innerText = "Generating image...";
-      loadingMessage.style.color = 'white';
-      loadingMessage.style.padding = '20px';
-      loadingMessage.style.borderRadius = '5px';
+    // Create loading message
+    const loadingMessage = document.createElement("div");
+    loadingMessage.innerText = "Generating image...";
+    loadingMessage.style.color = 'white';
+    loadingMessage.style.padding = '20px';
+    loadingMessage.style.borderRadius = '5px';
 
-      // Append spinner and message to the overlay
-      loadingOverlay.appendChild(spinner);
-      loadingOverlay.appendChild(loadingMessage);
+    // Append spinner and message to the overlay
+    loadingOverlay.appendChild(spinner);
+    loadingOverlay.appendChild(loadingMessage);
 
-      document.body.appendChild(loadingOverlay); // Show loading overlay first
+    document.body.appendChild(loadingOverlay); // Show loading overlay first
 
-      // Create the Virtual DOM container
-      const virtualContainer = document.createElement('div');
-      virtualContainer.id = 'virtual-dashboard';
-      virtualContainer.style.position = 'absolute';
-      virtualContainer.style.top = '-9999px'; // Hide it offscreen
-      virtualContainer.style.left = '-9999px';
-      virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
-      // virtualContainer.style.overflow = 'hidden'; // Hide overflow
+    // Create the Virtual DOM container
+    const virtualContainer = document.createElement('div');
+    virtualContainer.id = 'virtual-dashboard';
+    virtualContainer.style.position = 'absolute';
+    virtualContainer.style.top = '-9999px'; // Hide it offscreen
+    virtualContainer.style.left = '-9999px';
+    virtualContainer.style.width = '100vw'; // Ensure it captures full viewport width
+    // virtualContainer.style.overflow = 'hidden'; // Hide overflow
 
-      const originalDashboard = document.getElementById('ex-dashboard');
-      const gridContainer = originalDashboard.querySelector('#grid-container');
-      const legend = originalDashboard.querySelector('#color-legend');
-      const title = originalDashboard.querySelector('#title');
+    const originalDashboard = document.getElementById('ex-dashboard');
+    const gridContainer = originalDashboard.querySelector('#grid-container');
+    const legend = originalDashboard.querySelector('#color-legend');
+    const title = originalDashboard.querySelector('#title');
 
-      // Clone title element and style it
-      if (title) {
-          console.log("Title found and cloning");
-          const clonedTitle = title.cloneNode(true);
-          clonedTitle.style.textAlign = 'center'; // Center title
-          clonedTitle.style.marginBottom = '20px'; // Space below the title
-          virtualContainer.appendChild(clonedTitle);
-      } else {
-          console.warn("Title element not found");
+    // Clone title element and style it
+    if (title) {
+      console.log("Title found and cloning");
+      const clonedTitle = title.cloneNode(true);
+      clonedTitle.style.textAlign = 'center'; // Center title
+      clonedTitle.style.marginBottom = '20px'; // Space below the title
+      virtualContainer.appendChild(clonedTitle);
+    } else {
+      console.warn("Title element not found");
+    }
+
+    // Clone legend element and style it
+    if (legend) {
+      console.log("Legend found and cloning");
+      const clonedLegend = legend.cloneNode(true);
+      clonedLegend.style.marginTop = '20px'; // Space above the legend
+      clonedLegend.style.textAlign = 'center'; // Center legend
+      clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
+      clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
+      virtualContainer.appendChild(clonedLegend);
+    } else {
+      console.warn("Legend element not found");
+    }
+
+    // Clone the grid container (preserves the layout of maps)
+    if (gridContainer) {
+      console.log("Grid container found and cloning");
+
+      // Clone grid container and ensure grid layout styles are preserved
+      const clonedGridContainer = gridContainer.cloneNode(true);
+      clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
+      clonedGridContainer.style.gridTemplateColumns = getComputedStyle(gridContainer).gridTemplateColumns; // Keep columns
+      clonedGridContainer.style.gridTemplateRows = getComputedStyle(gridContainer).gridTemplateRows; // Keep rows
+
+      // Remove specific unwanted elements (image icons, plus buttons, etc.)
+      const unwantedElements = clonedGridContainer.querySelectorAll(
+        '.fa-table, ' +  // Table icon
+        '.fa-image, ' +  // Image icon
+        '.plot-grid-blank-item, ' +  // Blank grid items
+        '.fa-plus-square, ' +  // Plus buttons
+        '.plot-grid-add, ' +  // Plot grid add button (for rows or columns)
+        '.fa-edit, ' +  // Edit button
+        '.fa-grip-horizontal, ' +  // Drag handle
+        '.fa-expand, ' +  // Expand button
+        '.fa-times'  // Close button
+      );
+
+      unwantedElements.forEach(el => el.remove());
+
+      // Remove shadows from map containers
+      const maps = clonedGridContainer.querySelectorAll('.grid-card');
+      maps.forEach(map => {
+        map.style.boxShadow = 'none'; // Remove shadow around the map cards
+        map.style.width = '100%'; // Ensure the card takes the full width
+        map.style.height = 'auto'; // Let height adjust automatically
+
+        const mapContent = map.querySelector('.map-content');
+        if (mapContent) {
+          mapContent.style.width = '100%';
+          mapContent.style.height = '100%'; // Ensure it fits within the card
+          // mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
+        }
+      });
+
+      // If there is only one map, ensure proper grid behavior
+      if (maps.length === 1) {
+        clonedGridContainer.style.display = 'grid';
+        clonedGridContainer.style.gridTemplateColumns = '1fr'; // Single column
+        clonedGridContainer.style.gridTemplateRows = 'auto'; // Adjust the row height based on content
       }
 
-      // Clone legend element and style it
-      if (legend) {
-          console.log("Legend found and cloning");
-          const clonedLegend = legend.cloneNode(true);
-          clonedLegend.style.marginTop = '20px'; // Space above the legend
-          clonedLegend.style.textAlign = 'center'; // Center legend
-          clonedLegend.style.backgroundColor = 'transparent'; // Ensure background is transparent
-          clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
-          virtualContainer.appendChild(clonedLegend);
-      } else {
-          console.warn("Legend element not found");
-      }
+      // Append the cloned grid container to the virtual container
+      virtualContainer.appendChild(clonedGridContainer);
+    } else {
+      console.warn("Grid container not found");
+    }
 
-      // Clone the grid container (preserves the layout of maps)
-      if (gridContainer) {
-          console.log("Grid container found and cloning");
+    // Append the virtual container to the body
+    document.body.appendChild(virtualContainer);
 
-          // Clone grid container and ensure grid layout styles are preserved
-          const clonedGridContainer = gridContainer.cloneNode(true);
-          clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
-          clonedGridContainer.style.gridTemplateColumns = getComputedStyle(gridContainer).gridTemplateColumns; // Keep columns
-          clonedGridContainer.style.gridTemplateRows = getComputedStyle(gridContainer).gridTemplateRows; // Keep rows
+    // Set the height of the virtual container after appending
+    virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
 
-          // Remove specific unwanted elements (image icons, plus buttons, etc.)
-          const unwantedElements = clonedGridContainer.querySelectorAll(
-              '.fa-table, ' +  // Table icon
-              '.fa-image, ' +  // Image icon
-              '.plot-grid-blank-item, ' +  // Blank grid items
-              '.fa-plus-square, ' +  // Plus buttons
-              '.plot-grid-add, ' +  // Plot grid add button (for rows or columns)
-              '.fa-edit, ' +  // Edit button
-              '.fa-grip-horizontal, ' +  // Drag handle
-              '.fa-expand, ' +  // Expand button
-              '.fa-times'  // Close button
-          );
+    // Log the content of virtualContainer for debugging
+    console.log("Virtual container content:", virtualContainer.innerHTML);
 
-          unwantedElements.forEach(el => el.remove());
+    // Use a timeout to ensure the loading overlay appears immediately
+    setTimeout(() => {
+      // Render Virtual DOM to Canvas
+      html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
+        console.log("Canvas generated");
 
-          // Remove shadows from map containers
-          const maps = clonedGridContainer.querySelectorAll('.grid-card');
-          maps.forEach(map => {
-              map.style.boxShadow = 'none'; // Remove shadow around the map cards
-              map.style.width = '100%'; // Ensure the card takes the full width
-              map.style.height = 'auto'; // Let height adjust automatically
+        const dataURL = canvas.toDataURL("image/png");
 
-              const mapContent = map.querySelector('.map-content');
-              if (mapContent) {
-                  mapContent.style.width = '100%';
-                  mapContent.style.height = '100%'; // Ensure it fits within the card
-                  // mapContent.style.overflow = 'hidden'; // Prevent overflow of the map
-              }
-          });
+        // Trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = dataURL;
+        downloadLink.download = 'dashboard-maps.png';
+        downloadLink.click();
 
-          // If there is only one map, ensure proper grid behavior
-          if (maps.length === 1) {
-              clonedGridContainer.style.display = 'grid';
-              clonedGridContainer.style.gridTemplateColumns = '1fr'; // Single column
-              clonedGridContainer.style.gridTemplateRows = 'auto'; // Adjust the row height based on content
-          }
-
-          // Append the cloned grid container to the virtual container
-          virtualContainer.appendChild(clonedGridContainer);
-      } else {
-          console.warn("Grid container not found");
-      }
-
-      // Append the virtual container to the body
-      document.body.appendChild(virtualContainer);
-
-      // Set the height of the virtual container after appending
-      virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
-
-      // Log the content of virtualContainer for debugging
-      console.log("Virtual container content:", virtualContainer.innerHTML);
-
-      // Use a timeout to ensure the loading overlay appears immediately
-      setTimeout(() => {
-          // Render Virtual DOM to Canvas
-          html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-              console.log("Canvas generated");
-
-              const dataURL = canvas.toDataURL("image/png");
-
-              // Trigger the download
-              const downloadLink = document.createElement('a');
-              downloadLink.href = dataURL;
-              downloadLink.download = 'dashboard-maps.png';
-              downloadLink.click();
-
-              // Clean up
-              document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
-              document.body.removeChild(loadingOverlay);    // Remove the loading overlay
-          }).catch(error => {
-              console.error("Error generating canvas:", error);
-              document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
-          });
-      }, 0); // The timeout ensures the loading overlay is shown first
+        // Clean up
+        document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
+        document.body.removeChild(loadingOverlay);    // Remove the loading overlay
+      }).catch(error => {
+        console.error("Error generating canvas:", error);
+        document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
+      });
+    }, 0); // The timeout ensures the loading overlay is shown first
   }
-eventButtonDownloadData(format) {
+  eventButtonDownloadData(format) {
     console.log("Download data button clicked");
 
     // Create and show loading overlay and message immediately
@@ -1226,235 +1229,235 @@ eventButtonDownloadData(format) {
     // Retrieve card states for generating data
     const cardStates = this.getCardStates(this.url);
     const validCardStates = cardStates.filter(cardState => {
-        return cardState && typeof cardState === 'object' &&
-               cardState.sex && cardState.race && 
-               cardState.cause && cardState.year;
+      return cardState && typeof cardState === 'object' &&
+        cardState.sex && cardState.race &&
+        cardState.cause && cardState.year;
     });
 
     // If no valid cards are available, show an alert and stop further processing
     if (validCardStates.length === 0) {
-        alert("No valid data cards available for download.");
-        document.body.removeChild(loadingOverlay); // Remove loading overlay
-        return;
+      alert("No valid data cards available for download.");
+      document.body.removeChild(loadingOverlay); // Remove loading overlay
+      return;
     }
 
     // Map over validCardStates and generate data promises
     const dataPromises = validCardStates.map((cardState) => {
-        const query = {
-            sex: cardState.sex,
-            race: cardState.race,
-            cause: cardState.cause,
-            year: cardState.year,
-        };
+      const query = {
+        sex: cardState.sex,
+        race: cardState.race,
+        cause: cardState.cause,
+        year: cardState.year,
+      };
 
-        if (cardState.areaCounty && cardState.areaCounty !== "All") {
-            query.county_fips = cardState.areaCounty;
-        }
-        if (cardState.areaState && cardState.areaState !== "All") {
-            query.state_fips = cardState.areaState;
-        }
-        if (cardState.spatialLevel === "state") {
-            query.county_fips = "All";
-        }
+      if (cardState.areaCounty && cardState.areaCounty !== "All") {
+        query.county_fips = cardState.areaCounty;
+      }
+      if (cardState.areaState && cardState.areaState !== "All") {
+        query.state_fips = cardState.areaState;
+      }
+      if (cardState.spatialLevel === "state") {
+        query.county_fips = "All";
+      }
 
-        // Fetch appropriate data based on measure
-        if (cardState.measure === "population") {
-            const populationQuery = { ...query };
-            delete populationQuery.cause; // Population query doesn't need cause
-            return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
-        } else {
-            return this.dataManager.getCountyMortalityData(query, {
-                includeTotals: false,
-                states: this.state.areaStateOptions,
-                counties: this.state.areaCountyOptions,
-            });
-        }
+      // Fetch appropriate data based on measure
+      if (cardState.measure === "population") {
+        const populationQuery = { ...query };
+        delete populationQuery.cause; // Population query doesn't need cause
+        return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+      } else {
+        return this.dataManager.getCountyMortalityData(query, {
+          includeTotals: false,
+          states: this.state.areaStateOptions,
+          counties: this.state.areaCountyOptions,
+        });
+      }
     });
 
     // Wait for all data promises to resolve
     Promise.all(dataPromises).then((resolvedDataArrays) => {
-        const data = resolvedDataArrays.flat().map(item => {
-            // Combine county and state abbreviation into one field if both are present
-            if (item.county && item.state_abbreviation) {
-                item.county = `${item.county}, ${item.state_abbreviation}`;
-                delete item.state_abbreviation; // Remove the original abbreviation column
-            }
-            return item;
-        });
-
-        // Handle download based on format
-        if (format.toLowerCase() === 'csv') {
-            // Prepare data for CSV download
-            const csvContent = this.convertToCSV(data);
-
-            // Create a Blob and download link for CSV
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = 'dashboard-data.csv';
-            downloadLink.style.display = 'none'; // Hide the link
-            document.body.appendChild(downloadLink);
-            downloadLink.click(); // Trigger download
-            document.body.removeChild(downloadLink); // Cleanup
-
-        } else if (format.toLowerCase() === 'tsv') {
-            // Prepare data for TSV download
-            const tsvContent = this.convertToTSV(data);
-
-            // Create a Blob and download link for TSV
-            const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = 'dashboard-data.tsv';
-            downloadLink.style.display = 'none'; // Hide the link
-            document.body.appendChild(downloadLink);
-            downloadLink.click(); // Trigger download
-            document.body.removeChild(downloadLink); // Cleanup
-
-        } else if (format.toLowerCase() === 'json') {
-            // Prepare data for JSON download
-            const jsonContent = JSON.stringify(data, null, 2);
-
-            // Create a Blob and download link for JSON
-            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(blob);
-            downloadLink.download = 'dashboard-data.json';
-            downloadLink.style.display = 'none'; // Hide the link
-            document.body.appendChild(downloadLink);
-            downloadLink.click(); // Trigger download
-            document.body.removeChild(downloadLink); // Cleanup
-            
-        } else {
-            console.error("Unsupported format: ", format);
-            alert("The selected format is unsupported. Please choose CSV, TSV, or JSON.");
+      const data = resolvedDataArrays.flat().map(item => {
+        // Combine county and state abbreviation into one field if both are present
+        if (item.county && item.state_abbreviation) {
+          item.county = `${item.county}, ${item.state_abbreviation}`;
+          delete item.state_abbreviation; // Remove the original abbreviation column
         }
+        return item;
+      });
 
-        // Clean up
-        document.body.removeChild(loadingOverlay); // Remove the loading overlay
+      // Handle download based on format
+      if (format.toLowerCase() === 'csv') {
+        // Prepare data for CSV download
+        const csvContent = this.convertToCSV(data);
+
+        // Create a Blob and download link for CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'dashboard-data.csv';
+        downloadLink.style.display = 'none'; // Hide the link
+        document.body.appendChild(downloadLink);
+        downloadLink.click(); // Trigger download
+        document.body.removeChild(downloadLink); // Cleanup
+
+      } else if (format.toLowerCase() === 'tsv') {
+        // Prepare data for TSV download
+        const tsvContent = this.convertToTSV(data);
+
+        // Create a Blob and download link for TSV
+        const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'dashboard-data.tsv';
+        downloadLink.style.display = 'none'; // Hide the link
+        document.body.appendChild(downloadLink);
+        downloadLink.click(); // Trigger download
+        document.body.removeChild(downloadLink); // Cleanup
+
+      } else if (format.toLowerCase() === 'json') {
+        // Prepare data for JSON download
+        const jsonContent = JSON.stringify(data, null, 2);
+
+        // Create a Blob and download link for JSON
+        const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'dashboard-data.json';
+        downloadLink.style.display = 'none'; // Hide the link
+        document.body.appendChild(downloadLink);
+        downloadLink.click(); // Trigger download
+        document.body.removeChild(downloadLink); // Cleanup
+
+      } else {
+        console.error("Unsupported format: ", format);
+        alert("The selected format is unsupported. Please choose CSV, TSV, or JSON.");
+      }
+
+      // Clean up
+      document.body.removeChild(loadingOverlay); // Remove the loading overlay
     }).catch((error) => {
-        console.error("Error fetching data: ", error);
-        document.body.removeChild(loadingOverlay); // Remove the loading overlay in case of error
+      console.error("Error fetching data: ", error);
+      document.body.removeChild(loadingOverlay); // Remove the loading overlay in case of error
     });
-}
+  }
 
-// Utility function to convert data array to CSV format with comma handling
-convertToCSV(data) {
+  // Utility function to convert data array to CSV format with comma handling
+  convertToCSV(data) {
     const headers = Object.keys(data[0]).join(",");
 
     const rows = data.map(item => {
-        return Object.values(item).map(value => {
-            // Enclose in double quotes if the value contains a comma
-            return typeof value === "string" && value.includes(",") ? `"${value}"` : value;
-        }).join(",");
+      return Object.values(item).map(value => {
+        // Enclose in double quotes if the value contains a comma
+        return typeof value === "string" && value.includes(",") ? `"${value}"` : value;
+      }).join(",");
     });
 
     return [headers, ...rows].join("\n");
-}
+  }
 
-// Utility function to convert data array to TSV format
-convertToTSV(data) {
+  // Utility function to convert data array to TSV format
+  convertToTSV(data) {
     const headers = Object.keys(data[0]).join("\t");
     const rows = data.map(item => Object.values(item).join("\t"));
     return [headers, ...rows].join("\n");
-}
+  }
 
- eventButtonTableClicked() {
+  eventButtonTableClicked() {
     const { clientHeight: height } = document.body;
     const cardStates = this.getCardStates(this.url);
 
     // Filter out empty, null, or incomplete card states
     const validCardStates = cardStates.filter(cardState => {
-        // Ensure that cardState is an object and has all required fields
-        return cardState && typeof cardState === 'object' && 
-               cardState.sex && cardState.race && 
-               cardState.cause && cardState.year;
+      // Ensure that cardState is an object and has all required fields
+      return cardState && typeof cardState === 'object' &&
+        cardState.sex && cardState.race &&
+        cardState.cause && cardState.year;
     });
 
     // If no valid cards are available, show an alert and stop further processing
     if (validCardStates.length === 0) {
-        alert("No valid data cards available for table generation.");
-        return;
+      alert("No valid data cards available for table generation.");
+      return;
     }
 
     // Map over validCardStates and generate data promises
     const dataPromises = validCardStates.map((cardState) => {
-        // Construct the query parameters for fetching data
-        const query = {
-            sex: cardState.sex,
-            race: cardState.race,
-            cause: cardState.cause,
-            year: cardState.year
-        };
+      // Construct the query parameters for fetching data
+      const query = {
+        sex: cardState.sex,
+        race: cardState.race,
+        cause: cardState.cause,
+        year: cardState.year
+      };
 
-        // Add area-specific query parameters
-        if (cardState.areaCounty && cardState.areaCounty !== "All") {
-            query.county_fips = cardState.areaCounty;
-        }
-        if (cardState.areaState && cardState.areaState !== "All") {
-            query.state_fips = cardState.areaState;
-        }
-        if (cardState.spatialLevel === "state") {
-            query.county_fips = "All";
-        }
+      // Add area-specific query parameters
+      if (cardState.areaCounty && cardState.areaCounty !== "All") {
+        query.county_fips = cardState.areaCounty;
+      }
+      if (cardState.areaState && cardState.areaState !== "All") {
+        query.state_fips = cardState.areaState;
+      }
+      if (cardState.spatialLevel === "state") {
+        query.county_fips = "All";
+      }
 
-        // Check if the measure is population or mortality, and fetch the appropriate data
-        if (cardState.measure === "population") {
-            const populationQuery = { ...query };
-            delete populationQuery.cause; // Population query doesn't need cause
+      // Check if the measure is population or mortality, and fetch the appropriate data
+      if (cardState.measure === "population") {
+        const populationQuery = { ...query };
+        delete populationQuery.cause; // Population query doesn't need cause
 
-            // Return a promise for population data
-            return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
-        } else {
-            // Return a promise for mortality data
-            return this.dataManager.getCountyMortalityData(query, {
-                includeTotals: false,
-                states: this.state.areaStateOptions,
-                counties: this.state.areaCountyOptions
-            });
-        }
+        // Return a promise for population data
+        return this.dataManager.getPopulationData(populationQuery, { includeTotals: false });
+      } else {
+        // Return a promise for mortality data
+        return this.dataManager.getCountyMortalityData(query, {
+          includeTotals: false,
+          states: this.state.areaStateOptions,
+          counties: this.state.areaCountyOptions
+        });
+      }
     });
 
     // Wait for all data promises to resolve
     Promise.all(dataPromises).then((resolvedDataArrays) => {
-        const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
+      const data = resolvedDataArrays.flat(); // Combine all resolved data arrays into one
 
-        // Create and style the content element for the popup
-        const content = document.createElement("div");
-        content.style.height = (height * .9) + 'px';
-        content.style.overflowY = 'auto';
-        content.style.overflowX = 'auto';
-        content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
+      // Create and style the content element for the popup
+      const content = document.createElement("div");
+      content.style.height = (height * .9) + 'px';
+      content.style.overflowY = 'auto';
+      content.style.overflowX = 'auto';
+      content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
 
-        // Create the popup for the data table
-        popup(document.body, content, {
-            title: "Data Table",
-            backdrop: true,
-            stopEvents: false,
+      // Create the popup for the data table
+      popup(document.body, content, {
+        title: "Data Table",
+        backdrop: true,
+        stopEvents: false,
+      });
+
+      let tableColumns = [...mapTableColumns]; // Define table columns
+
+      // Check if there is data to display, otherwise show a 'No data available' message
+      if (data.length === 0) {
+        content.innerHTML = "<p>No data available for this card.</p>";
+      } else {
+        // Plot the data table if data is available
+        plotDataTable(data, content, {
+          columns: tableColumns
         });
-
-        let tableColumns = [...mapTableColumns]; // Define table columns
-
-        // Check if there is data to display, otherwise show a 'No data available' message
-        if (data.length === 0) {
-            content.innerHTML = "<p>No data available for this card.</p>";
-        } else {
-            // Plot the data table if data is available
-            plotDataTable(data, content, {
-                columns: tableColumns
-            });
-        }
+      }
     }).catch((error) => {
-        console.error("Error fetching data: ", error);
+      console.error("Error fetching data: ", error);
     });
-}
+  }
   #calcSharedState() {
     const cardStates = this.plotGrid.getCards().filter(d => d).map(d => d.cardState);
-    
+
     const sharedState = { ...cardStates[0] };
     for (const cardState of cardStates.slice(1)) {
       if (cardState) {
-        for (const [k,v] of Object.entries(cardState)) {
+        for (const [k, v] of Object.entries(cardState)) {
           if (sharedState[k] != v) {
             delete sharedState[k];
           }
@@ -1499,43 +1502,43 @@ class CardConfigPopup {
     })
   }
 
-  popupGetState(card=null) {
+  popupGetState(card = null) {
     const promise = new Promise((resolve) => this.cardStateResolve = resolve);
 
     if (card) {
-      for (const [k,v] of Object.entries(card.cardState)) {
+      for (const [k, v] of Object.entries(card.cardState)) {
         if (v != this.state[k]) {
           this.state[k] = v;
         }
-      }  
+      }
     }
 
     this.elems.plotCardConfig.style.display = "flex";
-    this.configPopup = popup(this.elems.container, this.elems.plotCardConfig, { 
+    this.configPopup = popup(this.elems.container, this.elems.plotCardConfig, {
       title: "Configure map card",
       blur: this.elems.blurElement,
     });
 
-    return promise; 
+    return promise;
   }
 }
 
 class PlotGrid {
-  constructor(options={}) {
+  constructor(options = {}) {
     options = {
       gridContainerElement: null,
 
-      nRows: 1, 
+      nRows: 1,
       nCols: 1,
       addHoverProximity: 80,
       ...options
     }
     Object.assign(this, options)
 
-    this.nodeMatrix = Array.from({length: this.nCols}, () => Array.from({length: this.nRows}, () => null));
+    this.nodeMatrix = Array.from({ length: this.nCols }, () => Array.from({ length: this.nRows }, () => null));
 
     this.listeners = {
-      gridUpdated: d => d, 
+      gridUpdated: d => d,
       editCardClicked: d => d,
       blankCardClicked: d => d,
       closeCardClicked: d => d,
@@ -1544,7 +1547,7 @@ class PlotGrid {
       downloadCardClicked: (card) => {
         // Download logic here
         console.log('Downloading card:', card);
-        
+
         // // Example download content logic:
         // const contentToDownload = card.content();
         // const blob = new Blob([contentToDownload], { type: 'text/plain' });
@@ -1584,7 +1587,7 @@ class PlotGrid {
       // this.gridContainerElement.style.minHeight = (this.nRows) * 300 + 'px'
       // const dashboardElement = document.getElementById('dashboard')
       // dashboardElement.style.minHeight = ((this.nRows) * 300) + 145 + 'px'
-})
+    })
     resizeObserver.observe(this.gridContainerElement)
 
     const addColumnButton = document.createElement("i")
@@ -1604,7 +1607,7 @@ class PlotGrid {
     this.gridElement.appendChild(addRowButton)
 
     document.addEventListener("mousemove", e => {
-      const bbox = this.gridElement.getBoundingClientRect() 
+      const bbox = this.gridElement.getBoundingClientRect()
 
       if (Math.abs(e.clientY - bbox.bottom) < this.addHoverProximity) {
         this.gridElement.classList.add("add-visible-row")
@@ -1625,8 +1628,8 @@ class PlotGrid {
         node.x = gridNode.x;
         node.y = gridNode.y;
         if (node.card) {
-          node.card.x =  gridNode.x;
-          node.card.y =  gridNode.y;
+          node.card.x = gridNode.x;
+          node.card.y = gridNode.y;
         }
       })
       const newNodeMatrix = this.nodeMatrix.map(d => [...d]);
@@ -1641,7 +1644,7 @@ class PlotGrid {
     })
   }
 
-  
+
   addCard(content, options) {
     this.grid.batchUpdate(true);
     if (this.nodeMatrix[options.x]?.[options.y]) {
@@ -1666,7 +1669,7 @@ class PlotGrid {
     gridItem.appendChild(card.getElement())
     this.grid.addWidget(gridItem, options)
 
-    this.nodeMatrix[options.x][options.y] = { origX: options.x, origY: options.y, x: options.x, y: options.y, card, element: gridItem};
+    this.nodeMatrix[options.x][options.y] = { origX: options.x, origY: options.y, x: options.x, y: options.y, card, element: gridItem };
     this.tippyMap = addTippys();
     this.grid.batchUpdate(false);
   }
@@ -1695,7 +1698,7 @@ class PlotGrid {
     // this.gridContainerElement.style.minHeight = (this.nRows + 1) * 300 + 'px'
     // const dashboardElement = document.getElementById('dashboard')
     // dashboardElement.style.minHeight = ((this.nRows + 1) * 300) + 145 + 'px'
-    
+
     this.grid.cellHeight(this.gridContainerElement.getBoundingClientRect().height / (this.nRows + 1));
     this.grid.batchUpdate();
     this.grid.engine.maxRow = this.nRows + 1;
@@ -1710,19 +1713,19 @@ class PlotGrid {
   removeRow(x) {
     this.grid.batchUpdate();
     for (let i = 0; i < this.nodeMatrix.length; i++) {
-      const gridItem  = this.nodeMatrix[i][x];
+      const gridItem = this.nodeMatrix[i][x];
       this.grid.removeWidget(gridItem);
-      this.nodeMatrix[i] = this.nodeMatrix[i].filter((d,j) => j != x);
+      this.nodeMatrix[i] = this.nodeMatrix[i].filter((d, j) => j != x);
     }
     this.grid.engine.maxRow = this.nRows - 1;
-   
+
     this.grid.batchUpdate(false);
-    this.nRows = this.nRows - 1; 
+    this.nRows = this.nRows - 1;
     this.listeners.gridUpdated();
   }
 
   addBlank(pos) {
-    let openedBatch = false; 
+    let openedBatch = false;
     if (!this.grid.engine.batchMode) {
       openedBatch = true;
       this.grid.batchUpdate(true);
@@ -1744,7 +1747,7 @@ class PlotGrid {
     blankElement.addEventListener("mouseleave", () => {
       blankElement.classList.remove("hover")
     })
-    
+
     blankElement.querySelector("#delete-row")?.addEventListener("click", e => {
       e.stopPropagation();
       this.listeners.deleteRow(node.y);
@@ -1804,7 +1807,7 @@ class PlotGrid {
     const deleteButton = document.createElement("i");
     deleteButton.setAttribute("tip", "Delete card, row, or column");
     deleteButton.className = "fas fa-trash-alt blank-delete-button";
-    
+
     deleteButton.addEventListener("mouseover", (e) => {
       e.stopPropagation();
       gridItem.classList.remove("hover");
@@ -1816,7 +1819,7 @@ class PlotGrid {
     });
 
     deleteButton.addEventListener("click", e => {
-      e.stopPropagation(); 
+      e.stopPropagation();
     });
 
     blankItem.appendChild(deleteButton);
@@ -1826,7 +1829,7 @@ class PlotGrid {
       //   text: "Delete blank card", id: "delete-blank-card"
       // },
       {
-        text: "Delete card row",  id: "delete-row" 
+        text: "Delete card row", id: "delete-row"
       },
       {
         text: "Delete card column", id: "delete-column"
@@ -1836,8 +1839,8 @@ class PlotGrid {
     // Add dropdown to the delete button
     dropdown.classList.add("blank-delete-button");
     dropdown.querySelector(".blank-delete-button").classList.remove("blank-delete-button");
-    
-   
+
+
 
     // Use the updated createDropdownButton function and pass the event to callbacks
     // const dropdown = createDropdownButton(deleteButton, [
@@ -1902,7 +1905,7 @@ class PlotCard {
       closeClicked: (d) => d,
       tableClicked: (d) => d,
     };
-    
+
     let timeout = null;
     const resizeObserver = new ResizeObserver(() => {
       this.contentElement.innerHTML = "";
@@ -1941,21 +1944,21 @@ class PlotCard {
   addListener(type, listener) {
     this.listeners[type] = listener;
   }
-// TODO: Remove redundant codes
-eventButtonDownloadClicked(cardTitle) { 
+  // TODO: Remove redundant codes
+  eventButtonDownloadClicked(cardTitle) {
     // Create loading overlay
     const loadingOverlay = document.createElement("div");
     Object.assign(loadingOverlay.style, {
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        zIndex: '10000',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      zIndex: '10000',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     });
 
     // Create loading message with spinner
@@ -1967,13 +1970,13 @@ eventButtonDownloadClicked(cardTitle) {
 
     const spinner = document.createElement("div");
     Object.assign(spinner.style, {
-        border: '4px solid rgba(255, 255, 255, 0.3)',
-        borderLeftColor: '#fff',
-        borderRadius: '50%',
-        width: '50px',
-        height: '50px',
-        marginBottom: '10px',
-        animation: 'spin 1s linear infinite'
+      border: '4px solid rgba(255, 255, 255, 0.3)',
+      borderLeftColor: '#fff',
+      borderRadius: '50%',
+      width: '50px',
+      height: '50px',
+      marginBottom: '10px',
+      animation: 'spin 1s linear infinite'
     });
 
     loadingMessage.appendChild(spinner);
@@ -1993,15 +1996,15 @@ eventButtonDownloadClicked(cardTitle) {
     const virtualContainer = document.createElement('div');
     virtualContainer.id = 'virtual-dashboard';
     Object.assign(virtualContainer.style, {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        overflow: 'hidden',
-        backgroundColor: 'white',
-        padding: '1', // Ensure no padding
-        margin: '1',  // Ensure no margin
-        width: 'fit-content',
-        zIndex: '9999'
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      overflow: 'hidden',
+      backgroundColor: 'white',
+      padding: '1', // Ensure no padding
+      margin: '1',  // Ensure no margin
+      width: 'fit-content',
+      zIndex: '9999'
     });
 
     // Get the title and legend from the dashboard
@@ -2011,32 +2014,32 @@ eventButtonDownloadClicked(cardTitle) {
 
     // Clone title element and add to virtual container
     if (title) {
-        const clonedTitle = title.cloneNode(true);
-        clonedTitle.style.marginBottom = '20px';
-        clonedTitle.style.textAlign = 'center'; 
-        clonedTitle.style.color = '#000';
-        if (cardTitle) {
-            clonedTitle.innerText = `${clonedTitle.innerText}, ${cardTitle}`;
-        }
-        virtualContainer.appendChild(clonedTitle);
+      const clonedTitle = title.cloneNode(true);
+      clonedTitle.style.marginBottom = '20px';
+      clonedTitle.style.textAlign = 'center';
+      clonedTitle.style.color = '#000';
+      if (cardTitle) {
+        clonedTitle.innerText = `${clonedTitle.innerText}, ${cardTitle}`;
+      }
+      virtualContainer.appendChild(clonedTitle);
     } else {
-        console.warn("Title element not found");
+      console.warn("Title element not found");
     }
 
     // Clone legend element and add to virtual container
     if (legend) {
-        const clonedLegend = legend.cloneNode(true);
-        clonedLegend.style.marginTop = '20px'; 
-        clonedLegend.style.textAlign = 'center'; 
-        clonedLegend.style.backgroundColor = 'transparent'; // Keep legend background transparent
-        clonedLegend.style.padding = '0';  // Remove padding
-        clonedLegend.style.margin = '0';   // Remove margin
-        clonedLegend.style.boxShadow = 'none'; // Remove any box-shadow
-        clonedLegend.style.border = 'none'; // Ensure there is no border
-        clonedLegend.style.outline = 'none'; // Ensure there is no outline
-        virtualContainer.appendChild(clonedLegend);
+      const clonedLegend = legend.cloneNode(true);
+      clonedLegend.style.marginTop = '20px';
+      clonedLegend.style.textAlign = 'center';
+      clonedLegend.style.backgroundColor = 'transparent'; // Keep legend background transparent
+      clonedLegend.style.padding = '0';  // Remove padding
+      clonedLegend.style.margin = '0';   // Remove margin
+      clonedLegend.style.boxShadow = 'none'; // Remove any box-shadow
+      clonedLegend.style.border = 'none'; // Ensure there is no border
+      clonedLegend.style.outline = 'none'; // Ensure there is no outline
+      virtualContainer.appendChild(clonedLegend);
     } else {
-        console.warn("Legend element not found");
+      console.warn("Legend element not found");
     }
 
     // Get current card's content and clone it
@@ -2057,21 +2060,21 @@ eventButtonDownloadClicked(cardTitle) {
     const svgElement = cardContent.querySelector('svg');
 
     if (svgElement) {
-        // Clone the SVG and ensure proper sizing
-        const clonedSVG = svgElement.cloneNode(true);
-        clonedSVG.setAttribute('width', '800');  // Set to fill the container
-        clonedSVG.setAttribute('height', '600'); // Maintain aspect ratio
+      // Clone the SVG and ensure proper sizing
+      const clonedSVG = svgElement.cloneNode(true);
+      clonedSVG.setAttribute('width', '800');  // Set to fill the container
+      clonedSVG.setAttribute('height', '600'); // Maintain aspect ratio
 
-        // Clear any existing SVG from the card content to avoid duplication
-        const existingSVG = cardContent.querySelector('svg');
-        if (existingSVG) {
-            existingSVG.remove();
-        }
+      // Clear any existing SVG from the card content to avoid duplication
+      const existingSVG = cardContent.querySelector('svg');
+      if (existingSVG) {
+        existingSVG.remove();
+      }
 
-        // Append the cloned SVG
-        virtualContainer.appendChild(clonedSVG);
+      // Append the cloned SVG
+      virtualContainer.appendChild(clonedSVG);
     } else {
-        console.warn("SVG element not found in card content");
+      console.warn("SVG element not found in card content");
     }
 
     // Add the rest of the card content (without SVG)
@@ -2084,60 +2087,60 @@ eventButtonDownloadClicked(cardTitle) {
     virtualContainer.style.height = `${rect.height}px`;
 
     setTimeout(() => {
-        // Render Virtual DOM to Canvas
-        html2canvas(virtualContainer, { useCORS: true, backgroundColor: 'white' }).then(canvas => {
-            const dataURL = canvas.toDataURL("image/png");
-            const downloadLink = document.createElement('a');
-            downloadLink.href = dataURL;
-            downloadLink.download = 'card-map.png';
-            downloadLink.click();
+      // Render Virtual DOM to Canvas
+      html2canvas(virtualContainer, { useCORS: true, backgroundColor: 'white' }).then(canvas => {
+        const dataURL = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement('a');
+        downloadLink.href = dataURL;
+        downloadLink.download = 'card-map.png';
+        downloadLink.click();
 
-            // Clean up
-            document.body.removeChild(virtualContainer);
-            document.body.removeChild(loadingOverlay);
-        }).catch(error => {
-            console.error("Error generating canvas:", error);
-            document.body.removeChild(loadingOverlay);
-        });
+        // Clean up
+        document.body.removeChild(virtualContainer);
+        document.body.removeChild(loadingOverlay);
+      }).catch(error => {
+        console.error("Error generating canvas:", error);
+        document.body.removeChild(loadingOverlay);
+      });
     }, 0);
-}
+  }
 
 
 
 
 
-// New dropdown functionality for downloading images
-createDropdownDownloadButton() {
-    const dropdownButton = createDropdownButton(this.elems.buttonDownloadImage, [ 
-        { text: "Download as PNG", callback: () => this.eventButtonDownloadClicked("PNG") },
-        { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
+  // New dropdown functionality for downloading images
+  createDropdownDownloadButton() {
+    const dropdownButton = createDropdownButton(this.elems.buttonDownloadImage, [
+      { text: "Download as PNG", callback: () => this.eventButtonDownloadClicked("PNG") },
+      { text: "Download as SVG (Coming soon)", callback: () => console.log("SVG download not yet implemented") }
     ]);
 
     return dropdownButton;
-}
+  }
 
   eventButtonTableClicked(options) {
-     const {clientHeight: height} = document.body
-     const content = document.createElement("div");
-     content.style.height = (height * .9) + 'px' ;
-     content.style.overflowY = 'auto';
-     content.style.overflowX = 'auto'; 
-     content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
-  
-  
-     popup(document.body, content , {
+    const { clientHeight: height } = document.body
+    const content = document.createElement("div");
+    content.style.height = (height * .9) + 'px';
+    content.style.overflowY = 'auto';
+    content.style.overflowX = 'auto';
+    content.style.minWidth = '1000px'; // Set a minimum width to ensure horizontal scroll
+
+
+    popup(document.body, content, {
       title: "Data Table",
       backdrop: true,
       stopEvents: false,
-     });
-  
-     let tableColumns = [...mapTableColumns]
-     options.data.then(data => {
+    });
+
+    let tableColumns = [...mapTableColumns]
+    options.data.then(data => {
       plotDataTable(data, content, {
         columns: tableColumns
-       })
-     })
-   }
+      })
+    })
+  }
 
   #buttonClickedEdit() {
     this.listeners.editClicked(this);
@@ -2164,7 +2167,7 @@ createDropdownDownloadButton() {
     this.eventButtonTableClicked(options);
   }
 
-#createElement(options) {
+  #createElement(options) {
     const gridCard = document.createElement("div");
     gridCard.className = "grid-card";
     gridCard.innerHTML = /*html*/`
@@ -2190,69 +2193,69 @@ createDropdownDownloadButton() {
 
     // Add event listener for the download button
     // Adding the download button event listener
-// Add event listener for the download button
-// Add event listener for the download button
+    // Add event listener for the download button
+    // Add event listener for the download button
     gridCard.querySelector(".fas.fa-image").addEventListener("click", (event) => {
-        const existingDropdown = gridCard.querySelector('.download-dropdown');
-        if (existingDropdown) {
-            existingDropdown.remove(); // Remove existing dropdown if it's already open
-        } else {
-            // Create a dropdown for download format selection
-            const downloadOptions = document.createElement('div');
-            downloadOptions.className = 'download-dropdown';
-            downloadOptions.innerHTML = `
+      const existingDropdown = gridCard.querySelector('.download-dropdown');
+      if (existingDropdown) {
+        existingDropdown.remove(); // Remove existing dropdown if it's already open
+      } else {
+        // Create a dropdown for download format selection
+        const downloadOptions = document.createElement('div');
+        downloadOptions.className = 'download-dropdown';
+        downloadOptions.innerHTML = `
                 <div class="dropdown-content">
                     <div class="dropdown-item" id="download-png">Download as PNG</div>
                     <div class="dropdown-item" id="download-svg">Download as SVG (Coming soon)</div>
                 </div>
             `;
 
-            // Append the dropdown to the gridCard
-            const downloadIcon = gridCard.querySelector('.fas.fa-image');
-            const iconRect = downloadIcon.getBoundingClientRect();
+        // Append the dropdown to the gridCard
+        const downloadIcon = gridCard.querySelector('.fas.fa-image');
+        const iconRect = downloadIcon.getBoundingClientRect();
 
-            // Adjust dropdown position relative to the icon
-            downloadOptions.style.position = 'absolute';
-            downloadOptions.style.top = `${downloadIcon.offsetTop + downloadIcon.offsetHeight + 5}px`; // Small gap below the icon
-            downloadOptions.style.left = `${downloadIcon.offsetLeft}px`; // Align it with the icon
+        // Adjust dropdown position relative to the icon
+        downloadOptions.style.position = 'absolute';
+        downloadOptions.style.top = `${downloadIcon.offsetTop + downloadIcon.offsetHeight + 5}px`; // Small gap below the icon
+        downloadOptions.style.left = `${downloadIcon.offsetLeft}px`; // Align it with the icon
 
-            gridCard.querySelector('.grid-card-topbar-buttons-lrg').appendChild(downloadOptions);
+        gridCard.querySelector('.grid-card-topbar-buttons-lrg').appendChild(downloadOptions);
 
-            // Handle dropdown item clicks
-            downloadOptions.querySelector("#download-png").addEventListener("click", () => {
-                downloadOptions.remove(); // Remove the dropdown
-                this.eventButtonDownloadClicked("PNG"); // Call your download function
-            });
+        // Handle dropdown item clicks
+        downloadOptions.querySelector("#download-png").addEventListener("click", () => {
+          downloadOptions.remove(); // Remove the dropdown
+          this.eventButtonDownloadClicked("PNG"); // Call your download function
+        });
 
-            downloadOptions.querySelector("#download-svg").addEventListener("click", () => {
-                console.log("SVG download not yet implemented");
-                downloadOptions.remove(); // Remove dropdown after selection
-            });
+        downloadOptions.querySelector("#download-svg").addEventListener("click", () => {
+          console.log("SVG download not yet implemented");
+          downloadOptions.remove(); // Remove dropdown after selection
+        });
 
-            // Close the dropdown if clicked outside
-            window.addEventListener("click", (event) => {
-                if (!event.target.closest('.download-dropdown') && !event.target.matches('.fas.fa-image')) {
-                    downloadOptions.remove();
-                }
-            });
-        }
+        // Close the dropdown if clicked outside
+        window.addEventListener("click", (event) => {
+          if (!event.target.closest('.download-dropdown') && !event.target.matches('.fas.fa-image')) {
+            downloadOptions.remove();
+          }
+        });
+      }
     });
 
 
 
     gridCard.querySelector(".fas.fa-table").addEventListener("click", () => this.#buttonClickedTable(options));
-    
+
     this.cardElement = gridCard;
     this.contentElement = gridCard.querySelector(".grid-card-content");
     this.titleElement = gridCard.querySelector(".grid-card-topbar-title");
-}
+  }
 
 
 
 }
 
 async function openFullscreen(content, title) {
-  const {clientHeight: height, clientWidth: width} = document.body
+  const { clientHeight: height, clientWidth: width } = document.body
   // document.body.style.overflow = 'hidden'
   const mapElement = await content(width * .9, height * .8)
   popup(document.body, mapElement, {
@@ -2266,8 +2269,8 @@ async function openFullscreen(content, title) {
 
 function zoomMap() {
   let zoom = d3.zoom()
-	.scaleExtent([0.25, 10])
-	.on('zoom', handleZoom);
+    .scaleExtent([0.25, 10])
+    .on('zoom', handleZoom);
 
   function handleZoom(e) {
     d3.select('.popup svg')

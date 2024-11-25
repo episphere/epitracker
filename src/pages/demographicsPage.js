@@ -7,7 +7,7 @@ import { DataTable } from "https://cdn.jsdelivr.net/npm/simple-datatables@8.0.0/
 import { toSvg } from "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
 import { EpiTrackerData } from "../utils/EpiTrackerData.js";
 import { State } from "../utils/State.js";
-import {COLORS} from '../utils/color.js'
+import { COLORS } from '../utils/color.js'
 import {
   createDropdownDownloadButton,
   createOptionSorter,
@@ -426,7 +426,7 @@ function updateURLParam(value, param) {
   // Replace the current history state with the updated URL
   history.replaceState({}, "", url.toString());
 }
-function setInputsEnabled(enabled) { 
+function setInputsEnabled(enabled) {
   // List of input element IDs to enable or disable
   const inputIds = [
     "select-compare-bar",
@@ -471,7 +471,7 @@ function addDownloadButton() {
 function downloadGraphSVG() {
   const sourceElement = document.getElementById('plot-source');
   const plotElement = document.getElementById('plots');
-  
+
   if (sourceElement) {
     sourceElement.style.display = 'block';
   }
@@ -480,7 +480,7 @@ function downloadGraphSVG() {
     if (sourceElement) {
       sourceElement.style.display = 'none';
     }
-    
+
     const link = document.createElement('a');
     link.download = 'plot-svg';
     link.href = data;
@@ -505,7 +505,7 @@ function downloadGraph() {
 }
 function updateTitle() {
   const level = state.spatialLevel === "county" ? "US county-level" : "US state-level";
-  
+
   let compareString = [state.compareBar, state.compareFacet]
     .filter((d) => d !== "none")
     .map((d) => formatName("fields", d))
@@ -514,7 +514,7 @@ function updateTitle() {
   compareString = compareString ? ` by ${compareString}` : "";
 
   const compareSet = new Set([state.compareBar, state.compareFacet]);
-  
+
   const selects = [
     { name: "Year", value: state.year },
     {
@@ -619,8 +619,8 @@ function updateLegend(data, query) {
       selectedValues = colorDomainValues;
     }
 
-    const colorTickFormat = query.compareColor === "race" 
-      ? (d) => formatName("race", d) 
+    const colorTickFormat = query.compareColor === "race"
+      ? (d) => formatName("race", d)
       : (d) => d;
 
     const legend = checkableLegend(
