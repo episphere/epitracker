@@ -711,11 +711,13 @@ class MapApplication {
       }
     }
 
-    const median = d3.median(allValues);
-    const deviations = allValues.map(d => Math.abs(d - median));
-    const MAD = 1.4826 * d3.median(deviations);
-    const initialClipDomain = [ median - 5 * MAD, median + 5 * MAD];
-    allValues = allValues.filter(d => d > initialClipDomain[0] && d < initialClipDomain[1]);
+    if (this.state.colorExcludeOutliers) {
+      const median = d3.median(allValues);
+      const deviations = allValues.map(d => Math.abs(d - median));
+      const MAD = 1.4826 * d3.median(deviations);
+      const initialClipDomain = [ median - 5 * MAD, median + 5 * MAD];
+      allValues = allValues.filter(d => d > initialClipDomain[0] && d < initialClipDomain[1]);  
+    }
 
     const mean = d3.mean(allValues)
 
@@ -728,7 +730,7 @@ class MapApplication {
       colorConfig.pivot = null;
     }
 
-    if (this.state.outlierCutoff && allValues.length > 1) {
+    if (this.state.colorExcludeOutliers && allValues.length > 1) {
       const std = d3.deviation(allValues);
      
       const clipDomain = [-this.state.outlierCutoff, this.state.outlierCutoff].map(d => mean + d*std);
