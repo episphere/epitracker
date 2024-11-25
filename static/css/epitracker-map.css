@@ -399,8 +399,9 @@ footer {
 .popup-content {
   height: 100%;
   width: 100%;
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow: visible;
+  /* overflow-y: auto; */
+  /* overflow-x: auto; */
 }
 
 .popup-buttons {
