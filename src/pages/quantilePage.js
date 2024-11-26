@@ -98,6 +98,7 @@ export function init() {
   elements.dashboardContainer = document.getElementById("dashboard-container");
   elements.graphContainer = document.getElementById("plot-container");
   elements.quantileContainer = document.getElementById("quantile-container");
+  elements.rightContainer = document.getElementById("right-container");
   elements.plotContainer = document.getElementById("plot-quantiles");
   elements.tableContainer = document.getElementById("table-container");
   elements.plotLegend = document.getElementById("plot-legend");
@@ -338,12 +339,13 @@ function initialDataLoad(mortalityData, quantileDetails) {
       elements.plotContainer.innerHTML = '';
       resizeTimeout = setTimeout(() => {
         state.trigger("plotConfig");
-      }, 50);
+      }, 100);
       previousSize = [rect.width, rect.height]
-
     }
   });
-  resizeObserver.observe(elements.quantileContainer);
+  // resizeObserver.observe(elements.quantileContainer);
+  resizeObserver.observe(elements.rightContainer);
+
 
   setInputsEnabled();
 }

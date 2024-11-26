@@ -2974,7 +2974,7 @@ button.previous-btn {
 }
 
 #plot-legend {
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   flex-shrink: 0;
   width: 100%;
 }

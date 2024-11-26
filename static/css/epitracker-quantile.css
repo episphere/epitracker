@@ -33,7 +33,11 @@
   padding: 20px;
   padding-top: 30px;
   min-height: 0;
-  overflow-y: auto;
+  max-width: 100%;
+  /* overflow-y: auto; */
+  overflow: auto;
+  min-width: 0;
+
 }
 
 #sidebar-form {
@@ -54,10 +58,12 @@
 }
 
 #right-container {
-  display: flex; 
+  display: flex;
   flex-direction: column;
   width: 100%;
   gap: 10px;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 #legend-container {
@@ -65,10 +71,11 @@
 }
 
 #plot-quantiles {
-  width: 100%;
-  min-height: fit-content;
+  width: fit-content;
+  min-width: 100%;
+  /* min-width: 0; */
   height: 100%;
-  overflow: hidden;
+  /* overflow: auto; */
 }
 
 #plot-quantiles svg {
@@ -76,8 +83,8 @@
 }
 
 #plot-legend {
-  margin-block: 15px;
-  margin-inline: 20px;
+  padding-block: 10px;
+  padding-inline: 15px;
 }
 
 .table-popup-content {

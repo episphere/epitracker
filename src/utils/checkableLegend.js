@@ -5,6 +5,7 @@ export function checkableLegend(values, colors, checkedList = null, labelFormat 
   const div = document.createElement("div")
   div.style.display = "flex"
   div.style.gap = "25px"
+  div.style.overflowX = "auto"
 
   if (checkedList == null) {
     checkedList = [...values]
