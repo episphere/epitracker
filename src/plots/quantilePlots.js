@@ -12,6 +12,7 @@ export function plotQuantileScatter(container, settingLegend, data, options = {}
     color: () => "slateblue",
     tooltipFields: [],
     facet: null,
+    facetDomain: null,
     drawLines: true,
     xTickFormat: d => d,
     xLabel: "quantile",
@@ -82,11 +83,16 @@ export function plotQuantileScatter(container, settingLegend, data, options = {}
   let sizePerFacet = container.getBoundingClientRect().width
   let nFacets = 1
   if (options.facet) {
-    const facetDomain = new Set(data.map(d => d[options.facet]))
-    nFacets = facetDomain.size
-    sizePerFacet = sizePerFacet / nFacets
+    const facetDomain = options.facetDomain ? options.facetDomain : [...new Set(data.map(d => d[options.facet]))];
+    nFacets = facetDomain.length;
+    sizePerFacet = sizePerFacet / nFacets;
   }
   sizePerFacet = Math.min(Math.max(300, sizePerFacet), 800)
+
+  const fx = { tickFormat: options.facetTickFormat };
+  if (options.facetDomain) {
+    fx.domain = options.facetDomain;
+  }
 
   const plotOptions = {
     // width: (sizePerFacet > 125 ? sizePerFacet * nFacets : 125 * nFacets) || 900,
@@ -99,7 +105,7 @@ export function plotQuantileScatter(container, settingLegend, data, options = {}
       ticks: 8, grid: true, label: options.yLabel,
       domain: yDomain, nice: true, labelAnchor: "center", labelArrow: "none",
     },
-    fx: { tickFormat: options.facetTickFormat },
+    fx,
     marginLeft: 80,
     marginTop: 80,
     marginBottom: 120,

@@ -68,11 +68,13 @@ const INITIAL_STATE = {
   quantileNumber: "4",
   showLines: true,
   startZero: true,
+  filter: null,
 };
 
 let state, dataManager;
 let elements, choices, staticData;
-let currentData;
+let currentData, compareValues;
+let tippyMap;
 
 export function init() {
   toggleLoading(true);
@@ -104,6 +106,7 @@ export function init() {
   elements.plotLegend = document.getElementById("plot-legend");
   elements.legendContainer = document.getElementById("legend-container");
   elements.settingsDropdown = document.getElementById("settings-dropdown");
+  elements.filterDropdown = document.getElementById("filter-dropdown");
   // elements.tableNavLink.addEventListener("click", () => changeView("table"));
   // elements.graphNavLink.addEventListener("click", () => changeView("plot"));
   elements.groupDownloadButton = document.querySelector(
@@ -114,6 +117,7 @@ export function init() {
   elements.buttonTable = document.getElementById("button-table");
   elements.buttonDownloadData = document.getElementById("button-download-data");
   elements.buttonDownloadImage = document.getElementById("button-download-image");
+  elements.buttonFilter = document.getElementById("filter-button");
   elements.imageTemplate = document.getElementById("img-template");
   elements.imageTitle = document.getElementById("img-title");
   elements.imageLegend = document.getElementById("img-legend");
@@ -121,7 +125,7 @@ export function init() {
   elements.imageSource = document.getElementById("img-source");
 
   addControlsLogic();
-  addTippys();
+  tippyMap = addTippys();
 
   // TODO: Remove
   const content = document.createElement("div");
@@ -161,6 +165,8 @@ function initializeState() {
   state.defineProperty("quantileNumber", initialState.quantileNumber);
   state.defineProperty("quantileNumberOptions", null);
   state.defineProperty("quantileRanges", null);
+  state.defineProperty("facetShow", null);
+  state.defineProperty("filter", initialState.filter);
 
   // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
@@ -220,6 +226,7 @@ function initializeState() {
     "showLines",
     "startZero",
     "legendCheckValues",
+    "facetShow",
   ]);
 
   for (const param of Object.keys(initialState)) {
@@ -455,13 +462,79 @@ async function queryUpdated(query) {
   state.mortalityData = data;
 
   updateLegend(data, query);
+
+  if (query.compareFacet != "none") {
+    elements.buttonFilter.style.display = "block";
+    setTimeout(() =>  tippyMap.get("filter-button").show(), 600);
+    setTimeout(() =>  tippyMap.get("filter-button").hide(), 3000);
+
+    elements.filterDropdown.innerHTML = '';
+    compareValues = [...new Set(data.map(d => d[query.compareFacet]))].sort();
+    let facetShow = new Set(compareValues);
+    if (state.filter) {
+      const paramFacetShow = new Set(state.filter?.split(","));
+      facetShow = facetShow.intersection(paramFacetShow);
+    }
+    if (facetShow.size == 0) {
+      facetShow = new Set(compareValues);
+    }
+    state.facetShow = facetShow;
+
+    
+    for (const value of compareValues) {
+      const formCheck = document.createElement("div");
+      formCheck.className = "form-check";
+
+      const checkbox = document.createElement("input");
+      checkbox.className = "form-check-input";
+      checkbox.setAttribute("type", "checkbox");
+      if (state.facetShow == null || state.facetShow.has(value)) {
+        checkbox.setAttribute("checked", "")
+      }
+
+      const label = document.createElement("label");
+      label.className = "form-check-label";
+      label.innerText = value;
+
+      formCheck.appendChild(checkbox);
+      formCheck.appendChild(label);
+
+      checkbox.addEventListener("input", () => {
+        if (checkbox.checked) {
+          state.facetShow.add(value);
+          state.trigger("facetShow");
+        } else {
+          state.facetShow.delete(value);
+          state.trigger("facetShow");
+        }
+      })
+      
+      elements.filterDropdown.appendChild(formCheck);
+    }
+
+    // <div class="form-check">
+    //   <input class="form-check-input" type="checkbox" value="" id="check-show-lines">
+    //   <label class="form-check-label" for="check-show-lines">
+    //     Show Lines
+    //   </label>
+    // </div>
+  } else {
+    elements.buttonFilter.style.display = "none";
+  }
 }
+
 function plotConfigUpdated(plotConfig, plotContainer = null, legendContainer = null) {
   if (!plotContainer) {
     plotContainer = elements.plotContainer;
   }
   if (!legendContainer) {
     legendContainer = elements.legendContainer;
+  }
+
+  if (state.facetShow && compareValues.length != state.facetShow.size) {
+    state.filter = [...state.facetShow].join(",");
+  } else {
+    state.filter = null;
   }
 
   const measureDetails = formatName("quantile_fields", plotConfig.query.quantileField, "all");
@@ -555,6 +628,7 @@ function plotConfigUpdated(plotConfig, plotContainer = null, legendContainer = n
         plotConfig.measure + "_low",
         plotConfig.measure + "_high",
       ],
+      facetDomain: state.facetShow ? [...state.facetShow] : null,
       color: colorFunction,
       drawLines: state.showLines,
       yStartZero: state.startZero,
@@ -645,6 +719,7 @@ function updateLegend(data, query, legendContainer = null) {
 function addControlsLogic() {
   // Add plot settings topbar popup
   minorPopup(elements.dashboardContainer, elements.buttonSettings, elements.settingsDropdown, "Plot Settings");
+  minorPopup(elements.dashboardContainer, elements.buttonFilter, elements.filterDropdown, "Filter");
 
   // Create table popup
   elements.buttonTable.addEventListener("click", () => {
