@@ -76,6 +76,7 @@ class MapApplication {
       grid: document.getElementById("grid-stack"),
       buttonUndo: document.getElementById("button-undo"),
       buttonColorSettings: document.getElementById("button-color-settings"),
+      buttonDataSettings: document.getElementById("button-data-settings"),
       buttonTable: document.getElementById("button-table"),            // Table button
       buttonDownload: document.getElementById("button-download"),      // Data download button
       buttonDownloadImage: document.getElementById("button-download-image"), // Image download button
@@ -86,6 +87,8 @@ class MapApplication {
       colorLegend: document.getElementById("color-legend"),
       colorSettings: document.getElementById("color-settings"),
       buttonColorSettingsClose: document.getElementById("color-settings-close"),
+
+      dataSettings: document.getElementById("data-settings"),
 
       // Map tooltip
       mapTooltipContent: document.getElementById("map-tooltip"),
@@ -249,10 +252,6 @@ class MapApplication {
     this.state.defineProperty("yearOptions", CONSTANTS.DATA_YEARS);
     this.state.defineProperty("cause", initialState.cause);
     this.state.defineProperty("causeOptions", optionValues.cause);
-    this.state.defineProperty("measure", initialState.measure);
-    this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES.map(d => ({
-      value: d, label: formatName("measures", d)
-    })));
     this.state.defineProperty("spatialLevel", initialState.spatialLevel);
     this.state.defineProperty("spatialLevelOptions", CONSTANTS.SPATIAL_LEVELS.map(d => ({
       value: d, label: formatName("levels", d)
@@ -280,12 +279,27 @@ class MapApplication {
       this.updateUrl();
     });
 
+    this.state.defineProperty("measure", initialState.measure);
+    this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES.map(d => ({
+      value: d, label: formatName("measures", d)
+    })));
 
     this.state.subscribe("spatialLevel", () => {
       if (this.state.spatialLevel == "state") {
         this.state.areaCounty = "All";
       }
     })
+
+    this.state.subscribe("measure", () => this.updateMeasure());
+  }
+
+  updateMeasure() {
+    if (this.cardStates) {
+      for (const cardState of this.cardStates) {
+        cardState.measure = this.state.measure;
+      }
+      this.updateGrid();
+    }
   }
 
   showInitialHints() {
@@ -301,19 +315,6 @@ class MapApplication {
   }
 
   addColorSettingsPopup() {
-
-    // const colorSettingsTooltip = addPopperTooltip(this.elems.innerDashboard);
-
-    // let tooltipShown = false;
-    // this.elems.buttonColorSettings.addEventListener("click", () => {
-    //   this.elems.colorSettings.style.display = "flex";
-    //   if (tooltipShown) {
-    //     colorSettingsTooltip.hide();
-    //   } else {
-    //     colorSettingsTooltip.show(this.elems.buttonColorSettings, this.elems.colorSettings);
-    //   }
-    //   tooltipShown = !tooltipShown;
-    // })
 
     // Add color scheme gradients
     this.state.schemeOptions = Object.entries(formatName("colorSchemes")).map(
@@ -340,7 +341,7 @@ class MapApplication {
     outlierCutoffRangeText.innerText = "±" + this.state.outlierCutoff + "σ";
 
     minorPopup(this.elems.innerDashboard, this.elems.buttonColorSettings, this.elems.colorSettings, "Color Settings");
-
+    minorPopup(this.elems.innerDashboard, this.elems.buttonDataSettings, this.elems.dataSettings, "Data Settings");
   }
 
   async createMapTooltip() {
@@ -486,9 +487,9 @@ class MapApplication {
    */
   parseUrl() {
     for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
-      const value = this.url.searchParams.get(field);
+      let value = this.url.searchParams.get(field);
       if (value != null) {
-        this.state[field] = value;
+        this.state[field] = JSON.parse(value);
       } else {
         this.state[field] = CONSTANTS.DEFAULT_STATE[field];
       }
@@ -693,6 +694,8 @@ class MapApplication {
 
     this.elems.colorLegend.innerHTML = '';
     this.elems.colorLegend.appendChild(sharedColorLegend);
+
+    this.updateTooltipHistogram();
 
     this.plotGrid.renderCards();
   }
