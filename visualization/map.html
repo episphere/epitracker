@@ -69,6 +69,7 @@
               <i id="button-edit-grid" class="settings-button fa-solid fa-plus" ></i>
               <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i>
               <i id="button-color-settings" class="settings-button fas fa-palette" tip="Color settings"></i>
+              <i id="button-data-settings" class="settings-button fas fa-database" tip="Data Settings"></i>
             <!-- Table download button -->
               <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
               <!-- Image download button -->
@@ -126,12 +127,6 @@
         <select id="select-select-county" class="form-select mb-2"  aria-label="US County select">
         </select>
       </div>
-          
-      <div class="plot-card-select">
-        <label for="select-measure">Measure</label>
-        <select id="select-measure" class="form-select mb-2" aria-label="Measure select" >
-        </select>
-      </div>
       
       <div class="plot-card-select">
         <label for="select-level">Spatial Level</label>
@@ -179,6 +174,14 @@
         <input type="range" class="form-range" id="outlier-cutoff-range" min="1" max="5" step="0.5">
         <span id="outlier-cutoff-range-text"></span>
       </div>
+    </div>
+  </div>
+
+  <div id="data-settings">
+    <div class="plot-card-select">
+      <label for="select-measure">Measure</label>
+      <select id="select-measure" class="form-select mb-2" aria-label="Measure select" >
+      </select>
     </div>
   </div>
 
