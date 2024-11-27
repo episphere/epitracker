@@ -3117,6 +3117,13 @@ footer {
   pointer-events: all;
 }
 
+#filter-dropdown {
+  display: none;
+  flex-direction: column;
+  padding: 15px;
+  pointer-events: all;
+}
+
 #color-settings-close:hover, #settings-close:hover {
   color: lightgrey;
 }
