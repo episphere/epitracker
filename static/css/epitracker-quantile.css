@@ -119,6 +119,7 @@
   z-index: 99999;
   display: flex; 
   flex-direction: column;
+  min-width: 640px;
   width: fit-content;
   height: fit-content;
   background-color: white;
@@ -159,6 +160,7 @@
 
 #filter-button {
   position: absolute;
+  display: none;
   left: 20px;
   top: 20px;
 }

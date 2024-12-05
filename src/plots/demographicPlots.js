@@ -50,11 +50,12 @@ function plotBar(data, options = {}) {
     ...options
   }
 
-  const CHAR_SIZE = 6.6
+  const CHAR_SIZE = 3
   const BASE_LABEL_WIDTH = 70
 
-  const barDomain = [...new Set(data.map(d => d[options.compareBar]))].sort()
-  const facetDomain = [...new Set(data.map(d => d[options.compareFacet]))].sort()
+  
+  const barDomain = options.barDomain ? options.barDomain : [...new Set(data.map(d => d[options.compareBar]))].sort()
+  const facetDomain = options.facetDomain ? options.facetDomain :[...new Set(data.map(d => d[options.compareFacet]))].sort()
 
   if (options.compareBar == "age_group") {
     barDomain.sort((a, b) => {
@@ -119,15 +120,17 @@ function plotBar(data, options = {}) {
     style: {
       fontSize: 15,
     },
-    fx: { tickRotate: 45, domain: facetDomain },
+    fx: {  domain: facetDomain },
     height: 640,
     width: plotWidth,
-    marginBottom: labelBox,
-    marginRight: labelBox,
-    marginLeft: 50,
-    marginTop: facetLabelBox,
+    marginBottom: labelBox + 20,
+    marginRight: labelBox / 2,
+    marginLeft: 70,
+    // marginTop: facetLabelBox,
+    marginTop: 60,
     y: {
       domain: options.yStartZero ? [0, domain[1]] : [domain[0], domain[1]], grid: true, nice: true,
+      labelAnchor: "center", labelArrow: "none",
     }
   }
 
@@ -135,19 +138,27 @@ function plotBar(data, options = {}) {
 
   plotOptions.x = { tickRotate: 45, type: "band", domain: barDomain }
   plotOptions.marks = [
-    Plot.frame({ strokeOpacity: 0.1 }),
+    // Plot.frame({ strokeOpacity: 0.1 }),
     Plot.barY(data, barOptions),
-    Plot.ruleY([rule])
+    // Plot.ruleY([rule])
   ]
 
   plotOptions = deepMerge(plotOptions, options.plotOptions)
 
   plotOptions.height = Math.max(plotOptions.height, options.minBarHeight + labelBox + facetLabelBox)
 
+
   const plot = Plot.plot(plotOptions)
   plot.removeAttribute("viewBox")
   plot.style.width = `${plotWidth}px`
   plot.style.maxWidth = `${plotWidth}px`
+  plot.style.height = `${plotOptions.height}px`
+
+  // Dumb workaround due to the absolute chaos that is trying to both center and overflow an element...
+  if (plotWidth < options.targetWidth) {
+    plot.style.marginLeft = `${(options.targetWidth - plotWidth)/2}px`;
+  }
+
   // plot.style.minWidth = `${900}px`
 
   return plot

@@ -2518,6 +2518,28 @@ button.previous-btn {
   max-width: 400px;
 }
 
+#demographics-container {
+  position: relative;
+  /* padding: 30px;
+  padding-top: 40px;
+  padding-left: 60px; */
+  overflow: auto;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+#plot-demographics {
+  min-width: 100%;
+  /* width: 100%; */
+  /* height: fit-content; */
+  min-height: 100%;
+  /* display: flex;
+  justify-content: center; */
+}
+
+
+
 .switch {
   position: relative;
   display: inline-block;
@@ -3123,6 +3145,8 @@ footer {
   padding: 15px;
   pointer-events: all;
 }
+
+
 
 #color-settings-close:hover, #settings-close:hover {
   color: lightgrey;
