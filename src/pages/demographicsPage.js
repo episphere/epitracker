@@ -142,24 +142,28 @@ class DemographicsApplication {
       }
     });
 
-    // The measure options depends on whether or not the user is comparing by age. 
+    // The measure options depends on whether or not the user is comparing or selection by age. 
     this.state.defineProperty("measure", initialState.measure);
     this.state.defineProperty("measureOptions", CONSTANTS.NUMERIC_MEASURES.map(d => ({
       value: d, label: formatName("measures", d)
-    })), ["compareState"]);
-    this.state.subscribe("compareState", () => {
+    })), ["compareState", "age"]);
+
+    const measureLogic =  () => {
       let measureOptions = CONSTANTS.NUMERIC_MEASURES.map((field) => ({
         value: field,
         label: formatName("measures", field),
       }));
 
-      if (this.state.compareBar ==  "age_group" || this.state.compareFacet == "age_group") {
+      if (this.state.compareBar ==  "age_group" || this.state.compareFacet == "age_group" || this.state.age != "All") {
         measureOptions = measureOptions.filter(d => d.value != "age_adjusted_rate");
         this.state.measure = "crude_rate";
       } 
 
       this.state.measureOptions = measureOptions;
-    });
+    }
+
+    this.state.subscribe("compareState", measureLogic);
+    this.state.subscribe("age", measureLogic);
 
     this.state.defineJointProperty("query", [
       "compareBar",
@@ -263,8 +267,9 @@ class DemographicsApplication {
       tableContainer.classList.add("table-container");
       content.appendChild(tableContainer);
 
-      const fields = ["race", "sex", "cause", "age_group", "state_fips"]
+      let fields = ["race", "sex", "cause", "age_group"]
         .map(d => ({ field: d, title: formatName("fields", d) }));
+      fields.push({field: "state", title: "State"})
       const measureFields = CONSTANTS.NUMERIC_MEASURES
         .map(d => ({ field: d, title: formatName("measures", d) }))
 
@@ -345,8 +350,7 @@ class DemographicsApplication {
     this.data = await this.dataManager.getDemographicMortalityData(dataQuery, {
       includeTotals: false,
     });
-
-    console.log(this.data);
+    this.data.forEach(row => row.state = formatName("states", row.state_fips));
 
     this.updateFilterDropdown();
     this.updateTitle();

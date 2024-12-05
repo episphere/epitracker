@@ -63,7 +63,6 @@ export function plotDataTable(data, container, options = {}) {
   container.innerHTML = ``;
   container.appendChild(table);
 
-
   const tabulator = new Tabulator(table, {
     data,
     columns,
