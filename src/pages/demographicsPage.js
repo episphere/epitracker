@@ -19,7 +19,7 @@ const CONSTANTS = {
     measure: "age_adjusted_rate",
     compareBar: "race",
     compareFacet: "sex",
-    startZero: false,
+    startZero: true,
   },
   COMPARABLE_FIELDS: ["race", "sex", "age_group"],
   NUMERIC_MEASURES: ["crude_rate", "age_adjusted_rate"],
