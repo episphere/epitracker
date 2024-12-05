@@ -486,31 +486,35 @@ class MapApplication {
    * Parse the URL params and put the information into the state object.
    */
   parseUrl() {
-    for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
-      let value = this.url.searchParams.get(field);
-      if (value != null) {
-        let newValue = value;
-        try {
-          newValue = JSON.parse(str);
-        } catch (e) { }
-        this.state[field] = newValue;
-      } else {
-        this.state[field] = CONSTANTS.DEFAULT_STATE[field];
-      }
-    }
-    for (const field of ["nRows", "nCols"]) {
-      let value = this.url.searchParams.get(field);
-      if (value != null) {
-        value = parseInt(value);
-        if (this.state[field] != value) {
-          this.state[field] = value;
+    if (this.url.searchParams.get("blank")) {
+      this.cardStates = [];
+    } else {
+      for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
+        let value = this.url.searchParams.get(field);
+        if (value != null) {
+          let newValue = value;
+          try {
+            newValue = JSON.parse(str);
+          } catch (e) { }
+          this.state[field] = newValue;
+        } else {
+          this.state[field] = CONSTANTS.DEFAULT_STATE[field];
         }
-      } else {
-        this.state[field] = CONSTANTS.DEFAULT_STATE[field];
       }
-    }
+      for (const field of ["nRows", "nCols"]) {
+        let value = this.url.searchParams.get(field);
+        if (value != null) {
+          value = parseInt(value);
+          if (this.state[field] != value) {
+            this.state[field] = value;
+          }
+        } else {
+          this.state[field] = CONSTANTS.DEFAULT_STATE[field];
+        }
+      }
 
-    this.cardStates = this.getCardStates(this.url)
+      this.cardStates = this.getCardStates(this.url);
+    }
   }
 
   /**
@@ -1007,38 +1011,42 @@ class MapApplication {
 
     const newParams = new URLSearchParams();
 
-    for (const [k, v] of Object.entries(this.sharedState)) {
-      if (CONSTANTS.DEFAULT_STATE[k] != v) {
-        newParams.append(k, v);
-      }
-    }
-
-    for (const setting of CONSTANTS.STATE_URL_FIELDS) {
-      if (CONSTANTS.DEFAULT_STATE[setting] != this.state[setting]) {
-        newParams.append(setting, this.state[setting]);
-      }
-    }
-
-    if (this.state.nRows != CONSTANTS.DEFAULT_STATE.nRows) {
-      newParams.append("nRows", this.state.nRows);
-    }
-    if (this.state.nCols != CONSTANTS.DEFAULT_STATE.nCols) {
-      newParams.append("nCols", this.state.nCols);
-    }
-
-
-    if (this.dFields.length > 0) {
-      newParams.append("dFields", this.dFields.join(","));
-
-      const dCards = [];
-      for (const card of this.plotGrid.getCards()) {
-        if (card?.cardState) {
-          dCards.push(this.dFields.map(field => card.cardState?.[field]))
-        } else {
-          dCards.push(null);
+    if (this.plotGrid.getCards().filter(d => d).length == 0) {
+      newParams.append("blank", 1);
+    } else {
+      for (const [k, v] of Object.entries(this.sharedState)) {
+        if (CONSTANTS.DEFAULT_STATE[k] != v) {
+          newParams.append(k, v);
         }
       }
-      newParams.append("dCards", dCards.map(dCard => dCard != null ? dCard.join(",") : "").join("|"));
+  
+      for (const setting of CONSTANTS.STATE_URL_FIELDS) {
+        if (CONSTANTS.DEFAULT_STATE[setting] != this.state[setting]) {
+          newParams.append(setting, this.state[setting]);
+        }
+      }
+  
+      if (this.state.nRows != CONSTANTS.DEFAULT_STATE.nRows) {
+        newParams.append("nRows", this.state.nRows);
+      }
+      if (this.state.nCols != CONSTANTS.DEFAULT_STATE.nCols) {
+        newParams.append("nCols", this.state.nCols);
+      }
+  
+  
+      if (this.dFields.length > 0) {
+        newParams.append("dFields", this.dFields.join(","));
+  
+        const dCards = [];
+        for (const card of this.plotGrid.getCards()) {
+          if (card?.cardState) {
+            dCards.push(this.dFields.map(field => card.cardState?.[field]))
+          } else {
+            dCards.push(null);
+          }
+        }
+        newParams.append("dCards", dCards.map(dCard => dCard != null ? dCard.join(",") : "").join("|"));
+      }
     }
 
     const newParamString = newParams.toString();
