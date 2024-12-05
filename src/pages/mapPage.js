@@ -812,10 +812,13 @@ class MapApplication {
     ]
     let filterElements = [
       state.year,
-      state.cause == "All" ? "All cancers" : state.cause,
       state.race == "All" ? "All races" : state.race,
       state.sex == "All" ? "All sexes" : state.sex,
-    ].filter(d => d);
+    ]
+    if (state.measure != "population") {
+     filterElements.push(state.cause == "All" ? "All cancers" : state.cause)
+    }
+    filterElements = filterElements.filter(d => d);
 
 
     let title = `US ${baseElements.filter(d => d).map(d => d.toLowerCase()).join(" ")}`;
