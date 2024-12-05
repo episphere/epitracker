@@ -5,12 +5,12 @@ export const COLORS = {
   },
   race: {
     "All": "#950b30",
-    "Non-Hispanic Black or African American": '#42979a',
-    "Non-Hispanic American Indian or Alaska Native": "#226467",
-    "Non-Hispanic White": "#a9aeb1",
-    "Non-Hispanic Asian": "#284976",
+    "Black or African American": '#42979a',
+    "American Indian or Alaska Native": "#226467",
+    "White": "#a9aeb1",
+    "Asian": "#284976",
     "Hispanic": "#d13d64",
-    "Non-Hispanic Native Hawaiian or Other Pacific Islander": "#ffbe2e",
+    "Native Hawaiian or Other Pacific Islander": "#ffbe2e",
   },
   age_group: {
     "85+": "#950b30",
