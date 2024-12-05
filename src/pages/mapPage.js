@@ -1011,6 +1011,8 @@ class MapApplication {
 
     const newParams = new URLSearchParams();
 
+    console.log("Update URL", this.plotGrid.getCards())
+
     if (this.plotGrid.getCards().filter(d => d).length == 0) {
       newParams.append("blank", 1);
     } else {
@@ -1054,9 +1056,10 @@ class MapApplication {
       if (this.url.search != this.pastStates.at(-1)) {
         this.pastStates.push(this.url.search);
       }
-      this.url.search = newParamString;
+      this.url.search = newParamString ? newParamString : " "; // Weird work-around, URL won't update if blank...?
       history.pushState(null, null, this.url.search);
     }
+
   }
 
 
@@ -1840,7 +1843,8 @@ class PlotGrid {
     blankItem.appendChild(plusText);
 
     const handle = document.createElement("div");
-    handle.className = "fa-grip-horizontal";
+    // handle.className = "fa-grip-horizontal";
+    handle.className = "fas fa-arrows-alt";
     handle.style.display = "none";
     blankItem.appendChild(handle);
 
@@ -2221,7 +2225,7 @@ class PlotCard {
         <div class="grid-card-topbar-buttons">
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
-          <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
+          <i class="fas fa-arrows-alt card-handle highlightable-button"></i>
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
