@@ -489,7 +489,11 @@ class MapApplication {
     for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
       let value = this.url.searchParams.get(field);
       if (value != null) {
-        this.state[field] = JSON.parse(value);
+        let newValue = value;
+        try {
+          newValue = JSON.parse(str);
+        } catch (e) { }
+        this.state[field] = newValue;
       } else {
         this.state[field] = CONSTANTS.DEFAULT_STATE[field];
       }
