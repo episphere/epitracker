@@ -346,6 +346,8 @@ class DemographicsApplication {
       includeTotals: false,
     });
 
+    console.log(this.data);
+
     this.updateFilterDropdown();
     this.updateTitle();
   }
