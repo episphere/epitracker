@@ -168,7 +168,7 @@ function initializeState() {
   state.defineProperty("facetShow", null);
   state.defineProperty("filter", initialState.filter);
 
-  // The compareRow and compareColumn properties can't be the same value (unless they are 'none'), handle that logic here.
+  // The compareColor and compareFacet properties can't be the same value (unless they are 'none'), handle that logic here.
   for (const [childProperty, parentProperty] of [
     ["compareColor", "compareFacet"],
     ["compareFacet", "compareColor"],

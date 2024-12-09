@@ -6,7 +6,7 @@ import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton, minorPopup } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton, minorPopup, numberFormat } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
@@ -367,7 +367,7 @@ class MapApplication {
       this.elems.mapTooltipName.innerText = name;
 
       const value = valueIndex.get(feature.id);
-      this.elems.mapTooltipValue.innerText = value != null ? value : "N/A";
+      this.elems.mapTooltipValue.innerText = value != null ? value.toLocaleString() : "N/A";
 
       const xScale = this.mapTooltipPlot.scale("x");
       const yScale = this.mapTooltipPlot.scale("y");
@@ -486,27 +486,35 @@ class MapApplication {
    * Parse the URL params and put the information into the state object.
    */
   parseUrl() {
-    for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
-      let value = this.url.searchParams.get(field);
-      if (value != null) {
-        this.state[field] = JSON.parse(value);
-      } else {
-        this.state[field] = CONSTANTS.DEFAULT_STATE[field];
-      }
-    }
-    for (const field of ["nRows", "nCols"]) {
-      let value = this.url.searchParams.get(field);
-      if (value != null) {
-        value = parseInt(value);
-        if (this.state[field] != value) {
-          this.state[field] = value;
+    if (this.url.searchParams.get("blank")) {
+      this.cardStates = [];
+    } else {
+      for (const field of [...CONSTANTS.CARD_STATE_FIELDS, ...CONSTANTS.STATE_URL_FIELDS]) {
+        let value = this.url.searchParams.get(field);
+        if (value != null) {
+          let newValue = value;
+          try {
+            newValue = JSON.parse(str);
+          } catch (e) { }
+          this.state[field] = newValue;
+        } else {
+          this.state[field] = CONSTANTS.DEFAULT_STATE[field];
         }
-      } else {
-        this.state[field] = CONSTANTS.DEFAULT_STATE[field];
       }
-    }
+      for (const field of ["nRows", "nCols"]) {
+        let value = this.url.searchParams.get(field);
+        if (value != null) {
+          value = parseInt(value);
+          if (this.state[field] != value) {
+            this.state[field] = value;
+          }
+        } else {
+          this.state[field] = CONSTANTS.DEFAULT_STATE[field];
+        }
+      }
 
-    this.cardStates = this.getCardStates(this.url)
+      this.cardStates = this.getCardStates(this.url);
+    }
   }
 
   /**
@@ -668,7 +676,7 @@ class MapApplication {
       width: 150,
       height: 60,
       marginBottom: 18,
-      x: { ticks: d3.extent(inRangeValues), tickSize: 0 },
+      x: { ticks: d3.extent(inRangeValues), tickSize: 0, tickFormat: numberFormat },
       y: { axis: null },
       marks: [
         Plot.rectY(inRangeValues, Plot.binX({ y: "count" }, { x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20 })),
@@ -812,10 +820,13 @@ class MapApplication {
     ]
     let filterElements = [
       state.year,
-      state.cause == "All" ? "All cancers" : state.cause,
       state.race == "All" ? "All races" : state.race,
       state.sex == "All" ? "All sexes" : state.sex,
-    ].filter(d => d);
+    ]
+    if (state.measure != "population") {
+     filterElements.push(state.cause == "All" ? "All cancers" : state.cause)
+    }
+    filterElements = filterElements.filter(d => d);
 
 
     let title = `US ${baseElements.filter(d => d).map(d => d.toLowerCase()).join(" ")}`;
@@ -1000,38 +1011,42 @@ class MapApplication {
 
     const newParams = new URLSearchParams();
 
-    for (const [k, v] of Object.entries(this.sharedState)) {
-      if (CONSTANTS.DEFAULT_STATE[k] != v) {
-        newParams.append(k, v);
-      }
-    }
-
-    for (const setting of CONSTANTS.STATE_URL_FIELDS) {
-      if (CONSTANTS.DEFAULT_STATE[setting] != this.state[setting]) {
-        newParams.append(setting, this.state[setting]);
-      }
-    }
-
-    if (this.state.nRows != CONSTANTS.DEFAULT_STATE.nRows) {
-      newParams.append("nRows", this.state.nRows);
-    }
-    if (this.state.nCols != CONSTANTS.DEFAULT_STATE.nCols) {
-      newParams.append("nCols", this.state.nCols);
-    }
-
-
-    if (this.dFields.length > 0) {
-      newParams.append("dFields", this.dFields.join(","));
-
-      const dCards = [];
-      for (const card of this.plotGrid.getCards()) {
-        if (card?.cardState) {
-          dCards.push(this.dFields.map(field => card.cardState?.[field]))
-        } else {
-          dCards.push(null);
+    if (this.plotGrid.getCards().filter(d => d).length == 0) {
+      newParams.append("blank", 1);
+    } else {
+      for (const [k, v] of Object.entries(this.sharedState)) {
+        if (CONSTANTS.DEFAULT_STATE[k] != v) {
+          newParams.append(k, v);
         }
       }
-      newParams.append("dCards", dCards.map(dCard => dCard != null ? dCard.join(",") : "").join("|"));
+  
+      for (const setting of CONSTANTS.STATE_URL_FIELDS) {
+        if (CONSTANTS.DEFAULT_STATE[setting] != this.state[setting]) {
+          newParams.append(setting, this.state[setting]);
+        }
+      }
+  
+      if (this.state.nRows != CONSTANTS.DEFAULT_STATE.nRows) {
+        newParams.append("nRows", this.state.nRows);
+      }
+      if (this.state.nCols != CONSTANTS.DEFAULT_STATE.nCols) {
+        newParams.append("nCols", this.state.nCols);
+      }
+  
+  
+      if (this.dFields.length > 0) {
+        newParams.append("dFields", this.dFields.join(","));
+  
+        const dCards = [];
+        for (const card of this.plotGrid.getCards()) {
+          if (card?.cardState) {
+            dCards.push(this.dFields.map(field => card.cardState?.[field]))
+          } else {
+            dCards.push(null);
+          }
+        }
+        newParams.append("dCards", dCards.map(dCard => dCard != null ? dCard.join(",") : "").join("|"));
+      }
     }
 
     const newParamString = newParams.toString();
@@ -1039,9 +1054,10 @@ class MapApplication {
       if (this.url.search != this.pastStates.at(-1)) {
         this.pastStates.push(this.url.search);
       }
-      this.url.search = newParamString;
+      this.url.search = newParamString ? newParamString : " "; // Weird work-around, URL won't update if blank...?
       history.pushState(null, null, this.url.search);
     }
+
   }
 
 
@@ -1825,7 +1841,8 @@ class PlotGrid {
     blankItem.appendChild(plusText);
 
     const handle = document.createElement("div");
-    handle.className = "fa-grip-horizontal";
+    // handle.className = "fa-grip-horizontal";
+    handle.className = "fas fa-arrows-alt";
     handle.style.display = "none";
     blankItem.appendChild(handle);
 
@@ -2206,7 +2223,7 @@ class PlotCard {
         <div class="grid-card-topbar-buttons">
           <i class="fas fa-times highlightable-button"></i>
           <i class="fas fa-expand highlightable-button"></i>
-          <i class="fas fa-grip-horizontal card-handle highlightable-button"></i>
+          <i class="fas fa-arrows-alt card-handle highlightable-button"></i>
         </div>
       </div>
       <div class="grid-card-content-container"><div class="grid-card-content"></div></div>
