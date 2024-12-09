@@ -301,6 +301,18 @@ export function replaceSelectsWithChoices(opts = {}) {
   };
 }
 
+export function numberFormat(d) {
+  if (d >= 1000 && d < 10000) {
+    return (d/1000).toFixed(1) + "k";
+  } else if (d >= 10000 && d < 1000000) {
+    return (d/1000).toFixed(0) + "k";
+  } else if (d >= 1000000) {
+    return (d/1000000).toFixed(1) + "M";
+  } else {
+    return d;
+  }
+}
+
 export function addPopperTooltip(element) {
   const tooltipElement = document.createElement("div");
   tooltipElement.classList.add("custom-tooltip");
@@ -498,6 +510,8 @@ export function colorRampLegendPivot(colorConfig, options = {}) {
   const { scheme, domain, pivot, reverse } = colorConfig;
   const { label = null, size, outlierColors } = options;
 
+  let tickFormat =  numberFormat;
+  if (options.tickFormat) tickFormat = options.tickFormat;
 
   let colorDomain = [...domain];
   if (pivot) {
@@ -509,7 +523,7 @@ export function colorRampLegendPivot(colorConfig, options = {}) {
     .scaleSequential(d3["interpolate" + scheme])
     .domain(reverse ? [colorDomain[1], colorDomain[0]] : colorDomain);
 
-  const ticks = pivot ? [domain[0], pivot, domain[1]] : domain;
+  let  ticks = pivot ? [domain[0], pivot, domain[1]] : domain;
 
   return colorRampLegend(
     colorScale,
@@ -517,7 +531,8 @@ export function colorRampLegendPivot(colorConfig, options = {}) {
     label,
     ticks,
     size,
-    outlierColors
+    outlierColors,
+    tickFormat,
   );
 }
 
@@ -528,6 +543,7 @@ export function colorRampLegend(
   tickValues = null,
   size = null,
   outlierColors = [],
+  tickFormat = d => d,
 ) {
   const nGrad = 16;
   const margin = 20;
@@ -590,7 +606,8 @@ export function colorRampLegend(
   const axis = d3
     .axisBottom(scale)
     .tickSize(size[1] - 15 - startY)
-    .tickSizeOuter(0);
+    .tickSizeOuter(0)
+    .tickFormat(tickFormat);
 
   if (tickValues != null) {
     axis.tickValues(tickValues);

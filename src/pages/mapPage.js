@@ -6,7 +6,7 @@ import choices from "https://cdn.jsdelivr.net/npm/choices.js@10.2.0/+esm";
 
 import { EpiTrackerData } from "../utils/EpiTrackerData.js"
 import { State } from '../utils/State.js';
-import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton, minorPopup } from '../utils/helper.js';
+import { addPopperTooltip, addTippys, colorRampLegendPivot, createOptionSorter, scaleGradient, popup, plotDataTable, createDropdownButton, minorPopup, numberFormat } from '../utils/helper.js';
 import { hookCheckbox, hookSelectChoices } from '../utils/input2.js';
 import { createChoroplethPlot } from '../plots/mapPlots.js';
 import { toggleLoading } from '../utils/download.js';
@@ -367,7 +367,7 @@ class MapApplication {
       this.elems.mapTooltipName.innerText = name;
 
       const value = valueIndex.get(feature.id);
-      this.elems.mapTooltipValue.innerText = value != null ? value : "N/A";
+      this.elems.mapTooltipValue.innerText = value != null ? value.toLocaleString() : "N/A";
 
       const xScale = this.mapTooltipPlot.scale("x");
       const yScale = this.mapTooltipPlot.scale("y");
@@ -676,7 +676,7 @@ class MapApplication {
       width: 150,
       height: 60,
       marginBottom: 18,
-      x: { ticks: d3.extent(inRangeValues), tickSize: 0 },
+      x: { ticks: d3.extent(inRangeValues), tickSize: 0, tickFormat: numberFormat },
       y: { axis: null },
       marks: [
         Plot.rectY(inRangeValues, Plot.binX({ y: "count" }, { x: d => d, fill: "#c0d3ca", inset: 0, thresholds: 20 })),
@@ -1010,8 +1010,6 @@ class MapApplication {
     if (!this.sharedState) return;
 
     const newParams = new URLSearchParams();
-
-    console.log("Update URL", this.plotGrid.getCards())
 
     if (this.plotGrid.getCards().filter(d => d).length == 0) {
       newParams.append("blank", 1);
