@@ -937,6 +937,13 @@ class MapApplication {
 
 
         return data.then(data => {
+          if (data.length == 0) {
+            const div = document.createElement("div");
+            div.className = "card-message";
+            div.innerText = "No data available for this selection";
+            return div;
+          }
+
           const indexField = cardState.spatialLevel + "_fips";
 
           let overlayFeatureCollection = null;
