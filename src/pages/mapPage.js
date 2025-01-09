@@ -1132,18 +1132,15 @@ class MapApplication {
 
     // Clone title element and style it
     if (title) {
-      console.log("Title found and cloning");
       const clonedTitle = title.cloneNode(true);
       clonedTitle.style.textAlign = 'center'; // Center title
       clonedTitle.style.marginBottom = '20px'; // Space below the title
       virtualContainer.appendChild(clonedTitle);
     } else {
-      console.warn("Title element not found");
     }
 
     // Clone legend element and style it
     if (legend) {
-      console.log("Legend found and cloning");
       const clonedLegend = legend.cloneNode(true);
       clonedLegend.style.marginTop = '20px'; // Space above the legend
       clonedLegend.style.textAlign = 'center'; // Center legend
@@ -1151,13 +1148,10 @@ class MapApplication {
       clonedLegend.style.boxShadow = 'none'; // Remove any shadow around the legend
       virtualContainer.appendChild(clonedLegend);
     } else {
-      console.warn("Legend element not found");
     }
 
     // Clone the grid container (preserves the layout of maps)
     if (gridContainer) {
-      console.log("Grid container found and cloning");
-
       // Clone grid container and ensure grid layout styles are preserved
       const clonedGridContainer = gridContainer.cloneNode(true);
       clonedGridContainer.style.display = gridContainer.style.display; // Maintain grid display
@@ -1204,7 +1198,6 @@ class MapApplication {
       // Append the cloned grid container to the virtual container
       virtualContainer.appendChild(clonedGridContainer);
     } else {
-      console.warn("Grid container not found");
     }
 
     // Append the virtual container to the body
@@ -1214,13 +1207,11 @@ class MapApplication {
     virtualContainer.style.height = `${virtualContainer.scrollHeight}px`;
 
     // Log the content of virtualContainer for debugging
-    console.log("Virtual container content:", virtualContainer.innerHTML);
 
     // Use a timeout to ensure the loading overlay appears immediately
     setTimeout(() => {
       // Render Virtual DOM to Canvas
       html2canvas(virtualContainer, { useCORS: true }).then(canvas => {
-        console.log("Canvas generated");
 
         const dataURL = canvas.toDataURL("image/png");
 
@@ -1234,13 +1225,11 @@ class MapApplication {
         document.body.removeChild(virtualContainer);  // Clean up the virtual DOM after rendering
         document.body.removeChild(loadingOverlay);    // Remove the loading overlay
       }).catch(error => {
-        console.error("Error generating canvas:", error);
         document.body.removeChild(loadingOverlay);  // Remove the loading overlay in case of error
       });
     }, 0); // The timeout ensures the loading overlay is shown first
   }
   eventButtonDownloadData(format) {
-    console.log("Download data button clicked");
 
     // Create and show loading overlay and message immediately
     const loadingOverlay = document.createElement("div");
@@ -1587,7 +1576,6 @@ class PlotGrid {
       deleteColumn: d => d,
       downloadCardClicked: (card) => {
         // Download logic here
-        console.log('Downloading card:', card);
 
         // // Example download content logic:
         // const contentToDownload = card.content();
@@ -1598,7 +1586,6 @@ class PlotGrid {
         // link.click();
       },
       tableClicked: (card) => {
-        console.log("Table button clicked for card:", card);
         // Define what happens when the table button is clicked
         // For example, open a modal, render a table, etc.
       },

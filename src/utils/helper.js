@@ -302,14 +302,10 @@ export function replaceSelectsWithChoices(opts = {}) {
 }
 
 export function numberFormat(d) {
-  if (d >= 1000 && d < 10000) {
-    return (d/1000).toFixed(1) + "k";
-  } else if (d >= 10000 && d < 1000000) {
-    return (d/1000).toFixed(0) + "k";
-  } else if (d >= 1000000) {
-    return (d/1000000).toFixed(1) + "M";
+  if (d < 1000) {
+    return d % 1 ? d3.format(".1f")(d) : d3.format(".0f")(d)
   } else {
-    return d;
+    return d3.format(".2s")(d)
   }
 }
 
@@ -607,7 +603,9 @@ export function colorRampLegend(
     .axisBottom(scale)
     .tickSize(size[1] - 15 - startY)
     .tickSizeOuter(0)
-    .tickFormat(tickFormat);
+    .tickFormat(d => {
+      return tickFormat(d)
+    });
 
   if (tickValues != null) {
     axis.tickValues(tickValues);
@@ -753,7 +751,6 @@ export function initSidebar() {
   const sidebar = document.getElementById("sidebar");
 
   button.addEventListener("click", () => {
-    console.log("Hide sidebar");
     if (sidebar.classList.contains("sidebar-hidden")) {
       sidebar.classList.remove("sidebar-hidden");
     } else {
