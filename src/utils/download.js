@@ -56,7 +56,7 @@ function downloadImage(image, fileName) {
   URL.revokeObjectURL(imageURL);
 }
 
-export function downloadElementAsImage(element, filename, format = "png") {
+export async function downloadElementAsImage(element, filename, format = "png") {
   const scale = 1.5;
 
   const toImage = format == "png" ? domToImage.toPng : domToImage.toSvg;
@@ -73,26 +73,24 @@ export function downloadElementAsImage(element, filename, format = "png") {
   //   newTab.document.write('<img src="' + dataUrl + '" alt="Image">');
   // })
 
-  toImage(element, {
+  const dataUrl = await toImage(element, {
     width: element.clientWidth * scale,
     height: element.clientHeight * scale,
     style: {
       transform: 'scale(' + scale + ')',
       transformOrigin: 'top left'
     }
-  }).then((dataUrl) => {
-    fetch(dataUrl)
-      .then(res => res.blob())
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${filename}.${format}`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      });
-  })
+  });
+
+  const result = await fetch(dataUrl);
+  const blob = await result.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 export function downloadGraph(graphId, fileName) {

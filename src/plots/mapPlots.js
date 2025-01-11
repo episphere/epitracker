@@ -121,7 +121,6 @@ export function createChoroplethPlot(
   if (options.width) plotOptions.width = options.width;
   if (options.height) plotOptions.height = options.height;
 
-
   const figure = document.createElement("figure");
   const plot = Plot.plot(plotOptions);
   const plotWrapper = document.createElement("svg");

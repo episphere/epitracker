@@ -76,12 +76,15 @@ footer {
 .grid-card-topbar-buttons-lrg {
   display: flex;
   gap: 8px;
-  color: #848484;
-  opacity: .4;
+  /* opacity: .4; */
   font-size: 24px;
-  color: #848484;
   margin-left: 12px;
   margin-top: 8px;
+}
+
+.grid-card-topbar-buttons-lrg .highlightable-button {
+  opacity: .5
+
 }
 
 .grid-card-topbar-title {

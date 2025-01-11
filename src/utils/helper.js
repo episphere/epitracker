@@ -745,6 +745,20 @@ const reSizePlots = (id, large, scale = 1.5) => {
 //   })
 // }
 
+export function getCombinedBoundingBox(selection) {
+  const boxes = selection.nodes().map(node => node.getBBox());
+
+  const xExtent = d3.extent(boxes, d => d.x).concat(d3.extent(boxes, d => d.x + d.width));
+  const yExtent = d3.extent(boxes, d => d.y).concat(d3.extent(boxes, d => d.y + d.height));
+
+  return {
+    x: xExtent[0],
+    y: yExtent[0],
+    width: xExtent[1] - xExtent[0],
+    height: yExtent[1] - yExtent[0]
+  };
+}
+
 export function initSidebar() {
   // TODO: Remove 'ex' prefixes.
   const button = document.getElementById("sidebar-toggle");
