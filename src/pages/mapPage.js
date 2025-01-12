@@ -953,7 +953,20 @@ class MapApplication {
     this.elems.imageMapsContainer.style.height = "fit-content";
 
     const measureName = this.sharedState.measure ? formatName("measures", this.sharedState.measure) : "Measure";
-    const sharedColorLegend = colorRampLegendPivot(await this.getColorConfig(), { label: measureName });
+
+    const colorConfig = {...await this.getColorConfig()};
+    if (singleCard) {
+      const data = await singleCard.data;
+      const cardDomain = d3.extent(data, row => row[singleCard.cardState.measure]);
+      colorConfig.domain = [
+        Math.max(cardDomain[0], colorConfig.domain[0]), 
+        Math.min(cardDomain[1], colorConfig.domain[1]), 
+      ]
+    }
+
+    const sharedColorLegend = colorRampLegendPivot(colorConfig, { 
+      label: measureName
+     });
     this.elems.imageLegend.innerHTML = '';
     this.elems.imageLegend.appendChild(sharedColorLegend);
   }
