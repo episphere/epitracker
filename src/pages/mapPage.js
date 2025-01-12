@@ -593,10 +593,10 @@ class MapApplication {
   imageDownloadClicked(card, format) {
     this.updateImageTemplate(card);
     this.toggleLoading(true);
-    // setTimeout(async () => {
-    //   await downloadElementAsImage(this.elems.imageTemplate, "epitracker-map-plot", format);
-    //   this.toggleLoading(false);
-    // }, 50);
+    setTimeout(async () => {
+      await downloadElementAsImage(this.elems.imageTemplate, "epitracker-map-plot", format);
+      this.toggleLoading(false);
+    }, 50);
   }
 
   baseState() {
