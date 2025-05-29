@@ -1,7 +1,6 @@
-import './index.scss'; 
+import './style/index.scss'; 
 // import '@nciocpl/ncids-js/nci-header/extended-with-mega-menu/auto-init';
-import megaMenuHTML from './_megamenu.html';
-
+import megaMenuHTML from './_includes/_megamenu.html';
 
 import './images/card_map.png'; 
 import './images/card_quantile.png'; 
@@ -10,6 +9,8 @@ import './images/card_demographics.png';
 
 import { DefaultMobileMenuSource } from '@nciocpl/ncids-js/nci-header';
 import { NCIExtendedHeaderWithMegaMenu } from '@nciocpl/ncids-js/nci-header';
+
+// import '@nciocpl/ncids-js/usa-combo-box/auto-init'
 
 // const megaMenuContent = document.querySelector("#megamenu-layer");
 

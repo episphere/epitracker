@@ -20,7 +20,10 @@ module.exports = (env, argv) => {
 		 *
 		 * See src/index.js for more information on styles and scripts.
 		 */
-		entry: './src/index.js',
+		entry: {
+			main: './src/index.js',
+			quantiles: './src/logic/quantilePage.js',
+		},
 
 		/**
 		 * The output configuration defines how Webpack should handle the generated
@@ -37,6 +40,9 @@ module.exports = (env, argv) => {
 			// Clears out the output directory before generated new files.
 			clean: true,
 		},
+
+		devtool: isProduction ? false : 'source-map', 
+
 		module: {
 			rules: [
 				{
@@ -132,6 +138,19 @@ module.exports = (env, argv) => {
 						filename: 'images/[name][ext]' 
 					}
 				},
+
+				{
+          test: /.*/, 
+          include: [
+            path.resolve(__dirname, 'data') 
+          ],
+          type: 'asset/resource', 
+          generator: {
+            filename: 'data/[name][ext]'
+          }
+        }
+
+				
 			],
 		},
 		plugins: [
@@ -144,13 +163,26 @@ module.exports = (env, argv) => {
 			 * should not be used for multi-page applications.
 			 */
 			new HtmlWebpackPlugin({
-				template: 'src/index.html',
+				template: 'src/pages/index.html',
 				inject: 'head',
 				minify: false,
 				meta: {
 					charset: { charset: 'UTF-8' },
 				},
+				chunks: ['main']
 			}),
+
+			new HtmlWebpackPlugin({
+				template: 'src/pages/quantiles.html',
+				filename: 'quantiles/index.html', 
+				inject: 'head',
+				minify: false,
+				meta: {
+					charset: { charset: 'UTF-8' },
+				},
+				chunks: ['main', 'quantiles']
+			}),
+			
 
 			/**
 			 * MiniCssExtractPlugin extracts CSS into separate files for production

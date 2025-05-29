@@ -12,6 +12,7 @@
     "autoprefixer": "^10.4.20",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.4.1",
+    "ejs-loader": "^0.5.0",
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.6.0",
@@ -24,7 +25,14 @@
   },
   "dependencies": {
     "@nciocpl/ncids-css": "^3.0.0",
-    "@nciocpl/ncids-js": "^3.3.0"
+    "@nciocpl/ncids-js": "^3.3.0",
+    "@observablehq/plot": "^0.6.17",
+    "@popperjs/core": "^2.11.8",
+    "arquero": "^8.0.1",
+    "d3": "^7.9.0",
+    "dom-to-image": "^2.6.0",
+    "jszip": "^3.10.1",
+    "tabulator-tables": "^6.3.1"
   },
   "browserslist": {
     "production": [
