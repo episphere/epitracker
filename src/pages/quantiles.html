@@ -167,6 +167,7 @@ TODO: Set-up templates for header, footer, etc.
           <div class="display-flex flex-justify gap-3 flex-align-end">
             <h3 id="title" class="margin-0 width-p75 text-center">US age-adjusted cancer mortality rate (per 100,000) by quartile of county-level adult smoking, 2018-2022</h3>
             <div class="display-flex gap-1 text-base">
+              <i id="button-filter" class="settings-button fa-solid fa-filter" tip="Filter"></i>
               <i id="button-options" class="settings-button fa-solid fa-gear" tip="Plot settings"></i>
               <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
               <!-- <i id="button-download-image" class="settings-button fas fa-image" tip="Download image"></i> -->
@@ -464,6 +465,17 @@ TODO: Set-up templates for header, footer, etc.
           <label class="usa-checkbox__label" for="check-start-zero">Start y-axis at 0</label>
         </div>
       </fieldset>
+    </div>
+
+    <div id="filter-dropdown-content" class="display-flex">
+      <div id="filter-compare-color-container" class="display-flex flex-column">
+        <div class="text-base-darker text-bold">Within Plot</div>
+        <fieldset id="filter-compare-color" class="usa-fieldset"></fieldset>
+      </div>
+      <div id="filter-compare-facet-container" class="display-flex flex-column">
+        <div class="text-base-darker text-bold">Between Plot</div>
+        <fieldset id="filter-compare-facet" class="usa-fieldset"></fieldset>
+      </div>
     </div>
 
    

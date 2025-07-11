@@ -1,7 +1,7 @@
 import { EpiTrackerData } from "./utils/EpiTrackerData.js";
 import { formatName } from "./utils/nameFormat.js";
 import { State } from "./utils/State.js";
-import { addPopperTooltip, round, createDropdown, downloadElementAsImage, downloadRowData, hookCheckbox, hookComboBox, hookSelect, minorPopup, plotDataTable, popup, retrieveElements } from "./utils/helper.js";
+import { addPopperTooltip, round, createDropdown, downloadElementAsImage, downloadRowData, hookCheckbox, hookComboBox, hookSelect, minorPopup, plotDataTable, popup, retrieveElements, hookCheckboxList } from "./utils/helper.js";
 import { plotQuantileScatter } from "./quantilePlot.js";
 import * as d3 from "d3";
 import { COLORS, SYMBOLS } from "./utils/plotStyle.js";
@@ -41,7 +41,14 @@ const INITIAL_STATE = {
   startZero: true,
   filter: null,
   showCI: true,
+  compareColorFilter: null,
+  compareFacetFilter: null,
 };
+
+const SPECIAL_URL_TYPES = {
+  compareColorFilter: "Set",
+  compareFacetFilter: "Set",
+}
 
 const SELECT_CONFIGS = [
   { id: "select-compare-color", propertyName: "compareColor" },
@@ -143,7 +150,12 @@ class StateManager extends State {
 
     const initialState = {... INITIAL_STATE};
     for (const [paramName, paramValue] of this.url.searchParams) {
-      initialState[paramName] = paramValue;
+      if (SPECIAL_URL_TYPES[paramName] == "Set") {
+        // Special case for set
+        initialState[paramName] = new Set(paramValue.split(","));
+      } else {
+        initialState[paramName] = paramValue;
+      }
     }
 
 
@@ -190,12 +202,16 @@ class StateManager extends State {
     this.defineProperty("showCI", initialState.showCI);
     this.defineProperty("startZero", initialState.startZero);
     this.defineProperty("facetShow", null);
+    this.defineProperty("compareColorFilter", initialState.compareColorFilter)//, ["compareColor"]);
+    this.defineProperty("compareColorFilterOptions", null);
+    this.defineProperty("compareFacetFilter", initialState.compareFacetFilter)//, ["compareFacet"]);
+    this.defineProperty("compareFacetFilterOptions", null);
 
-    for (const [paramName, paramValue] of this.url.searchParams) {
-      if (this.hasProperty(paramName)) {
-        this[paramName] = paramValue;
-      }
-    }
+    // for (const [paramName, paramValue] of this.url.searchParams) {
+    //   if (this.hasProperty(paramName)) {
+    //     this[paramName] = paramValue;
+    //   }
+    // }
 
 
     // --- Initialize state dependent logic ---
@@ -207,6 +223,7 @@ class StateManager extends State {
         if (COMPARABLE_FIELDS.includes(this[compareProperty])) {
           this[this[compareProperty]] = "All";
         }
+        this[compareProperty + "Filter"] = null;
       });
     }
 
@@ -258,6 +275,8 @@ class StateManager extends State {
       "startZero",
       "colorShow",
       "facetShow",
+      "compareColorFilter",
+      "compareFacetFilter",
     ]);
 
     this.defineProperty("currentData", null, ["query"]);
@@ -279,7 +298,12 @@ class StateManager extends State {
   updateURLParam(value, param) {
     const url = this.url;
     if (INITIAL_STATE[param] != value) {
-      url.searchParams.set(param, value);
+      if (SPECIAL_URL_TYPES[param] == "Set") {
+        // Special case for set
+        url.searchParams.set(param, [...value].join(","));
+      } else {
+        url.searchParams.set(param, value);
+      }
     } else {
       url.searchParams.delete(param);
     }
@@ -335,10 +359,6 @@ class DataManager {
   }
 
   getQuantileDetails(query) {
-    console.log(query, this.quantileDetailsMap
-      .get(query.quantileYear)
-      .get(query.quantileNumber)
-      .get(query.quantileField))
     return this.quantileDetailsMap
       .get(query.quantileYear)
       .get(query.quantileNumber)
@@ -475,6 +495,10 @@ class UIManager {
       imageTemplate: "#img-template",
       imagePlot: "#img-plot",
       imageTitle: "#img-title",
+      filterCompareColor: "#filter-compare-color",
+      filterCompareFacet: "#filter-compare-facet",
+      filterCompareColorContainer: "#filter-compare-color-container",
+      filterCompareFacetContainer: "#filter-compare-facet-container",
     });
 
     this.hookInputs();
@@ -482,6 +506,7 @@ class UIManager {
     this.hookTableView();
     this.hookPlotRedraw();
     this.hookTitle();
+    this.hookFilterMenu();
   }
 
   hookTitle() {
@@ -544,9 +569,14 @@ class UIManager {
   hookMenuButtons() {
     const mainElement = document.getElementById("main-content");
 
+    // -- Plot options dropdown --
+
     const buttonOptionsElement = document.getElementById("button-options");
     const graphSettingsElement = document.getElementById("graph-settings-dropdown-content");
     minorPopup(mainElement, buttonOptionsElement, graphSettingsElement, "Graph Settings");
+
+
+    // -- Download dropdown --
 
     const downloadData = (format) => {
       const filename = "epitracker_quantile_data";
@@ -568,7 +598,45 @@ class UIManager {
       { label: "Download data (.tsv)", action: () => downloadData("tsv") },
       { label: "Download data (.json)",  action: () => downloadData("json")},
     ]);
+
+
+    // -- Filter dropdown --
+
+    const buttonFilterElement = document.getElementById("button-filter");
+    const filterElement = document.getElementById("filter-dropdown-content");
+    minorPopup(mainElement, buttonFilterElement, filterElement, "Filter");
+
+    this.state.subscribe("query", () => {
+      this.updateFilterMenu();
+    })
   }
+
+  hookFilterMenu() {
+    hookCheckboxList(this.elems.filterCompareColor, this.state, "compareColorFilter", "compareColorFilterOptions");
+    hookCheckboxList(this.elems.filterCompareFacet, this.state, "compareFacetFilter", "compareFacetFilterOptions");
+
+    // this.state.subscribe("compareColorFilter", () => {
+    //   console.log("{compareColorFilter}", this.state.compareColorFilter);
+    // })
+  }
+
+  updateFilterMenu() {
+    if (this.state.compareColor != "none") {
+      this.elems.filterCompareColorContainer.style.display = "flex";
+      const values = [...new Set(this.state.currentData.data.map(d => d[this.state.compareColor]))];
+      this.state.compareColorFilterOptions = values;
+    } else {
+      this.elems.filterCompareColorContainer.style.display = "none";
+    }
+    if (this.state.compareFacet != "none") {
+      this.elems.filterCompareFacetContainer.style.display = "flex";
+      const values = [...new Set(this.state.currentData.data.map(d => d[this.state.compareFacet]))];
+      this.state.compareFacetFilterOptions = values;
+    } else {
+      this.elems.filterCompareFacetContainer.style.display = "none";
+    }
+  }
+
 
   hookTableView() {
     this.elems.tablePopupClose.addEventListener("click", () => {
@@ -668,9 +736,17 @@ class PlotManager {
       }
     };
 
+    let filteredData = data; 
+    if (plotConfig.query.compareColor != "none" && plotConfig.compareColorFilter != null) {
+      filteredData = filteredData.filter(d => plotConfig.compareColorFilter.has(d[plotConfig.query.compareColor]));
+    }
+    if (plotConfig.query.compareFacet != "none" && plotConfig.compareFacetFilter != null) {
+      filteredData = filteredData.filter(d => plotConfig.compareFacetFilter.has(d[plotConfig.query.compareFacet]));
+    }
+
     let legend = false;
     if (plotConfig.query.compareColor != "none") {
-      const colorDomain = [...new Set(data.map(d => d[plotConfig.query.compareColor]))];
+      const colorDomain = [...new Set(filteredData.map(d => d[plotConfig.query.compareColor]))];
       const colorRange = colorDomain.map(d => colorFunction({[plotConfig.query.compareColor]: d}));
       const symbolRange = colorDomain.map(d => symbolFunction({[plotConfig.query.compareColor]: d}));
       legend = { domain: colorDomain, range: colorRange, symbolRange, position: "bottom", 
@@ -699,7 +775,7 @@ class PlotManager {
 
 
     this.drawPlot = (plotContainer) => {
-      const { plot } = plotQuantileScatter(plotContainer, data, plotOptions);
+      const { plot } = plotQuantileScatter(plotContainer, filteredData, plotOptions);
       plot.style.marginLeft = "auto";
       plot.style.marginRight = "auto";
     }
