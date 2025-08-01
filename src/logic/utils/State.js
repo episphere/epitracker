@@ -21,6 +21,17 @@ export class State {
 
 
   defineProperty(property, value, parentProperties) {
+    if (parentProperties) {
+      for (const parentProperty of parentProperties) {
+        // if (!this.dependencyTree.getNode(property)) {
+        if (!this.properties.hasOwnProperty(parentProperty)) {
+          console.log(this.properties, property, this.properties[property]);
+          throw Error(`Unable to define property '${property}', parent property '${parentProperty}' does not exist.`);
+        }
+      }
+    }
+
+
     if (!this.hasOwnProperty(property)) {
       Object.defineProperty(this, property, {
         set: function(value) { this._setProperty(property, value) },
@@ -61,6 +72,10 @@ export class State {
   }
 
   subscribe(property, f) {
+    if (!this.dependencyTree.getNode(property)) {
+      throw Error(`property '${property}' does not exist.`)
+    }
+
     this.dependencyTree.getNode(property).content.listeners.push(f)
   }
 

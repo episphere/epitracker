@@ -26,7 +26,7 @@ const NUMERIC_MEASURES = [
   "crude_rate_ratio_ref_high",
 ];
 
-const INITIAL_STATE = {
+const DEFAULT_STATE = {
   compareColor: "sex",
   compareFacet: "none",
   sex: "All",
@@ -52,6 +52,12 @@ const SELECT_CONFIGS = [
   { id: "select-measure", propertyName: "measure" },
   { id: "combo-quantile-field", propertyName: "quantileField" },
   { id: "select-quantile-number", propertyName: "quantileNumber" },
+];
+
+const CHECK_CONFIGS = [
+  { id: "check-show-lines", propertyName: "showLines" },
+  { id: "check-show-ci", propertyName: "showCI" },
+  { id: "check-start-zero", propertyName: "startZero" },
 ]
 
 // Specifies ideal order of fields in data rows.
@@ -77,164 +83,64 @@ class QuantileApp {
   }
 
   async init() {
-    this.state = new StateManager();
-    await this.state.init();
+    this.dataManager = new DataManager();
+    await this.dataManager.init();
 
-    // this.dataManager = new DataManager(this.state);
+    this.state = new StateManager(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
+    await this.initializeAppState(); 
+
     this.plotManager = new PlotManager();
+
     this.uiManager = new UIManager(this.state, this.plotManager); 
-
-    // await this.initilizeStateOptions();
-
     this.uiManager.setInputsEnabled(true);
 
-    // this.state.subscribe("query", (query) => this.listenQueryUpdated(query));
-    this.state.subscribe("plotConfig", (query) => this.listenPlotConfigUpdated(query));
-    this.state.trigger("query");
+    this.initializeAppLogic();
   }
 
-  async loadQuantileDetails() {
-    return await d3.json("../../data/quantile/quantile_details.json");
-  }
+  async initializeAppState() {
 
-  /**
-   * Populate the state option fields by loading an initial dataset and scanning the field values.
-   */
-  async initilizeStateOptions() {
-
-    // this.state.compareColorOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
-    //   value: field,
-    //   label: formatName("fields", field)
-    // }));
-    // this.state.compareFacetOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
-    //   value: field,
-    //   label: formatName("fields", field)
-    // }));
-
-    // this.dataFieldDetails = await this.dataManager.getDataDetails();
-    // this.state.causeOptions = this.dataFieldDetails.cause;
-    // this.state.sexOptions = this.dataFieldDetails.sex;
-    // this.state.raceOptions = this.dataFieldDetails.race;
-    // this.state.quantileFieldOptions = this.dataFieldDetails.quantileFields;
-
-    // this.state.measureOptions = NUMERIC_MEASURES.map((field, i) => {
-    //   let label = formatName("measures", field)
-    //   if (typeof label == "object") label = label.name
-    //   return { value: field, label }
-    // });
-  }
-
-  async listenPlotConfigUpdated(plotConfig) {
-    this.plotManager.updatePlot(this.state.currentData, plotConfig);
-    this.plotManager.updateTable(this.state.currentData);
-    this.uiManager.redrawPlot();
-  }
-
-}
-
-class StateManager extends State {
-  constructor() {
-    super();
-    this.dataManager = new DataManager();
-  }
-
-  async init() {
-    this.url = new URL(window.location.href);
-
-    const initialState = {... INITIAL_STATE};
-    for (const [paramName, paramValue] of this.url.searchParams) {
-      initialState[paramName] = paramValue;
-    }
-
+    // --- Define default values for the Select options in the UI ---
 
     const comparableFieldOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
-      value: field,
-      label: formatName("fields", field)
+      value: field, label: formatName("fields", field)
     }));
 
+    const defaultSelectOptions = { 
+      ...await this.dataManager.getDataDetails(),
 
-    this.dataFieldDetails = await this.dataManager.getDataDetails();
-    // this.state.causeOptions = this.dataFieldDetails.cause;
-    // this.state.sexOptions = this.dataFieldDetails.sex;
-    // this.state.raceOptions = this.dataFieldDetails.race;
-    // this.state.quantileFieldOptions = this.dataFieldDetails.quantileFields;
+      compareColor: comparableFieldOptions,
+      compareFacet: comparableFieldOptions,
 
-    this.measureOptions = NUMERIC_MEASURES.map((field, i) => {
-      let label = formatName("measures", field)
-      if (typeof label == "object") label = label.name
-      return { value: field, label }
-    });
+      measure: NUMERIC_MEASURES.map(field => {
+        let label = formatName("measures", field);
+        if (typeof label == "object") label = label.name;
+        return { value: field, label };
+      }),
 
-    // --- Initialize state properties ---
+      quantileNumber: QUANTILE_NUMBERS
+    };
 
-    this.defineProperty("compareColor", initialState.compareColor);
-    this.defineProperty("compareColorOptions", comparableFieldOptions);
-    this.defineProperty("compareFacet", initialState.compareFacet);
-    this.defineProperty("compareFacetOptions", comparableFieldOptions);
-    this.defineProperty("year", initialState.year);
-    this.defineProperty("yearOptions", DATA_YEARS);
-    this.defineProperty("cause", initialState.cause);
-    this.defineProperty("causeOptions", this.dataFieldDetails.cause);
-    this.defineProperty("race", initialState.race, ["compareColor", "compareFacet"]);
-    this.defineProperty("raceOptions", this.dataFieldDetails.race);
-    this.defineProperty("sex", initialState.sex, ["compareColor", "compareFacet"]);
-    this.defineProperty("sexOptions", this.dataFieldDetails.sex);
-    this.defineProperty("measure", initialState.measure);
-    this.defineProperty("measureOptions", NUMERIC_MEASURES);
-    this.defineProperty("quantileField", initialState.quantileField);
-    this.defineProperty("quantileFieldOptions", this.dataFieldDetails.quantileFields);
-    this.defineProperty("quantileNumber", initialState.quantileNumber);
-    this.defineProperty("quantileNumberOptions", QUANTILE_NUMBERS);
-    this.defineProperty("quantileYear", initialState.quantileYear);
-    this.defineProperty("showLines", initialState.showLines);
-    this.defineProperty("showCI", initialState.showCI);
-    this.defineProperty("startZero", initialState.startZero);
-    this.defineProperty("facetShow", null);
+    // 'year' and 'quantileYear' are currently not configurable, but we're keeping them in for the future.
+    this.state.defineProperty("year");
+    this.state.defineProperty("quantileYear");
 
-    for (const [paramName, paramValue] of this.url.searchParams) {
-      if (this.hasProperty(paramName)) {
-        this[paramName] = paramValue;
-      }
+
+    // --- Define state properties required for input elements in the UI ---
+
+    for (const selectConfig of SELECT_CONFIGS) {
+      const options = defaultSelectOptions[selectConfig.propertyName];
+
+      this.state.defineProperty(selectConfig.propertyName);
+      this.state.defineProperty(selectConfig.propertyName + "Options", options);
     }
 
-
-    // --- Initialize state dependent logic ---
-
-    // The values for the selections are dependent on the compares (e.g. if we are comparing by race, then the race 
-    // select must be equal to "all").
-    for (const compareProperty of ["compareColor", "compareFacet"]) {
-      this.subscribe(compareProperty, () => {
-        if (COMPARABLE_FIELDS.includes(this[compareProperty])) {
-          this[this[compareProperty]] = "All";
-        }
-      });
+    for (const selectConfig of CHECK_CONFIGS) {
+      this.state.defineProperty(selectConfig.propertyName);
     }
 
-    // The compareColor and compareFacet properties can't be the same value (unless they are 'none').
-    for (const [childProperty, parentProperty] of [
-      ["compareColor", "compareFacet"],
-      ["compareFacet", "compareColor"],
-    ]) {
-      this.linkProperties(childProperty, parentProperty);
-      this.subscribe(parentProperty, () => {
-        if (
-          this[parentProperty] == this[childProperty] &&
-          this[childProperty] != "none"
-        ) {
-          this[childProperty] = "none";
-        }
-      });
-    }
+    // --- Define additional inter-dependant state properties --- 
 
-    this.subscribe("cause", () => {
-      if (this.cause == "Prostate") {
-        this.sexOptions = ["Male"];
-      } else {
-        this.sexOptions = this.dataFieldDetails.sex;
-      }
-    });
-
-    this.defineJointProperty("query", [
+    this.state.defineJointProperty("query", [
       "compareColor",
       "compareFacet",
       "cause",
@@ -246,47 +152,158 @@ class StateManager extends State {
       "quantileYear",
     ]);
 
-    this.defineProperty("colorShow", null, ["query"]);
-    this.defineProperty("quantileDetails", null, ["query"]);
+    this.state.defineProperty("colorShow", null, ["query"]);
+    this.state.defineProperty("currentData", null, ["query"]);
+    this.state.defineProperty("quantileDetails", null, ["query"]);
 
-    this.defineJointProperty("plotConfig", [
-      // "mortalityData",
+    this.state.defineJointProperty("plotConfig", [
       "query",
       "measure",
       "showLines",
       "showCI",
       "startZero",
       "colorShow",
-      "facetShow",
     ]);
 
-    this.defineProperty("currentData", null, ["query"]);
 
-    for (const param of Object.keys(initialState)) {
-      if (this.hasProperty(param)) {
-        this.subscribe(param, (value, param) => this.updateURLParam(value, param));
-      }
+    // --- Define inter-dependent state logic ---
+
+    // The values for the selections are dependent on the chosen comparison fields.
+    for (const compareProperty of ["compareColor", "compareFacet"]) {
+      this.state.subscribe(compareProperty, () => {
+        if (COMPARABLE_FIELDS.includes(this[compareProperty])) {
+          this[this[compareProperty]] = "All";
+        }
+      });
     }
 
-    this.subscribe("query", async (query) => {
-      this.currentData = await this.dataManager.query(query);
-      this.quantileDetails = this.dataManager.getQuantileDetails(query);
+    // The compareColor and compareFacet properties can't be the same value (unless they are 'none').
+    for (const [childProperty, parentProperty] of [
+      ["compareColor", "compareFacet"],
+      ["compareFacet", "compareColor"],
+    ]) {
+      this.state.linkProperties(childProperty, parentProperty);
+      this.state.subscribe(parentProperty, () => {
+        if (
+          this.state[parentProperty] == this.state[childProperty] &&
+          this.state[childProperty] != "none"
+        ) {
+          this.state[childProperty] = "none";
+        }
+      });
+    }
 
+    // Prostate cancer is 'Male' only. 
+    this.state.subscribe("cause", () => {
+      if (this.state.cause == "Prostate") {
+        this.state.sexOptions = ["Male"];
+      } else {
+        this.state.sexOptions = this.state.dataFieldDetails.sex;
+      }
     });
-
   }
 
+  initializeAppLogic() {
+    this.state.subscribe("query", async (query) => {
+      this.state.currentData = await this.dataManager.query(query);
+      this.state.quantileDetails = this.dataManager.getQuantileDetails(query);
+    });
+
+    this.state.subscribe("plotConfig", (plotConfig) => {
+      this.plotManager.updatePlot(this.state.currentData, plotConfig);
+      this.plotManager.updateTable(this.state.currentData);
+      this.uiManager.redrawPlot();
+    });
+
+    this.state.trigger("query");
+  }
+
+
+
+
+  // async init() {
+  //   this.state = new StateManager();
+
+  //   this.plotManager = new PlotManager();
+  //   this.uiManager = new UIManager(this.state, this.plotManager); 
+
+
+  //   this.uiManager.setInputsEnabled(true);
+
+  //   this.state.subscribe("plotConfig", (query) => this.listenPlotConfigUpdated(query));
+  //   this.state.trigger("query");
+  // }
+
+  async loadQuantileDetails() {
+    return await d3.json("../../data/quantile/quantile_details.json");
+  }
+
+
+
+  async listenPlotConfigUpdated(plotConfig) {
+    this.plotManager.updatePlot(this.state.currentData, plotConfig);
+    this.plotManager.updateTable(this.state.currentData);
+    this.uiManager.redrawPlot();
+  }
+
+}
+
+
+
+// ============================================================
+// - urlStateManager.js ---------------------------------------
+// ============================================================
+
+
+/**
+ * The StateManager is responsible for defining the state, informing subscribers when updates occur, and maintaining 
+ * the serialized state URL parameters. 
+ * The StateManager class does NOT handle any special state logic. 
+ */
+class StateManager extends State {
+  constructor (defaults = {}, urlProperties = []) {
+    super();
+    this.defaults = defaults;
+    this.url = new URL(window.location.href);
+    this.urlProperties = new Set(urlProperties);
+  }
+
+  /**
+   * Defines a state property, optionally initializing it from a URL search parameter, and subscribes it to URL updates.
+   * @param {string} property - The name of the property to define.
+   * @param {*} [value] - The default value of the property. If not provided, it will check the URL.
+   * @param {string[]} [parentProperties] - An array of parent property names.
+   */
+  defineProperty(property, value, parentProperties) {
+    if (!value && this.url.searchParams.has(property)) {
+      value = this.url.searchParams.get(property);
+    } else if (this.defaults[property]) {
+      value = this.defaults[property];
+    }
+    super.defineProperty(property, value, parentProperties);
+    if (this.urlProperties.has(property)) {
+      this.subscribe(property, (value, property) => this.updateURLParam(value, property));
+    }
+  }
+
+   /**
+   * Updates a URL search parameter based on a property's value.
+   * If the value is the initial default, the parameter is removed.
+   * @param {*} value - The new value for the parameter.
+   * @param {string} param - The URL search parameter to update.
+   */
   updateURLParam(value, param) {
     const url = this.url;
-    if (INITIAL_STATE[param] != value) {
+    if (this.defaults[param] != value) {
       url.searchParams.set(param, value);
     } else {
       url.searchParams.delete(param);
     }
     history.replaceState({}, "", this.url.toString());
   }
-  
 }
+
+
 
 class DataManager {
   constructor() {
@@ -329,7 +346,7 @@ class DataManager {
       cause: [...new Set(initialData.map((d) => d.cause))].map(d => d),
       race:  [...new Set(initialData.map((d) => d.race))].map(d => d),
       sex: [...new Set(initialData.map((d) => d.sex))].map(d => d),
-      quantileFields: [...this.quantileDetailsMap.get("2022").get("4").values()].map(d => ({
+      quantileField: [...this.quantileDetailsMap.get("2022").get("4").values()].map(d => ({
         value: d.field, label: d.name}))
     }
   }
@@ -574,8 +591,6 @@ class UIManager {
     this.elems.tablePopupClose.addEventListener("click", () => {
       this.elems.tablePopupOverlay.style.display = "none";
     });
-
-    // TODO: Hook download button
 
     this.elems.buttonTable.addEventListener("click", () => {
       this.tablePopup();
