@@ -128,7 +128,19 @@ module.exports = (env, argv) => {
 
 				{
 					test: /\.html$/i,
-					use: 'html-loader', 
+					use: [
+						{
+							loader: 'html-loader',
+						},
+						{
+							loader: 'posthtml-loader',
+							options: {
+								plugins: [
+								require('posthtml-include')({ root: path.join(__dirname, 'src') }),
+								],
+							},
+						},
+					],
 				},
 
 				{

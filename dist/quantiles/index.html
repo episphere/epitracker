@@ -5,8 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport">
 
-  <link crossorigin="anonymous" type="text/css" rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+  <link crossorigin="anonymous" type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer="">
   <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
 
 
@@ -30,108 +29,106 @@ TODO: Set-up templates for header, footer, etc.
   <!-- Top "Official Site" banner -->
   <section class="usa-banner" aria-label="Official government website">
     <header class="usa-banner__header">
-      <div class="usa-banner__inner">
+        <div class="usa-banner__inner">
         <div class="usa-banner__header-text">
-          An official website of the United States government
+            An official website of the United States government
         </div>
-      </div>
+        </div>
     </header>
-  </section>
+</section>
 
-
-  <header id="header-with-mega-menu" class="nci-header nci-header--megamenu" aria-label="NIH National Cancer Institute">
+<header id="header-with-mega-menu" class="nci-header nci-header--megamenu" aria-label="NIH National Cancer Institute">
     <!-- Top most header content: logo, searchbar*, [menu popup button] -->
     <div class="nci-header__navbar">
-      <!-- NCI logo -->
-      <div class="nci-logo" id="megamenu-logo">
+        <!-- NCI logo -->
+        <div class="nci-logo" id="megamenu-logo">
         <a href="http://cancer.gov">
-          <picture>
-            <source media="(min-width: 1024px)"
-              srcset="https://www.cancer.gov/profiles/custom/cgov_site/themes/custom/cgov/static/images/design-elements/logos/nci-logo-full.svg" />
-            <img
-              src="https://www.cancer.gov/profiles/custom/cgov_site/themes/custom/cgov/static/images/design-elements/logos/nci-logo-full.svg"
-              alt="National Cancer Institute Homepage" />
-          </picture>
+            <picture>
+            <source media="(min-width: 1024px)" srcset="https://www.cancer.gov/profiles/custom/cgov_site/themes/custom/cgov/static/images/design-elements/logos/nci-logo-full.svg">
+            <img src="https://www.cancer.gov/profiles/custom/cgov_site/themes/custom/cgov/static/images/design-elements/logos/nci-logo-full.svg" alt="National Cancer Institute Homepage">
+            </picture>
         </a>
-      </div>
-  
-      <!-- Search box (with mobile variant), menu popup button (mobile online)-->
-      <div class="nci-header-nav__secondary">
+        </div>
+
+        <!-- Search box (with mobile variant), menu popup button (mobile online)-->
+        <div class="nci-header-nav__secondary">
         <button class="usa-button nci-header-mobilenav__open-btn">Menu</button>
-  
+
         <form class="nci-header-search" role="search">
-          <label class="usa-sr-only" for="nci-header-search__field">
+            <label class="usa-sr-only" for="nci-header-search__field">
             Search
-          </label>
-          <input class="usa-input" id="nci-header-search__field" type="search" name="search" />
-  
-          <button class="usa-button nci-header-search__search-button" type="submit" aria-label="Search">
+            </label>
+            <input class="usa-input" id="nci-header-search__field" type="search" name="search">
+
+            <button class="usa-button nci-header-search__search-button" type="submit" aria-label="Search">
             <span class="nci-header-search__label" aria-hidden="true">
-              Search
+                Search
             </span>
-            <svg class="usa-icon" xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 24 24"
-              aria-labelledby="search-icon-title">
-              <title id="search-icon-title">Search</title>
-              <path d="M0 0h24v24H0z" fill="none" />
-              <path
-                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            <svg class="usa-icon" xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 24 24" aria-labelledby="search-icon-title">
+                <title id="search-icon-title">Search</title>
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
             </svg>
-          </button>
+            </button>
         </form>
-      </div>
+        </div>
     </div>
-  
-  
+
+
     <!-- Navigation header content -->
     <nav aria-label="Primary Navigation" class="nci-header-nav">
-      <div class="nci-header-nav__inner">
+        <div class="nci-header-nav__inner">
         <ul class="nci-header-nav__primary">
-          <li class="nci-header-nav__primary-item">
+            <li class="nci-header-nav__primary-item">
             <a href="#" class="nci-header-nav__primary-link usa-current">
-              <span>Home</span>
+                <span>Home</span>
             </a>
-          </li>
-          <li class="nci-header-nav__primary-item">
+            </li>
+            <li class="nci-header-nav__primary-item">
             <a href="#" class="nci-header-nav__primary-link" data-menu-id="2">
-              <span>Visualizations</span>
+                <span>Visualizations</span>
             </a>
-          </li>
-          <li class="nci-header-nav__primary-item">
+            </li>
+            <li class="nci-header-nav__primary-item">
             <a href="#" class="nci-header-nav__primary-link">
-              <span>Guide</span>
+                <span>Guide</span>
             </a>
-          </li>
-          <li class="nci-header-nav__primary-item">
+            </li>
+            <li class="nci-header-nav__primary-item">
             <a href="#" class="nci-header-nav__primary-link">
-              <span>Report Issue</span>
+                <span>Report Issue</span>
             </a>
-          </li>
+            </li>
         </ul>
-      </div>
+        </div>
     </nav>
-  </header>
+</header>
+
+
+
+ 
   
 
   <main id="main-content" class="main-content type">
     <div class="grid-container">
       <div class="grid-row margin-y-5">
-        <div class="grid-col-auto display-flex flex-column width-card-lg" >  
+        <div class="grid-col-auto display-flex flex-column width-card-lg">  
           <div class="usa-form-group ">  
             <h2 class="nci-heading-h2 margin-top-4">Data Options</h2>     
             <h3 class="nci-heading-h3">Compare</h3>
             
             <label class="usa-label text-bold usa-label-short-margin" for="select-compare-color">Within Plot</label>
-            <select class="usa-select" name="select-compare-color" id="select-compare-color" disabled></select>
+            <select class="usa-select" name="select-compare-color" id="select-compare-color" disabled=""></select>
 
             <label class="usa-label text-bold usa-label-short-margin" for="select-compare-facet">Between Plot</label>
-            <select class="usa-select" name="select-compare-facet" id="select-compare-facet" disabled></select>
+            <select class="usa-select" name="select-compare-facet" id="select-compare-facet" disabled=""></select>
 
             <h3 class="nci-heading-h3">Select</h3>
 
          
             <label class="usa-label text-bold usa-label-short-margin" for="select-select-cause">Cancer Site</label>
             <div id="combo-select-cause" class="usa-combo-box">
-              <select class="usa-select" name="select-select-cause" id="select-select-cause" disabled>
+              <select class="usa-select" name="select-select-cause" id="select-select-cause" disabled="">
                 <!-- <option value="apple">Apple</option>
                 <option value="apricot">Apricot</option>
                 <option value="avocado">Avocado</option> -->
@@ -140,27 +137,27 @@ TODO: Set-up templates for header, footer, etc.
   
   
             <label class="usa-label text-bold usa-label-short-margin" for="select-select-sex">Sex</label>
-            <select class="usa-select" name="select-select-sex" id="select-select-sex" disabled></select>
+            <select class="usa-select" name="select-select-sex" id="select-select-sex" disabled=""></select>
   
             <label class="usa-label text-bold usa-label-short-margin" for="select-select-race">Race/Ethnicity</label>
-            <select class="usa-select" name="select-select-race" id="select-select-race" disabled></select>
+            <select class="usa-select" name="select-select-race" id="select-select-race" disabled=""></select>
 
             <h3 class="nci-heading-h3">Stratify Quantiles</h3>
 
             <label class="usa-label text-bold usa-label-short-margin" for="select-quantile-field">County Characteristic</label>
             <div id="combo-quantile-field" class="usa-combo-box">
-              <select class="usa-select" name="select-quantile-field" id="select-quantile-field" disabled></select>
+              <select class="usa-select" name="select-quantile-field" id="select-quantile-field" disabled=""></select>
             </div>
   
             <label class="usa-label text-bold usa-label-short-margin" for="select-quantile-number">Number of Quantiles</label>
-            <select class="usa-select" name="select-quantile-number" id="select-quantile-number" disabled></select>
+            <select class="usa-select" name="select-quantile-number" id="select-quantile-number" disabled=""></select>
   
             <h3 class="nci-heading-h3">Other</h3>
             <label class="usa-label text-bold usa-label-short-margin" for="select-measure">Measure</label>
-            <select class="usa-select" name="select-measure" id="select-measure" disabled></select>
+            <select class="usa-select" name="select-measure" id="select-measure" disabled=""></select>
           </div>
         </div>
-        <div class="grid-col-fill display-flex flex-column padding-left-5 padding-right-0" >
+        <div class="grid-col-fill display-flex flex-column padding-left-5 padding-right-0">
           <h1 class="margin-0">County Characteristics Quantile Graphs</h1>
           <p class="font-serif-sm">Configurable graphs showing cancer mortality rates by various county-level characteristics, with optional stratification by race and sex.</p>
           
@@ -175,8 +172,8 @@ TODO: Set-up templates for header, footer, etc.
           </div>
           
           
-          <div  id="plot-container-container" class="margin-x-0 margin-y-1 margin-top-2 height-full flex display-flex flex-justify-center">
-            <div id="plot-container"  class="radius-lg shadow-2 display-flex" ></div>
+          <div id="plot-container-container" class="margin-x-0 margin-y-1 margin-top-2 height-full flex display-flex flex-justify-center">
+            <div id="plot-container" class="radius-lg shadow-2 display-flex"></div>
           </div>
         </div>
       </div>
@@ -256,12 +253,11 @@ TODO: Set-up templates for header, footer, etc.
           <div class="tablet:grid-col-4">
             <div class="usa-sign-up">
               <div class="usa-sign-up__heading">Sign up for email updates</div>
-              <form accept-charset="UTF-8" action="https://public.govdelivery.com/accounts/USNIHNCI/subscribers/qualify"
-                aria-label="Footer subscribe" class="usa-form" id="signup" method="post" novalidate target="_blank">
-                <input id="category_id" name="category_id" type="hidden" value="USNIHNCI_C25" />
+              <form accept-charset="UTF-8" action="https://public.govdelivery.com/accounts/USNIHNCI/subscribers/qualify" aria-label="Footer subscribe" class="usa-form" id="signup" method="post" novalidate="" target="_blank">
+                <input id="category_id" name="category_id" type="hidden" value="USNIHNCI_C25">
                 <div class="usa-form-group">
                   <label class="usa-label" for="email"> Enter your email address </label>
-                  <input class="usa-input width-full" id="email" name="email" type="email" value="" />
+                  <input class="usa-input width-full" id="email" name="email" type="email" value="">
                 </div>
                 <button class="usa-button usa-button--accent-warm" type="submit">Sign up</button>
               </form>
@@ -304,65 +300,54 @@ TODO: Set-up templates for header, footer, etc.
             <div class="grid-row grid-gap-1 nci-big__social">
               <div class="grid-col-auto">
                 <a class="usa-social-link usa-social-link--facebook" href="#">
-                  <svg aria-labelledby="facebook-title" class="usa-icon" role="img" viewBox="0 0 24 24" width="24"
-                    xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-labelledby="facebook-title" class="usa-icon" role="img" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
                     <title id="facebook-title">Facebook</title>
-                    <rect fill="none" height="24" width="24" />
-                    <path
-                      d="M22,12c0-5.52-4.48-10-10-10S2,6.48,2,12c0,4.84,3.44,8.87,8,9.8V15H8v-3h2V9.5C10,7.57,11.57,6,13.5,6H16v3h-2 c-0.55,0-1,0.45-1,1v2h3v3h-3v6.95C18.05,21.45,22,17.19,22,12z" />
+                    <rect fill="none" height="24" width="24"></rect>
+                    <path d="M22,12c0-5.52-4.48-10-10-10S2,6.48,2,12c0,4.84,3.44,8.87,8,9.8V15H8v-3h2V9.5C10,7.57,11.57,6,13.5,6H16v3h-2 c-0.55,0-1,0.45-1,1v2h3v3h-3v6.95C18.05,21.45,22,17.19,22,12z"></path>
                   </svg>
                 </a>
               </div>
               <div class="grid-col-auto">
                 <a class="usa-social-link usa-social-link--twitter" href="#">
-                  <svg aria-labelledby="twitter-title" class="usa-icon" role="img" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-labelledby="twitter-title" class="usa-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <title id="twitter-title">Twitter</title>
-                    <path
-                      d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5,8.1c0,.1,0,.21,0,.31a6.81,6.81,0,0,1-6.86,6.86,6.74,6.74,0,0,1-3.69-1.08,5.63,5.63,0,0,0,.58,0,4.79,4.79,0,0,0,3-1A2.41,2.41,0,0,1,7.8,13.51a1.75,1.75,0,0,0,.46.05,2.59,2.59,0,0,0,.63-.08A2.42,2.42,0,0,1,7,11.11v0a2.33,2.33,0,0,0,1.09.3A2.43,2.43,0,0,1,7.3,8.16a6.84,6.84,0,0,0,5,2.53,2.59,2.59,0,0,1-.07-.55,2.41,2.41,0,0,1,2.41-2.41,2.38,2.38,0,0,1,1.77.76A4.67,4.67,0,0,0,17.9,7.9a2.39,2.39,0,0,1-1.06,1.34,4.55,4.55,0,0,0,1.39-.39A5,5,0,0,1,17,10.1Z"
-                      id="Twitter" />
+                    <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5,8.1c0,.1,0,.21,0,.31a6.81,6.81,0,0,1-6.86,6.86,6.74,6.74,0,0,1-3.69-1.08,5.63,5.63,0,0,0,.58,0,4.79,4.79,0,0,0,3-1A2.41,2.41,0,0,1,7.8,13.51a1.75,1.75,0,0,0,.46.05,2.59,2.59,0,0,0,.63-.08A2.42,2.42,0,0,1,7,11.11v0a2.33,2.33,0,0,0,1.09.3A2.43,2.43,0,0,1,7.3,8.16a6.84,6.84,0,0,0,5,2.53,2.59,2.59,0,0,1-.07-.55,2.41,2.41,0,0,1,2.41-2.41,2.38,2.38,0,0,1,1.77.76A4.67,4.67,0,0,0,17.9,7.9a2.39,2.39,0,0,1-1.06,1.34,4.55,4.55,0,0,0,1.39-.39A5,5,0,0,1,17,10.1Z" id="Twitter"></path>
                   </svg>
                 </a>
               </div>
               <div class="grid-col-auto">
                 <a class="usa-social-link usa-social-link--instagram" href="#">
-                  <svg aria-labelledby="instagram-title" class="usa-icon" role="img" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-labelledby="instagram-title" class="usa-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <title id="instagram-title">Instagram</title>
                     <g id="Instagram">
-                      <path d="M12,10a2,2,0,1,0,2,2A2,2,0,0,0,12,10Z" />
-                      <path
-                        d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm6,12.69A3.32,3.32,0,0,1,14.69,18H9.31A3.32,3.32,0,0,1,6,14.69V9.31A3.32,3.32,0,0,1,9.31,6h5.38A3.32,3.32,0,0,1,18,9.31Z" />
-                      <path
-                        d="M16.94,9.31a2.25,2.25,0,0,0-2.25-2.25H9.31A2.25,2.25,0,0,0,7.06,9.31v5.38a2.25,2.25,0,0,0,2.25,2.25h5.38a2.25,2.25,0,0,0,2.25-2.25h0ZM12,15.09A3.09,3.09,0,1,1,15.09,12,3.09,3.09,0,0,1,12,15.09Zm3.77-5.75a.79.79,0,0,1-.55.23.83.83,0,0,1-.55-.23.78.78,0,0,1,0-1.11A.82.82,0,0,1,15.22,8a.78.78,0,0,1,.55,1.33Z" />
+                      <path d="M12,10a2,2,0,1,0,2,2A2,2,0,0,0,12,10Z"></path>
+                      <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm6,12.69A3.32,3.32,0,0,1,14.69,18H9.31A3.32,3.32,0,0,1,6,14.69V9.31A3.32,3.32,0,0,1,9.31,6h5.38A3.32,3.32,0,0,1,18,9.31Z"></path>
+                      <path d="M16.94,9.31a2.25,2.25,0,0,0-2.25-2.25H9.31A2.25,2.25,0,0,0,7.06,9.31v5.38a2.25,2.25,0,0,0,2.25,2.25h5.38a2.25,2.25,0,0,0,2.25-2.25h0ZM12,15.09A3.09,3.09,0,1,1,15.09,12,3.09,3.09,0,0,1,12,15.09Zm3.77-5.75a.79.79,0,0,1-.55.23.83.83,0,0,1-.55-.23.78.78,0,0,1,0-1.11A.82.82,0,0,1,15.22,8a.78.78,0,0,1,.55,1.33Z"></path>
                     </g>
                   </svg>
                 </a>
               </div>
               <div class="grid-col-auto">
                 <a class="usa-social-link usa-social-link--youtube" href="#">
-                  <svg aria-labelledby="youtube-title" class="usa-icon" role="img" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-labelledby="youtube-title" class="usa-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <title id="youtube-title">Youtube</title>
                     <g id="YouTube">
-                      <path
-                        d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.75,12.91A1.49,1.49,0,0,1,16.69,16a34.65,34.65,0,0,1-4.69.26A34.65,34.65,0,0,1,7.31,16a1.49,1.49,0,0,1-1.06-1.06A15.88,15.88,0,0,1,6,12a15.88,15.88,0,0,1,.25-2.91A1.49,1.49,0,0,1,7.31,8,34.65,34.65,0,0,1,12,7.77,34.65,34.65,0,0,1,16.69,8a1.49,1.49,0,0,1,1.06,1.06A15.88,15.88,0,0,1,18,12,15.88,15.88,0,0,1,17.75,14.91Z" />
-                      <polygon points="10.77 13.78 13.91 12 10.77 10.22 10.77 13.78" />
+                      <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.75,12.91A1.49,1.49,0,0,1,16.69,16a34.65,34.65,0,0,1-4.69.26A34.65,34.65,0,0,1,7.31,16a1.49,1.49,0,0,1-1.06-1.06A15.88,15.88,0,0,1,6,12a15.88,15.88,0,0,1,.25-2.91A1.49,1.49,0,0,1,7.31,8,34.65,34.65,0,0,1,12,7.77,34.65,34.65,0,0,1,16.69,8a1.49,1.49,0,0,1,1.06,1.06A15.88,15.88,0,0,1,18,12,15.88,15.88,0,0,1,17.75,14.91Z"></path>
+                      <polygon points="10.77 13.78 13.91 12 10.77 10.22 10.77 13.78"></polygon>
                     </g>
                   </svg>
                 </a>
               </div>
               <div class="grid-col-auto">
                 <a class="usa-social-link usa-social-link--linkedin" href="#">
-                  <svg aria-labelledby="linkedin-title" class="usa-icon" role="img" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-labelledby="linkedin-title" class="usa-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <title id="linkedin-title">Linkedin</title>
                     <g id="final">
                       <path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M8.912001,17.584H6.584v-7.472h2.328001V17.584z
                     M7.744,9.104C6.992,9.104,6.4,8.488,6.4,7.76c0-0.752,0.592-1.344,1.344-1.344c0.728,0,1.343999,0.592,1.343999,1.344
                     C9.087999,8.488,8.472,9.104,7.744,9.104z M17.6,17.584h-2.328v-3.64c0-0.856-0.024001-1.967999-1.216001-1.967999
                     s-1.392,0.927999-1.392,1.912v3.696H10.36v-7.472h2.224v1.008h0.024c0.464-0.752,1.296-1.216001,2.199999-1.192
-                    c2.352001,0,2.792,1.552001,2.792,3.544001C17.6,13.472,17.6,17.584,17.6,17.584z" />
+                    c2.352001,0,2.792,1.552001,2.792,3.544001C17.6,13.472,17.6,17.584,17.6,17.584z"></path>
                     </g>
                   </svg>
                 </a>
@@ -417,8 +402,7 @@ TODO: Set-up templates for header, footer, etc.
   </div>
 
   <div id="hidden-stuff">
-    <div id="megamenu-layer" class="nci-megamenu" aria-live="polite" aria-busy="false" aria-atomic="true"
-    aria-hidden="false">
+    <div id="megamenu-layer" class="nci-megamenu" aria-live="polite" aria-busy="false" aria-atomic="true" aria-hidden="false">
       <div class="grid-container">
         <div class="grid-row grid-gap-1">
           <!-- <div class="grid-col-3 nci-megamenu__primary-pane"><a class="nci-megamenu__primary-link" href="/tools">Explore
@@ -427,20 +411,17 @@ TODO: Set-up templates for header, footer, etc.
             <div class="grid-row grid-gap">
               <div class="grid-col-4">
                 <ul class="nci-megamenu__list">
-                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link"
-                      href="/tools/exposure-assessment-tools">Cancer Mapping Tool</a></li>
+                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link" href="/tools/exposure-assessment-tools">Cancer Mapping Tool</a></li>
                 </ul>
               </div>
               <div class="grid-col-4">
                 <ul class="nci-megamenu__list">
-                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link"
-                      href="/tools/radiation-dosimetry-tools">County Characteristics Tool</a></li>
+                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link" href="/tools/radiation-dosimetry-tools">County Characteristics Tool</a></li>
                 </ul>
               </div>
               <div class="grid-col-4">
                 <ul class="nci-megamenu__list">
-                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link"
-                      href="/tools/analysis">Demographics Tool</a></li>
+                  <li class="nci-megamenu__list-item"><a class="nci-megamenu__list-item-link" href="/tools/analysis">Demographics Tool</a></li>
                 </ul>
               </div>
             </div>
@@ -452,15 +433,15 @@ TODO: Set-up templates for header, footer, etc.
     <div id="graph-settings-dropdown-content">
       <fieldset class="usa-fieldset">
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input" id="check-show-lines" type="checkbox" name="check-show-lines" />
+          <input class="usa-checkbox__input" id="check-show-lines" type="checkbox" name="check-show-lines">
           <label class="usa-checkbox__label" for="check-show-lines">Show connecting lines</label>
         </div>
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input" id="check-show-ci" type="checkbox" name="check-show-ci" />
+          <input class="usa-checkbox__input" id="check-show-ci" type="checkbox" name="check-show-ci">
           <label class="usa-checkbox__label" for="check-show-ci">Show confidence intervals</label>
         </div>
         <div class="usa-checkbox">
-          <input class="usa-checkbox__input" id="check-start-zero" type="checkbox" name="check-start-zero" />
+          <input class="usa-checkbox__input" id="check-start-zero" type="checkbox" name="check-start-zero">
           <label class="usa-checkbox__label" for="check-start-zero">Start y-axis at 0</label>
         </div>
       </fieldset>
@@ -469,60 +450,6 @@ TODO: Set-up templates for header, footer, etc.
    
   </div>
 </body>
-
-<style>
-  #plot-container {
-    width: 100%; 
-    height: calc(100vh - 5rem); 
-    max-height: 680px; 
-    /* min-height: 400px;   */
-    position: sticky;  
-    top: 20px; 
-    overflow-x: auto; 
-    overflow-y: hidden; 
-    /* scrollbar-gutter: stable; */
-    /* box-shadow: 0px 0px 6px 2px rgb(222, 222, 222); */
-    border: solid #565c65 1px;
-    flex-shrink: 0;
-  }
-
-  #plot-container-container {
-    /* background-color: pink; */
-  }
-
-  /* .simplebar-track.simplebar-horizontal {
-    background-color: red !important;
-  } */
-
-  ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: white;
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #9ca3af;
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #7b7f84;
-}
-
-::-webkit-scrollbar-button {
-  display: none;
-}
-
-html {
-  /* scrollbar-width: thin; */
-  /* scrollbar-color: #9ca3af rgb(0,0,0,0); */
-}
-
-</style>
 
 <!-- <script type="module" src="../logic/quantilePage.js"></script> -->
 

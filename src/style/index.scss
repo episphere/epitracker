@@ -24,6 +24,19 @@
 @forward "usa-checkbox";
 @forward "usa-fieldset";
 
+#plot-container {
+  width: 100%; 
+  height: calc(100vh - 5rem); 
+  max-height: 680px; 
+  position: sticky;  
+  top: 20px; 
+  overflow-x: auto; 
+  overflow-y: hidden; 
+  border: solid #565c65 1px;
+  flex-shrink: 0;
+}
+
+  
 
 html {
   background-color: #00314b;
@@ -78,19 +91,6 @@ html {
 
 .dropdown-item:hover {
   background-color: #f0f0f0;
-}
-
-
-.gap-1 {
-  gap: 8px;
-}
-
-.gap-3 {
-  gap: 16px;
-}
-
-.width-p75 {
-  width: 75%;
 }
 
 #main-content {
@@ -209,3 +209,40 @@ html {
 #img-legend .legend-check {
   font-size: .9em;
 }
+
+
+.gap-1 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 16px;
+}
+
+.width-p75 {
+  width: 75%;
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: white;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7b7f84;
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
