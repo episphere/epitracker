@@ -120,61 +120,6 @@ export function hookComboBox(element, state, valueProperty, optionsProperty, uns
   return comboBox;
 }
 
-export function hookCheckboxList(element, state, valueProperty, optionsProperty) {
-
-  state.subscribe(optionsProperty, () => {
-    element.innerHTML = '';
-
-    let options = [];
-    if (Array.isArray(state[optionsProperty])) {
-      options = state[optionsProperty].map((d) =>
-        typeof d == "string" ? { label: d, value: d } : d
-      );
-    }
-
-    options.forEach((option, i) => {
-      const checkboxWrapper = document.createElement("div");
-      checkboxWrapper.classList.add("usa-checkbox");
-
-      const inputElement = document.createElement("input");
-      inputElement.setAttribute("type", "checkbox");
-      inputElement.className = "usa-checkbox__input";
-      inputElement.setAttribute("id", `check-${valueProperty}-${i}`);
-      inputElement.setAttribute("name", `check-${valueProperty}-${i}`);
-      if ((!state[valueProperty]) || state[valueProperty].has(option.value)) {
-        inputElement.setAttribute("checked", "");
-      }
-      inputElement.addEventListener("click", () => {
-        let checkedSet = state[valueProperty];
-        if (!checkedSet) {
-          checkedSet = new Set(options.map(d => d.value));
-        }
-        if (inputElement.checked) {
-          checkedSet.add(option.value);
-        } else {
-          checkedSet.delete(option.value);
-        }
-        // If all options are checked, set to a null value.
-        if (checkedSet.size == options.length) {
-          checkedSet = null;
-        }
-        state[valueProperty] = checkedSet;
-      });
-      checkboxWrapper.appendChild(inputElement);
-
-      const labelElement = document.createElement("label");
-      labelElement.className = "usa-checkbox__label";
-      labelElement.setAttribute("for", `check-${valueProperty}-${i}`);
-      labelElement.innerText = option.label;
-      checkboxWrapper.appendChild(labelElement);
-
-      element.appendChild(checkboxWrapper);
-    });
-  });
-
-  state.trigger(optionsProperty);
-}
-
 export function hookCheckbox(selector, state, valueProperty) {
   const check = document.querySelector(selector);
   if (check == null) {
@@ -474,6 +419,7 @@ export function downloadRowData(data, filename, format) {
 }
 
 export function downloadStringAsFile(content, filename, contentType) {
+  console.log("FN", filename)
   const blob = new Blob([content], { type: contentType });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -497,6 +443,8 @@ export async function downloadElementAsImage(element, filename, format = "png") 
       transformOrigin: 'top left'
     }
   });
+
+  console.log("Data URL", toImage, element, element.clientWidth, element.clientHeight);
 
   const result = await fetch(dataUrl);
   const blob = await result.blob();
