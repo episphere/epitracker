@@ -23,9 +23,7 @@ export class State {
   defineProperty(property, value, parentProperties) {
     if (parentProperties) {
       for (const parentProperty of parentProperties) {
-        // if (!this.dependencyTree.getNode(property)) {
         if (!this.properties.hasOwnProperty(parentProperty)) {
-          console.log(this.properties, property, this.properties[property]);
           throw Error(`Unable to define property '${property}', parent property '${parentProperty}' does not exist.`);
         }
       }
@@ -44,14 +42,19 @@ export class State {
 
   defineJointProperty(name, properties) {
     this.defineProperty(name, null, properties)
-    
-    const listener = () => {
+
+    const updateProperties = () => {
       const obj = {}
       for (const property of properties) {
         obj[property] = this.properties[property]
       }
       this[name] = obj 
     }
+    
+    const listener = () => {
+     updateProperties()
+    }
+    updateProperties()
     for (const property of properties) {
       this.subscribe(property, listener)
     }
@@ -65,7 +68,6 @@ export class State {
 
     const childNode = this.dependencyTree.getNode(childProperty)
     for (const parentProperty of parentProperties) {
-      //console.log(childProperty, parentProperty, this.dependencyTree.getNode(parentProperty))
       const parentNode = this.dependencyTree.getNode(parentProperty)
       parentNode.children.set(childProperty, childNode)
     }

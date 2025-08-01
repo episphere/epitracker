@@ -1,14 +1,14 @@
 import { EpiTrackerData } from "./utils/EpiTrackerData.js";
 import { formatName } from "./utils/nameFormat.js";
-import { State } from "./utils/State.js";
-import { addPopperTooltip, round, createDropdown, downloadElementAsImage, downloadRowData, hookCheckbox, hookComboBox, hookSelect, minorPopup, plotDataTable, popup, retrieveElements } from "./utils/helper.js";
+import {  round, createDropdown, downloadElementAsImage, 
+  downloadRowData, hookCheckbox, hookComboBox, hookSelect, 
+  minorPopup, plotDataTable, retrieveElements } from "./utils/helper.js";
 import { plotQuantileScatter } from "./quantilePlot.js";
 import * as d3 from "d3";
 import { COLORS, SYMBOLS } from "./utils/plotStyle.js";
+import { StateURL } from "./utils/StateURL.js";
 
-// TODO: Title ***
-// TODO: Filtering
-// TODO: State change warnings
+
 // TODO: County characteristic grouping
 
 
@@ -77,6 +77,14 @@ const PROPORTIONS_AS_PERCENTAGES = true;
 
 //  ====================================================================================================================
 
+
+
+/**
+ * @class QuantileApp
+ * @description The high-level controller for the quantile visualization application. This class orchestrates the
+ * initialization and coordination of the state, data manager, and UI manager. It defines the state and initializes
+ * the logic between state properties.
+ */
 class QuantileApp {
   constructor() {
     this.init();
@@ -86,26 +94,28 @@ class QuantileApp {
     this.dataManager = new DataManager();
     await this.dataManager.init();
 
-    this.state = new StateManager(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
+    this.state = new StateURL(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
     await this.initializeAppState(); 
 
-    this.plotManager = new PlotManager();
-
-    this.uiManager = new UIManager(this.state, this.plotManager); 
+    this.uiManager = new UIManager(this.state); 
     this.uiManager.setInputsEnabled(true);
 
     this.initializeAppLogic();
   }
 
+  /**
+   * Asynchronously initializes the application's state. This configures default options for UI controls, defines all 
+   * state properties, and establishes their inter-dependencies.
+   */
   async initializeAppState() {
 
-    // --- Define default values for the Select options in the UI ---
+    // ------ Define default values for the Select options in the UI ---------------------------------------------------
 
     const comparableFieldOptions = ["none", ...COMPARABLE_FIELDS].map((field) => ({
       value: field, label: formatName("fields", field)
     }));
 
-    const defaultSelectOptions = { 
+    this.defaultSelectOptions = { 
       ...await this.dataManager.getDataDetails(),
 
       compareColor: comparableFieldOptions,
@@ -125,10 +135,11 @@ class QuantileApp {
     this.state.defineProperty("quantileYear");
 
 
-    // --- Define state properties required for input elements in the UI ---
+
+    // ===== Define state properties required for input elements in the UI ---------------------------------------------
 
     for (const selectConfig of SELECT_CONFIGS) {
-      const options = defaultSelectOptions[selectConfig.propertyName];
+      const options = this.defaultSelectOptions[selectConfig.propertyName];
 
       this.state.defineProperty(selectConfig.propertyName);
       this.state.defineProperty(selectConfig.propertyName + "Options", options);
@@ -138,8 +149,11 @@ class QuantileApp {
       this.state.defineProperty(selectConfig.propertyName);
     }
 
-    // --- Define additional inter-dependant state properties --- 
 
+
+    // ===== Define additional inter-dependant state properties --------------------------------------------------------
+
+    // Bundle all properties that trigger a query when updated.
     this.state.defineJointProperty("query", [
       "compareColor",
       "compareFacet",
@@ -152,21 +166,24 @@ class QuantileApp {
       "quantileYear",
     ]);
 
-    this.state.defineProperty("colorShow", null, ["query"]);
-    this.state.defineProperty("currentData", null, ["query"]);
-    this.state.defineProperty("quantileDetails", null, ["query"]);
-
-    this.state.defineJointProperty("plotConfig", [
-      "query",
-      "measure",
-      "showLines",
-      "showCI",
-      "startZero",
-      "colorShow",
+    // Bundle all properties that update the display, but do not require a data query. 
+    this.state.defineJointProperty("displayConfig", [
+      "measure", "showLines", "showCI", "startZero",
     ]);
 
 
-    // --- Define inter-dependent state logic ---
+    this.state.defineProperty("currentData", null, ["query"]);
+    this.state.defineProperty("quantileDetails", null, ["query"]);
+
+    this.state.defineJointProperty("renderablePlot", [
+      "query",
+      "currentData",
+      "displayConfig"
+    ]);
+
+
+
+    // ===== Define inter-dependent state logic ------------------------------------------------------------------------
 
     // The values for the selections are dependent on the chosen comparison fields.
     for (const compareProperty of ["compareColor", "compareFacet"]) {
@@ -198,119 +215,36 @@ class QuantileApp {
       if (this.state.cause == "Prostate") {
         this.state.sexOptions = ["Male"];
       } else {
-        this.state.sexOptions = this.state.dataFieldDetails.sex;
+        this.state.sexOptions = this.defaultSelectOptions.sex;
       }
     });
   }
 
+  /**
+   * Initializes the application's query logic.
+   */
   initializeAppLogic() {
     this.state.subscribe("query", async (query) => {
       this.state.currentData = await this.dataManager.query(query);
-      this.state.quantileDetails = this.dataManager.getQuantileDetails(query);
     });
-
-    this.state.subscribe("plotConfig", (plotConfig) => {
-      this.plotManager.updatePlot(this.state.currentData, plotConfig);
-      this.plotManager.updateTable(this.state.currentData);
-      this.uiManager.redrawPlot();
-    });
-
     this.state.trigger("query");
   }
-
-
-
-
-  // async init() {
-  //   this.state = new StateManager();
-
-  //   this.plotManager = new PlotManager();
-  //   this.uiManager = new UIManager(this.state, this.plotManager); 
-
-
-  //   this.uiManager.setInputsEnabled(true);
-
-  //   this.state.subscribe("plotConfig", (query) => this.listenPlotConfigUpdated(query));
-  //   this.state.trigger("query");
-  // }
-
-  async loadQuantileDetails() {
-    return await d3.json("../../data/quantile/quantile_details.json");
-  }
-
-
-
-  async listenPlotConfigUpdated(plotConfig) {
-    this.plotManager.updatePlot(this.state.currentData, plotConfig);
-    this.plotManager.updateTable(this.state.currentData);
-    this.uiManager.redrawPlot();
-  }
-
 }
-
-
-
-// ============================================================
-// - urlStateManager.js ---------------------------------------
-// ============================================================
 
 
 /**
- * The StateManager is responsible for defining the state, informing subscribers when updates occur, and maintaining 
- * the serialized state URL parameters. 
- * The StateManager class does NOT handle any special state logic. 
+ * @class DataManager
+ * @description Manages data fetching and processing.
  */
-class StateManager extends State {
-  constructor (defaults = {}, urlProperties = []) {
-    super();
-    this.defaults = defaults;
-    this.url = new URL(window.location.href);
-    this.urlProperties = new Set(urlProperties);
-  }
-
-  /**
-   * Defines a state property, optionally initializing it from a URL search parameter, and subscribes it to URL updates.
-   * @param {string} property - The name of the property to define.
-   * @param {*} [value] - The default value of the property. If not provided, it will check the URL.
-   * @param {string[]} [parentProperties] - An array of parent property names.
-   */
-  defineProperty(property, value, parentProperties) {
-    if (!value && this.url.searchParams.has(property)) {
-      value = this.url.searchParams.get(property);
-    } else if (this.defaults[property]) {
-      value = this.defaults[property];
-    }
-    super.defineProperty(property, value, parentProperties);
-    if (this.urlProperties.has(property)) {
-      this.subscribe(property, (value, property) => this.updateURLParam(value, property));
-    }
-  }
-
-   /**
-   * Updates a URL search parameter based on a property's value.
-   * If the value is the initial default, the parameter is removed.
-   * @param {*} value - The new value for the parameter.
-   * @param {string} param - The URL search parameter to update.
-   */
-  updateURLParam(value, param) {
-    const url = this.url;
-    if (this.defaults[param] != value) {
-      url.searchParams.set(param, value);
-    } else {
-      url.searchParams.delete(param);
-    }
-    history.replaceState({}, "", this.url.toString());
-  }
-}
-
-
-
 class DataManager {
   constructor() {
     this.dataManager = new EpiTrackerData();
     this.initialization = this.init();
   }
 
+  /**
+   * Asynchronously loads and prepares the initial quantile details data.
+   */
   async init() {
     // TODO: Handle initial data query here too
 
@@ -332,6 +266,10 @@ class DataManager {
   }
 
 
+  /**
+   * Retrieves details required to populate UI controls, such as dropdown menus.
+   * It fetches an initial data sample to derive available options for causes, races, etc.
+   */
   async getDataDetails() {
     await this.initialization;
 
@@ -351,27 +289,38 @@ class DataManager {
     }
   }
 
+  /**
+   * Retrieves the quantile details for a specific county measure field based on a query object.
+   * @param {object} query - The query object.
+   */
   getQuantileDetails(query) {
-    console.log(query, this.quantileDetailsMap
-      .get(query.quantileYear)
-      .get(query.quantileNumber)
-      .get(query.quantileField))
     return this.quantileDetailsMap
       .get(query.quantileYear)
       .get(query.quantileNumber)
       .get(query.quantileField);
   }
 
+  /**
+   * The main method to query and process data based on user selections.
+   * It ensures initialization is complete, fetches raw data, and then processes it.
+   * @param {object} query - The query object.
+   */
   async query(query) {
     await this.initialization;
-
     const quantileDetails = this.getQuantileDetails(query);
-
     const data = this.processData(await this.rawQuery(query), query, quantileDetails);
-
     return { data,  quantileDetails };
   }
 
+  
+  /**
+   * Enriches the raw data with calculated fields for analysis and display.
+   * This includes confidence intervals, rate ratios, and human-readable labels.
+   * @param {object[]} data - The raw data array from the query.
+   * @param {object} query - The query object.
+   * @param {object} quantileDetails - The quantile details for the selected county measure field.
+   * @returns {object[]} The processed and enriched data array.
+   */
   processData(data, query, quantileDetails) {
     // Add confidence intervals (using a basic method)
     for (const row of data) {
@@ -400,7 +349,6 @@ class DataManager {
       }
     }
 
-
     // Add / modify data for human readability
     for (const row of data) {
       row.quantile_range = quantileDetails.quantileRanges[row.quantile-1].join(" - ");
@@ -413,7 +361,11 @@ class DataManager {
     return data;
   }
 
-
+  /**
+   * Fetches the raw mortality data.
+   * @param {object} query - The user-defined query object.
+   * @returns {Promise<object[]>} A promise that resolves to the raw data array.
+   */
   rawQuery(query) {
     const dataQuery = {
       year: query.year,
@@ -432,46 +384,18 @@ class DataManager {
       includeTotals: false,
     });
   }
-
-
-
-  /**
-   * Get ticks for x-axis of quantile plot. Ticks are formatted so that if any number has a string length larger than
-   * a fixed number, then all ticks are converted to scientific notation. Precision is set to fixed number.
-   */
-  // quantileDetailsToTicks(quantileDetails, measureDetails) {
-  //   // TODO: Automatically find an appropriate value for precision.
-  
-  //   // Get ticks for x-axis of quantile plot. Ticks are formatted so that if any number has a string length larger than
-  //   // a fixed number, then all ticks are converted to scientific notation. Precision is set to fixed number.
-  //   if (quantileDetails) {
-  //     let ranges = quantileDetails.quantileRanges.map((range) => {
-  //       // Convert proportions to percentages
-  //       if (measureDetails.unit == "Proportion") {
-  //         range = range.map(d => d * 100);
-  //       }
-  //       return range.map((d) => Number(d.toPrecision(2)).toString())
-  //     });
-
-  //     const exp = d3.merge(ranges).some((d) => d.length > 6);
-  //     for (let i = 0; i < ranges.length; i++) {
-  //       if (exp) {
-  //         ranges[i] = ranges[i].map((d) => parseFloat(d));
-  //       } else {
-  //         ranges[i] = ranges[i].map((d) =>
-  //           parseFloat(d).toLocaleString("en-US", { maximumFractionDigits: 8 })
-  //         );
-  //       }
-  //     }
-  //     return ranges.map((d) => d.join(" - "));
-  //   }
-  // }
 }
 
+
+/**
+ * @class 
+ * @description Contains logic to maintain consistency between the UI and the applications state. Also handles responses
+ * to UI based events (such as downloading data or displaying the table). Orchestrates plot drawing through PlotDrawer.
+ */
 class UIManager {
   constructor(state, plotManager) {
     this.state = state;
-    this.plotManager = plotManager;
+    this.plotDrawer = new PlotDrawer();
     this.init();
   }
 
@@ -494,6 +418,14 @@ class UIManager {
       imageTitle: "#img-title",
     });
 
+    this.state.subscribe("renderablePlot", (renderablePlot) => {
+      const { query, currentData, displayConfig } = renderablePlot;
+      const plotConfig = { query, ...displayConfig};
+      this.plotDrawer.updatePlot(currentData, plotConfig);
+      this.plotDrawer.updateTable(currentData);
+      this.redrawPlot();
+    });
+
     this.hookInputs();
     this.hookMenuButtons();
     this.hookTableView();
@@ -501,18 +433,22 @@ class UIManager {
     this.hookTitle();
   }
 
+
+  /**
+   * Initialize the logic which updates the title in response to state changes.
+   */
   hookTitle() {
-    this.state.subscribe("plotConfig", (plotConfig) => {
-      const measureName = formatName("measures", plotConfig.measure, "verbose").toLowerCase();
-      const quantileName = formatName("quantiles", plotConfig.query.quantileNumber);
-      const quantileFieldName = this.state.quantileDetails.name.toLowerCase();
+    this.state.subscribe("renderablePlot", (renderablePlot) => {
+      const measureName = formatName("measures", renderablePlot.displayConfig.measure, "verbose").toLowerCase();
+      const quantileName = formatName("quantiles", renderablePlot.query.quantileNumber);
+      const quantileFieldName = this.state.currentData.quantileDetails.name.toLowerCase();
       let title = `US ${measureName} by ${quantileName} of county-level ${quantileFieldName}`;
 
       let filterElements = [
-        plotConfig.query.year,
-        plotConfig.query.cause == "All" ? null : plotConfig.query.cause,
-        plotConfig.query.race == "All" ? null : plotConfig.query.race,
-        plotConfig.query.sex == "All" ? null : plotConfig.query.sex,
+        renderablePlot.query.year,
+        renderablePlot.query.cause == "All" ? null : renderablePlot.query.cause,
+        renderablePlot.query.race == "All" ? null : renderablePlot.query.race,
+        renderablePlot.query.sex == "All" ? null : renderablePlot.query.sex,
       ].filter(d => d).map(d => d.toLowerCase());
     
       if (filterElements.length > 0) {
@@ -523,6 +459,9 @@ class UIManager {
     });
   }
 
+  /**
+   * Initialize the logic which maintains consistency between the UI inputs and the state.
+   */
   hookInputs() {
     const selects = {};
 
@@ -558,6 +497,9 @@ class UIManager {
     hookCheckbox("#check-start-zero", this.state, "startZero");
   }
 
+  /**
+   * Set-up UI dropdowns.
+   */
   hookMenuButtons() {
     const mainElement = document.getElementById("main-content");
 
@@ -587,23 +529,24 @@ class UIManager {
     ]);
   }
 
+   /**
+   * Handle table popup events.
+   */
   hookTableView() {
     this.elems.tablePopupClose.addEventListener("click", () => {
       this.elems.tablePopupOverlay.style.display = "none";
     });
 
     this.elems.buttonTable.addEventListener("click", () => {
-      this.tablePopup();
+      this.elems.tablePopupOverlay.style.display = "block";
+      this.plotDrawer.drawTable(this.elems.tableContainer);
     });
 
   }
 
-  tablePopup() {
-    this.elems.tablePopupOverlay.style.display = "block";
-    this.plotManager.drawTable(this.elems.tableContainer);
-  }
-
-
+  /**
+   * Initialize the logic which updates the plot in response to size changes.
+   */
   hookPlotRedraw() {
     let resizeTimeout;
     let previousSize = [-1, -1];
@@ -622,16 +565,23 @@ class UIManager {
         previousSize = [rect.width, rect.height]
       }
     });
-    // resizeObserver.observe(elements.quantileContainer);
     resizeObserver.observe(this.elems.plotContainer);
   }
 
+  /**
+ * Generates and downloads the current quantile graph as an image.
+ * @param {'png' | 'svg'} format The desired image format for the download.
+ */
   downloadGraph(format) {
-    this.plotManager.drawPlot(this.elems.imagePlot);
+    this.plotDrawer.drawPlot(this.elems.imagePlot);
     this.elems.imageTitle.innerText = document.getElementById("title").innerText;
     downloadElementAsImage(this.elems.imageTemplate, "epitracker-quantile-graph", format);
   }
 
+  /**
+   * Enables and disables the input elements of the UI.
+   * @param {*}  A boolean indicating whether to enable (`true`) or disable (`false`) the input elements.
+   */
   setInputsEnabled(enabled) {
     for (const element of document.querySelectorAll("select")) {
       if (enabled) {
@@ -649,16 +599,34 @@ class UIManager {
     }
   }
 
-
-
   redrawPlot() {
-    this.plotManager.drawPlot(this.elems.plotContainer);
+    this.plotDrawer.drawPlot(this.elems.plotContainer);
   }
 }
 
 
-class PlotManager {
+/**
+ * @class UIManager
+ * @description  Manages the configuration and rendering of the quantile scatter plot and its corresponding data table.
+ * This class prepares drawing functions based on user-selected configurations and data.
+ */
+class PlotDrawer {
 
+  /**
+   * Configures the plot options and prepares the `drawPlot` method for rendering.
+   * This method sets up all visual aspects of the scatter plot, including axes, labels, etc.
+   * It then reassigns `this.drawPlot` to a new function that will render the plot in a given container.
+   *
+   * @param {object} currentData - The data object for the plot.
+   * @param {Array<object>} currentData.data - The dataset to be plotted.
+   * @param {object} currentData.quantileDetails - Quantile details about the county measure.
+   * @param {object} plotConfig - The configuration object for the plot.
+   * @param {string} plotConfig.measure - The primary measure to plot on the y-axis.
+   * @param {boolean} plotConfig.showCI - Flag to show/hide confidence intervals.
+   * @param {boolean} plotConfig.showLines - Flag to show/hide connecting lines.
+   * @param {boolean} plotConfig.startZero - Flag to start the y-axis at zero.
+   * @param {object} plotConfig.query - The user query object defining faceting and coloring.
+   */
   updatePlot(currentData, plotConfig) {
     let { data, quantileDetails } = currentData;
 
@@ -720,6 +688,14 @@ class PlotManager {
     }
   }
 
+  /**
+   * Configures and prepares the `drawTable` method for rendering the data in a tabular format.
+   * This method reassigns `this.drawTable` to a new function that will render the data table
+   * in a given container.
+   *
+   * @param {object} currentData - The data object for the table.
+   * @param {Array<object>} currentData.data - The dataset to be displayed.
+   */
   updateTable(currentData) {
     this.drawTable = (tableContainer) => {
       const content = document.createElement("div");
