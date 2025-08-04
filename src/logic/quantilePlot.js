@@ -135,8 +135,10 @@ export function plotQuantileScatter(container,  data, options = {}) {
 
   const plotContainer = document.createElement("div");
   plotContainer.style.width = "100%";
-  plotContainer.style.display = "flex";
-  plotContainer.style.flexDirection = "column";
+  // plotContainer.style.display = "flex";
+  // plotContainer.style.flexDirection = "column";
+  plotContainer.style.display = "grid";
+  plotContainer.style.gridTemplateRows = "1fr auto";
 
 
   container.style.minHeight = options.minHeight + 60 + "px"

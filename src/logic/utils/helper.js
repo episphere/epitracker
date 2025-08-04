@@ -2,7 +2,8 @@ import { USAComboBox } from "./USAComboBox.js";
 import * as Popper from "@popperjs/core";
 import { Tabulator, FrozenColumnsModule, SortModule, FormatModule } from 'tabulator-tables'
 import * as d3 from "d3";
-import domToImage from "dom-to-image";
+import { domToPng } from 'modern-screenshot';
+
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule]);
 
@@ -431,20 +432,12 @@ export function downloadStringAsFile(content, filename, contentType) {
 }
 
 export async function downloadElementAsImage(element, filename, format = "png") {
-  const scale = 1.5;
+  const scale = 3;
+  // const scale = 1.0;
 
-  const toImage = format == "png" ? domToImage.toPng : domToImage.toSvg;
 
-  const dataUrl = await toImage(element, {
-    width: element.clientWidth * scale,
-    height: element.clientHeight * scale,
-    style: {
-      transform: 'scale(' + scale + ')',
-      transformOrigin: 'top left'
-    }
-  });
-
-  console.log("Data URL", toImage, element, element.clientWidth, element.clientHeight);
+  const dataUrl = await domToPng(element, { scale });
+  // element.style.transform = 'scale(' + scale + ')'
 
   const result = await fetch(dataUrl);
   const blob = await result.blob();

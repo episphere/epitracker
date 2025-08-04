@@ -188,8 +188,8 @@ class QuantileApp {
     // The values for the selections are dependent on the chosen comparison fields.
     for (const compareProperty of ["compareColor", "compareFacet"]) {
       this.state.subscribe(compareProperty, () => {
-        if (COMPARABLE_FIELDS.includes(this[compareProperty])) {
-          this[this[compareProperty]] = "All";
+        if (COMPARABLE_FIELDS.includes(this.state[compareProperty])) {
+          this.state[this.state[compareProperty]] = "All";
         }
       });
     }
@@ -404,6 +404,7 @@ class UIManager {
     this.elems = retrieveElements({
       plotContainerContainer: "#plot-container-container",
       plotContainer: "#plot-container",
+      plotElement: "#plot",
       buttonTable: "#button-table",
       body: "#main-content",
       title: "#title",
@@ -551,21 +552,21 @@ class UIManager {
     let resizeTimeout;
     let previousSize = [-1, -1];
     const resizeObserver = new ResizeObserver(() => {
-      const rect = this.elems.plotContainer.getBoundingClientRect();
+      const rect = this.elems.plotElement.getBoundingClientRect();
 
       if (rect.width != previousSize[0] || rect.height != previousSize[1]) {
         if (resizeTimeout) {
           clearTimeout(resizeTimeout);
         }
 
-        this.elems.plotContainer.innerHTML = '';
+        this.elems.plotElement.innerHTML = '';
         resizeTimeout = setTimeout(() => {
           this.redrawPlot();
         }, 300);
         previousSize = [rect.width, rect.height]
       }
     });
-    resizeObserver.observe(this.elems.plotContainer);
+    resizeObserver.observe(this.elems.plotElement);
   }
 
   /**
@@ -600,7 +601,7 @@ class UIManager {
   }
 
   redrawPlot() {
-    this.plotDrawer.drawPlot(this.elems.plotContainer);
+    this.plotDrawer.drawPlot(this.elems.plotElement);
   }
 }
 

@@ -194,6 +194,17 @@ module.exports = (env, argv) => {
 				},
 				chunks: ['main', 'quantiles']
 			}),
+
+			new HtmlWebpackPlugin({
+				template: 'src/pages/maps.html',
+				filename: 'maps/index.html', 
+				inject: 'head',
+				minify: false,
+				meta: {
+					charset: { charset: 'UTF-8' },
+				},
+				chunks: ['main', 'maps']
+			}),
 			
 
 			/**

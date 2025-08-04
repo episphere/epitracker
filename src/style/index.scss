@@ -27,12 +27,12 @@
 #plot-container {
   width: 100%; 
   height: calc(100vh - 5rem); 
-  max-height: 680px; 
+  max-height: 785px; 
   position: sticky;  
   top: 20px; 
-  overflow-x: auto; 
+  // overflow-x: auto; 
   overflow-y: hidden; 
-  border: solid #565c65 1px;
+  border: solid #565c65 2px;
   flex-shrink: 0;
 }
 
@@ -146,10 +146,15 @@ html {
 
 #img-template {
   z-index: 99999;
-  display: flex; 
+  
+  display: inline-flex; 
   flex-direction: column;
+
+  // display: inline-grid;
+  // grid-template-columns: 1fr;
+  
   min-width: 640px;
-  width: fit-content;
+  // width: fit-content;
   height: fit-content;
   gap: 20px;
   padding: 30px;
@@ -161,6 +166,12 @@ html {
   font-weight: bold;
   font-size: 1em;
   text-align: center;
+
+  // width: 100%;
+
+  // So title does not affect plot width
+  width: 0;
+  min-width: 100%;
 }
 
 #img-legend {
@@ -169,6 +180,7 @@ html {
 
 #img-plot {
   height: 800px;
+  min-width: 100%;
 }
 
 #img-source {
