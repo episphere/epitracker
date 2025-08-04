@@ -60,19 +60,6 @@ const CHECK_CONFIGS = [
   { id: "check-start-zero", propertyName: "startZero" },
 ]
 
-// Specifies ideal order of fields in data rows.
-const DATA_FIELDS = [
-  "race","sex","cause",
-  "quantile_field", "quantile", "quantile_range", 
-  "deaths","population",
-  "crude_rate","crude_rate_ci_lower","crude_rate_ci_upper",
-  "age_adjusted_rate","age_adjusted_rate_ci_lower","age_adjusted_rate_ci_upper",
-  "age_adjusted_rate_ratio_ref_low", "age_adjusted_rate_ratio_ref_low_ci_lower", "age_adjusted_rate_ratio_ref_low_ci_upper",
-  "age_adjusted_rate_ratio_ref_high", "age_adjusted_rate_ratio_ref_high_ci_lower", "age_adjusted_rate_ratio_ref_high_ci_upper",
-  "crude_rate_ratio_ref_low", "crude_rate_ratio_ref_low_ci_lower", "crude_rate_ratio_ref_low_ci_upper",
-  "crude_rate_ratio_ref_high", "crude_rate_ratio_ref_high_ci_lower", "crude_rate_ratio_ref_high_ci_upper",
-]
-
 const PROPORTIONS_AS_PERCENTAGES = true;
 
 //  ====================================================================================================================
@@ -251,7 +238,7 @@ class DataManager {
     const allQuantileDetails = await d3.json("../../data/quantile/quantile_details.json");
     if (PROPORTIONS_AS_PERCENTAGES) {
       for (const quantileDetails of allQuantileDetails) {
-        if (quantileDetails.unit = "Proportion") {
+        if (quantileDetails.unit == "Proportion") {
           quantileDetails.unit = "Percentage";
           // The rounding here defeats the purpose of the smart rounding in the quantile file, but FP rounding errors 
           // occur every time if I don't do it. Annoying!
@@ -631,6 +618,7 @@ class PlotDrawer {
   updatePlot(currentData, plotConfig) {
     let { data, quantileDetails } = currentData;
 
+    console.log(quantileDetails);
     const xLabel = `${quantileDetails.name} (${quantileDetails.unit === "Proportion" ? "Percentage" : quantileDetails.unit})`;
 
     // Ensure quantile ticks are descriptive
