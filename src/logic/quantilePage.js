@@ -2,7 +2,8 @@ import { EpiTrackerData } from "./utils/EpiTrackerData.js";
 import { formatName } from "./utils/nameFormat.js";
 import {  round, createDropdown, downloadElementAsImage, 
   downloadRowData, hookCheckbox, hookComboBox, hookSelect, 
-  minorPopup, plotDataTable, retrieveElements } from "./utils/helper.js";
+  minorPopup, plotDataTable, retrieveElements, 
+  hookCheckboxList} from "./utils/helper.js";
 import { plotQuantileScatter } from "./quantilePlot.js";
 import * as d3 from "d3";
 import { COLORS, SYMBOLS } from "./utils/plotStyle.js";
@@ -41,6 +42,8 @@ const DEFAULT_STATE = {
   startZero: true,
   filter: null,
   showCI: true,
+  compareColorFilter: null,
+  compareFacetFilter: null,
 };
 
 const SELECT_CONFIGS = [
@@ -81,7 +84,6 @@ class QuantileApp {
     this.dataManager = new DataManager();
     await this.dataManager.init();
 
-    this.state = new StateURL(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
     await this.initializeAppState(); 
 
     this.uiManager = new UIManager(this.state); 
@@ -95,6 +97,8 @@ class QuantileApp {
    * state properties, and establishes their inter-dependencies.
    */
   async initializeAppState() {
+
+    this.state = new StateURL(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
 
     // ------ Define default values for the Select options in the UI ---------------------------------------------------
 
@@ -153,11 +157,14 @@ class QuantileApp {
       "quantileYear",
     ]);
 
+    this.state.defineProperty("compareColorFilterOptions", null);
+    this.state.defineProperty("compareFacetFilterOptions", null);
+
     // Bundle all properties that update the display, but do not require a data query. 
     this.state.defineJointProperty("displayConfig", [
-      "measure", "showLines", "showCI", "startZero",
+      "measure", "showLines", "showCI", "startZero", 
+      "compareColorFilter", "compareFacetFilter"
     ]);
-
 
     this.state.defineProperty("currentData", null, ["query"]);
     this.state.defineProperty("quantileDetails", null, ["query"]);
@@ -214,6 +221,16 @@ class QuantileApp {
     this.state.subscribe("query", async (query) => {
       this.state.currentData = await this.dataManager.query(query);
     });
+    // this.state.subscribe("filters", async (filters) => {
+    //   let filteredData = this.state.currentData.data; 
+    //   if (this.state.query.compareColor != "none" && filters.compareColorFilter != null) {
+    //     filteredData = filteredData.filter(d => filters.compareColorFilter.has(d[this.state.query.compareColor]));
+    //   }
+      
+    //   // if (plotConfig.query.compareFacet != "none" && plotConfig.compareFacetFilter != null) {
+    //   //   filteredData = filteredData.filter(d => plotConfig.compareFacetFilter.has(d[plotConfig.query.compareFacet]));
+    //   // }
+    // });
     this.state.trigger("query");
   }
 }
@@ -404,13 +421,18 @@ class UIManager {
       imageTemplate: "#img-template",
       imagePlot: "#img-plot",
       imageTitle: "#img-title",
+      filterCompareColor: "#filter-compare-color",
+      filterCompareFacet: "#filter-compare-facet",
+      filterCompareColorContainer: "#filter-compare-color-container",
+      filterCompareFacetContainer: "#filter-compare-facet-container",
     });
 
     this.state.subscribe("renderablePlot", (renderablePlot) => {
       const { query, currentData, displayConfig } = renderablePlot;
       const plotConfig = { query, ...displayConfig};
-      this.plotDrawer.updatePlot(currentData, plotConfig);
-      this.plotDrawer.updateTable(currentData);
+      const currentDataAug = {...currentData, data: this.getFilteredData()};
+      this.plotDrawer.updatePlot(currentDataAug, plotConfig);
+      this.plotDrawer.updateTable(currentDataAug);
       this.redrawPlot();
     });
 
@@ -494,6 +516,19 @@ class UIManager {
     const buttonOptionsElement = document.getElementById("button-options");
     const graphSettingsElement = document.getElementById("graph-settings-dropdown-content");
     minorPopup(mainElement, buttonOptionsElement, graphSettingsElement, "Graph Settings");
+    
+    const buttonFilterElement = document.getElementById("button-filter");
+    const filterElement = document.getElementById("filter-dropdown-content");
+    minorPopup(mainElement, buttonFilterElement, filterElement, "Filter");
+    this.state.subscribe("currentData", () => {
+      if (this.state.currentData.data) {
+        this.updateFilterMenu();
+      }
+    })
+
+    hookCheckboxList(this.elems.filterCompareColor, this.state, "compareColorFilter", "compareColorFilterOptions");
+    hookCheckboxList(this.elems.filterCompareFacet, this.state, "compareFacetFilter", "compareFacetFilterOptions");
+
 
     const downloadData = (format) => {
       const filename = "epitracker_quantile_data";
@@ -529,7 +564,6 @@ class UIManager {
       this.elems.tablePopupOverlay.style.display = "block";
       this.plotDrawer.drawTable(this.elems.tableContainer);
     });
-
   }
 
   /**
@@ -556,10 +590,45 @@ class UIManager {
     resizeObserver.observe(this.elems.plotElement);
   }
 
+  updateFilterMenu() {
+    if (this.state.currentData) {
+      if (this.state.compareColor != "none") {
+        this.elems.filterCompareColorContainer.style.display = "flex";
+        const values = [...new Set(this.state.currentData.data.map(d => d[this.state.compareColor]))];
+        this.state.compareColorFilterOptions = values;
+      } else {
+        this.elems.filterCompareColorContainer.style.display = "none";
+      }
+      if (this.state.compareFacet != "none") {
+        this.elems.filterCompareFacetContainer.style.display = "flex";
+        const values = [...new Set(this.state.currentData.data.map(d => d[this.state.compareFacet]))];
+        this.state.compareFacetFilterOptions = values;
+      } else {
+        this.elems.filterCompareFacetContainer.style.display = "none";
+      }
+    }
+  }
+
+  getFilteredData() {
+    if (!this.state.currentData) {
+      return null;
+    }
+
+    const { compareColorFilter, compareFacetFilter } = this.state;
+    let filteredData = this.state.currentData.data; 
+    if (this.state.query.compareColor != "none" && compareColorFilter != null) {
+      filteredData = filteredData.filter(d => compareColorFilter.has(d[this.state.query.compareColor]));
+    }
+    if (this.state.query.compareFacet != "none" && compareFacetFilter != null) {
+      filteredData = filteredData.filter(d => compareFacetFilter.has(d[this.state.query.compareFacet]));
+    }
+    return filteredData;
+  }
+
   /**
- * Generates and downloads the current quantile graph as an image.
- * @param {'png' | 'svg'} format The desired image format for the download.
- */
+   * Generates and downloads the current quantile graph as an image.
+   * @param {'png' | 'svg'} format The desired image format for the download.
+   */
   downloadGraph(format) {
     this.plotDrawer.drawPlot(this.elems.imagePlot);
     this.elems.imageTitle.innerText = document.getElementById("title").innerText;
@@ -618,7 +687,6 @@ class PlotDrawer {
   updatePlot(currentData, plotConfig) {
     let { data, quantileDetails } = currentData;
 
-    console.log(quantileDetails);
     const xLabel = `${quantileDetails.name} (${quantileDetails.unit === "Proportion" ? "Percentage" : quantileDetails.unit})`;
 
     // Ensure quantile ticks are descriptive

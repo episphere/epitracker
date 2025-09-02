@@ -1,5 +1,7 @@
 import { State } from "./State.js";
 
+const SET_REGEX = /^\{(.*)\}$/s;
+
 /**
  * Manages state by extending the base State class, with the added functionality of synchronizing specified state 
  * properties with the URL's query parameters.
@@ -11,6 +13,10 @@ export class StateURL extends State {
     this.defaults = defaults;
     this.url = new URL(window.location.href);
     this.urlProperties = new Set(urlProperties);
+
+    for (const [property, value] of Object.entries(defaults)) {
+      this.defineProperty(property);
+    }
   }
 
   /**
@@ -22,6 +28,7 @@ export class StateURL extends State {
   defineProperty(property, value, parentProperties) {
     if (!value && this.url.searchParams.has(property)) {
       value = this.url.searchParams.get(property);
+      value = this.decodeValue(value);
     } else if (this.defaults[property]) {
       value = this.defaults[property];
     }
@@ -40,10 +47,33 @@ export class StateURL extends State {
   updateURLParam(value, param) {
     const url = this.url;
     if (this.defaults[param] != value) {
-      url.searchParams.set(param, value);
+      url.searchParams.set(param, this.encodeValue(value));
     } else {
       url.searchParams.delete(param);
     }
     history.replaceState({}, "", this.url.toString());
+  }
+
+  encodeValue(value) {
+    if (value instanceof Set) {
+      return `{${[...value].join(",")}}`;
+    } else {
+      return value;
+    }
+  }
+
+  decodeValue(value) {
+    try {
+      if (SET_REGEX.test(value)) {
+        const match = value.match(SET_REGEX);
+        if (match) {
+          return new Set(match[1].split(","));
+        }
+      } else {
+        return value; 
+      }
+    } catch (e) {
+      console.error(e.message); 
+    } 
   }
 }

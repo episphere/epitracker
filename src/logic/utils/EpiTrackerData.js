@@ -246,7 +246,7 @@ export class EpiTrackerData {
 
     // let data
     // if (!(data = this.dataMemoryMap.get(`mortality-data-${year}`))) {
-    //   const url = `../../data/mortality/age_adjusted_data_${year}.csv.zip`
+    //   const url = `../../data/geospatial/age_adjusted_data_${year}.csv.zip`
     //   data = await (await fetch(url)).blob()
 
     //   if (this.args.keepInMemory == "zipped") {
@@ -266,7 +266,7 @@ export class EpiTrackerData {
     // }
 
     return this.#smartLoadZipData(
-      `../../data/mortality/age_adjusted_data_${year}.csv.zip`,
+      `../../data/geospatial/age_adjusted_data_${year}.csv.zip`,
       `age_adjusted_data_${year}.csv`
     );
   }

@@ -3,7 +3,9 @@ import * as Popper from "@popperjs/core";
 import { Tabulator, FrozenColumnsModule, SortModule, FormatModule } from 'tabulator-tables'
 import * as d3 from "d3";
 import { domToPng } from 'modern-screenshot';
-
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+import 'tippy.js/animations/scale.css';
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule]);
 
@@ -119,6 +121,61 @@ export function hookComboBox(element, state, valueProperty, optionsProperty, uns
   });
 
   return comboBox;
+}
+
+export function hookCheckboxList(element, state, valueProperty, optionsProperty) {
+
+  state.subscribe(optionsProperty, () => {
+    element.innerHTML = '';
+
+    let options = [];
+    if (Array.isArray(state[optionsProperty])) {
+      options = state[optionsProperty].map((d) =>
+        typeof d == "string" ? { label: d, value: d } : d
+      );
+    }
+
+    options.forEach((option, i) => {
+      const checkboxWrapper = document.createElement("div");
+      checkboxWrapper.classList.add("usa-checkbox");
+
+      const inputElement = document.createElement("input");
+      inputElement.setAttribute("type", "checkbox");
+      inputElement.className = "usa-checkbox__input";
+      inputElement.setAttribute("id", `check-${valueProperty}-${i}`);
+      inputElement.setAttribute("name", `check-${valueProperty}-${i}`);
+      if ((!state[valueProperty]) || state[valueProperty].has(option.value)) {
+        inputElement.setAttribute("checked", "");
+      }
+      inputElement.addEventListener("click", () => {
+        let checkedSet = state[valueProperty];
+        if (!checkedSet) {
+          checkedSet = new Set(options.map(d => d.value));
+        }
+        if (inputElement.checked) {
+          checkedSet.add(option.value);
+        } else {
+          checkedSet.delete(option.value);
+        }
+        // If all options are checked, set to a null value.
+        if (checkedSet.size == options.length) {
+          checkedSet = null;
+        }
+        state[valueProperty] = checkedSet;
+      });
+      checkboxWrapper.appendChild(inputElement);
+
+      const labelElement = document.createElement("label");
+      labelElement.className = "usa-checkbox__label";
+      labelElement.setAttribute("for", `check-${valueProperty}-${i}`);
+      labelElement.innerText = option.label;
+      checkboxWrapper.appendChild(labelElement);
+
+      element.appendChild(checkboxWrapper);
+    });
+  });
+
+  state.trigger(optionsProperty);
 }
 
 export function hookCheckbox(selector, state, valueProperty) {
@@ -452,4 +509,46 @@ export async function downloadElementAsImage(element, filename, format = "png") 
 
 export function round(number, dp) {
   return parseFloat(number.toFixed(dp));
+}
+
+const tippyMap = new Map();
+export function addTippys(parentElement) {
+
+  let elements = []
+  if (parentElement) {
+    elements = parentElement.querySelectorAll('[tip]');
+  } else {
+    elements = document.querySelectorAll('[tip]');
+  }
+
+
+  for (const element of elements) {
+    if (!element.hasAttribute("tippy")) {
+      const instance = tippy(element, {
+        content: element.getAttribute("tip"),
+        animation: "scale",
+        theme: "dark",
+        placement: "left",
+      })
+      element.setAttribute("tippy", "");
+      let id = element.getAttribute("id");
+      tippyMap.set(id, instance);
+      for (const className of element.classList) {
+        let arr = tippyMap.get(className);
+        if (!arr) {
+          arr = [];
+          tippyMap.set(className, arr);
+        }
+        arr.push(instance);
+      }
+    }
+  }
+
+  return tippyMap;
+}
+
+export function getContentHeight(element) {
+  const styles = window.getComputedStyle(element);
+  const contentHeight = element.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom);
+  return contentHeight;
 }

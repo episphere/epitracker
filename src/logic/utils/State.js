@@ -29,14 +29,21 @@ export class State {
       }
     }
 
-
-    if (!this.hasOwnProperty(property)) {
-      Object.defineProperty(this, property, {
+    if (this.hasOwnProperty(property)) {
+      this.dependencyTree.removeNode(property);
+    } else {
+       Object.defineProperty(this, property, {
         set: function(value) { this._setProperty(property, value) },
         get: function() { return this.properties[property] }
       })
       this.properties[property] = value
     }
+
+    // Special behavior: if property value has a "subscribe" function when defined, we use it to trigger property updates.
+    if (typeof value?.subscribe == "function") {
+      value.subscribe(() => this.trigger(property));
+    }
+
     this.dependencyTree.addNode(property, {listeners: [], parents: parentProperties}, parentProperties)
   }
 
@@ -156,6 +163,25 @@ class Tree {
   getAllNodes(key) {
     return this.breadthFirstSearch(this.getNode(key))
   }
+
+  removeNode(key) {
+    if (!this.nodes.has(key)) {
+      console.warn(`Node with key '${key}' not found.`);
+      return false;
+    }
+
+    for (const parentNode of this.nodes.values()) {
+      if (parentNode.children.has(key)) {
+        parentNode.children.delete(key);
+      }
+    }
+
+    this.nodes.delete(key);
+    this.trimTree();
+
+    return true;
+  }
+  
 
   breadthFirstSearch(root) {
     let visitedSet = new Set()
