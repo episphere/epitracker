@@ -373,7 +373,11 @@ class USAComboBox {
             li.setAttribute('role', 'option');
             li.setAttribute('data-selected', `${option.selected}`);
             li.setAttribute('data-value', option.value);
-            li.textContent = option.textContent;
+            if (option.children.length > 0) {
+                li.replaceChildren(...option.children)
+            } else {
+                li.textContent = option.textContent;
+            }
             li.addEventListener('mouseover', this.mouseoverListener);
             li.addEventListener('click', this.optionClickListener);
             return li;

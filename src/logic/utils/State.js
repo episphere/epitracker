@@ -11,7 +11,6 @@ export class State {
   
   constructor() {
     this.properties = {}
-    this.listeners = new Map()
     this.dependencyTree = new Tree()
 
     //this.updatePropertyStack = new Set()
@@ -90,6 +89,13 @@ export class State {
 
   trigger(property) {
     this._setProperty(property, this.properties[property])
+  }
+
+  triggerAll() {
+    const rootNodes = this.dependencyTree.getRootNodes();
+    for (const rootNode of rootNodes) {
+      this.trigger(rootNode.key);
+    }
   }
 
   hasProperty(property) {
@@ -180,6 +186,16 @@ class Tree {
     this.trimTree();
 
     return true;
+  }
+
+  getRootNodes() {
+    const allNodeKeys = new Set(this.nodes.keys());
+    for (const node of this.nodes.values()) {
+      for (const childKey of node.children.keys()) {
+        allNodeKeys.delete(childKey);
+      }
+    }
+    return Array.from(allNodeKeys).map(key => this.nodes.get(key));
   }
   
 

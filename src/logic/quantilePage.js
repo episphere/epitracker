@@ -7,7 +7,7 @@ import {  round, createDropdown, downloadElementAsImage,
 import { plotQuantileScatter } from "./quantilePlot.js";
 import * as d3 from "d3";
 import { COLORS, SYMBOLS } from "./utils/plotStyle.js";
-import { StateURL } from "./utils/StateURL.js";
+import { SetCoder, StateURL } from "./utils/StateURL.js";
 
 
 // TODO: County characteristic grouping
@@ -98,7 +98,10 @@ class QuantileApp {
    */
   async initializeAppState() {
 
-    this.state = new StateURL(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE));
+    this.state = new StateURL(DEFAULT_STATE, Object.getOwnPropertyNames(DEFAULT_STATE), {
+      compareFacetFilter: SetCoder,
+      compareColorFilter: SetCoder,
+    });
 
     // ------ Define default values for the Select options in the UI ---------------------------------------------------
 

@@ -6,6 +6,7 @@ import { domToPng } from 'modern-screenshot';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/animations/scale.css';
+import { formatName } from "./nameFormat.js";
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule]);
 
@@ -50,17 +51,25 @@ function setSelectOptions(select, state, optionsProperty, valueProperty) {
       typeof d == "string" ? { label: d, value: d } : d
     );
   }
+  // options.sort((a,b) => a.label.localeCompare(b.label));
 
   const optionElements = [];
   for (const option of options) {
     const optionElement = document.createElement("option");
     optionElement.setAttribute("value", option.value);
-    optionElement.innerText = option.label;
+
+    if (option.element) {
+      optionElement.replaceChildren(option.element);
+    } else {
+       optionElement.innerText = option.label;
+    }
+
     if (option.value == state[valueProperty]) {
       optionElement.setAttribute("selected", "");
     }
     optionElements.push(optionElement);
   }
+  console.log(optionsProperty, optionElements)
   
   select.replaceChildren(...optionElements);
   return optionElements;
@@ -215,7 +224,10 @@ export function createDropdown(container, button, actions) {
     dropdownItem.innerText = action.label;
     dropdownContent.appendChild(dropdownItem);
 
-    dropdownItem.addEventListener("click", () => action.action());
+    dropdownItem.addEventListener("click", () => {
+      tooltip.hide();
+      action.action()
+    });
 
     if (action.separatorAfter) {
       const seperator = document.createElement("div");
@@ -227,7 +239,8 @@ export function createDropdown(container, button, actions) {
   const tooltip = addPopperTooltip(container);
   let tooltipShown = false;
 
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (e) => {
+    e.stopPropagation();
     if (tooltipShown) {
       tooltip.hide();
     } else {
@@ -242,6 +255,19 @@ export function createDropdown(container, button, actions) {
       tooltip.hide();
     }
   });
+
+  const mutationObserver = new MutationObserver((mutations, observer) => {
+    for (const mutation of mutations) {
+      if (mutation.type == "childList") {
+        for (const removedNode of mutation.removedNodes) {
+          if (removedNode == button || removedNode.contains(button)) {
+            tooltip.hide();
+          }
+        }
+      }
+    }
+  });
+  mutationObserver.observe(container, { childList: true, subtree: true });
 
   // tooltip.show(button, dropdown)
 }
@@ -286,7 +312,11 @@ export function addPopperTooltip(element) {
     tooltipElement.style.display = "none";
   }
 
-  return { show, hide, tooltipElement };
+  function remove() {
+    tooltipElement.remove();
+  }
+
+  return { show, hide, remove, tooltipElement };
 }
 
 export function minorPopup(container, button, content, title) {
@@ -317,7 +347,7 @@ export function minorPopup(container, button, content, title) {
   })
 
   button.addEventListener("click", () => {
-    content.style.display = "flex";
+    // content.style.display = "flex";
     if (tooltipShown) {
       tooltip.hide();
     } else {
@@ -332,6 +362,63 @@ export function minorPopup(container, button, content, title) {
       tooltip.hide();
     }
   })
+}
+
+export function initializePopup() {
+  const popupElement = document.getElementById("popup");
+  const titleElement = popupElement.querySelector("#popup-title");
+  const contentContainerElement = popupElement.querySelector("#popup-content-container");
+  const popupBodyElement = popupElement.querySelector("#popup-body");
+
+  function open(content, title) {
+    popupElement.classList.remove("display-none");
+    popupElement.classList.add("display-flex");
+    titleElement.innerText = title;
+    contentContainerElement.replaceChildren(content);
+  }
+
+  function close() {
+    popupElement.classList.add("display-none");
+    popupElement.classList.remove("display-flex");
+  }
+
+  popupElement.addEventListener("click", (e) => {
+    if (!popupBodyElement.contains(e.target)) {
+      close();
+    }
+  });
+  popupElement.querySelector("#popup-close").addEventListener("click", () => close());
+
+  return { open, close };
+}
+
+export function popup(popupContent, title) {
+  if (typeof popupContent == "string") {
+    popupContent = document.querySelector(popupContent);
+  }
+
+  const popupElement = document.getElementById("popup");
+  popupElement.classList.remove("display-none");
+  popupElement.classList.add("display-flex");
+
+  popupElement.querySelector("#popup-title").innerText = title;
+
+  const contentContainer = popupElement.querySelector("#popup-content-container");
+  contentContainer.replaceChildren(popupContent);
+
+  function close() {
+    popupElement.classList.add("display-none");
+    popupElement.classList.remove("display-flex");
+  }
+
+  const popupBody = popupElement.querySelector("#popup-body");
+  popupElement.addEventListener("click", (e) => {
+    if (!popupBody.contains(e.target)) {
+      close();
+    }
+  });
+
+  popupElement.querySelector("#popup-table-close").addEventListener("click", () => close());
 }
 
 export function approximateTextBBox(text, rotation=-Math.PI/4) {
@@ -444,7 +531,16 @@ export function plotDataTable(data, container, options = {}) {
     columns = [],
   } = options
 
-  columns.forEach(col => {
+  const tableColumns = columns.map(d => ({...d}));
+  for (const column of tableColumns) {
+    if (column.formatAs) {
+      column.title = formatName(column.formatAs, column.field, column.formatMode);
+    }
+    delete column.formatAs;
+    delete column.formatMode;
+  }
+
+  tableColumns.forEach(col => {
     if (!col.title) col.title = col.field
   })
 
@@ -456,8 +552,8 @@ export function plotDataTable(data, container, options = {}) {
 
   const tabulator = new Tabulator(table, {
     data,
-    columns,
-    layout: "fitDataFill",
+    columns: tableColumns,
+    // layout: "fitDataFill",
   })
 
 }
@@ -477,7 +573,6 @@ export function downloadRowData(data, filename, format) {
 }
 
 export function downloadStringAsFile(content, filename, contentType) {
-  console.log("FN", filename)
   const blob = new Blob([content], { type: contentType });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -551,4 +646,264 @@ export function getContentHeight(element) {
   const styles = window.getComputedStyle(element);
   const contentHeight = element.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom);
   return contentHeight;
+}
+
+
+export function colorRampLegendPivot(colorConfig, options = {}) {
+  const { scheme, domain, pivot, reverse } = colorConfig;
+  const { label = null, size, outlierColors } = options;
+
+  let tickFormat =  numberFormat;
+  if (options.tickFormat) tickFormat = options.tickFormat;
+
+  let colorDomain = [...domain];
+  if (pivot) {
+    const maxSide = Math.max(pivot - colorDomain[0], colorDomain[1] - pivot);
+    colorDomain = [pivot - maxSide, pivot + maxSide];
+  }
+
+  const colorScale = d3
+    .scaleSequential(d3["interpolate" + scheme])
+    .domain(reverse ? [colorDomain[1], colorDomain[0]] : colorDomain);
+
+  let  ticks = pivot ? [domain[0], pivot, domain[1]] : domain;
+
+  return colorRampLegend(
+    colorScale,
+    domain,
+    label,
+    ticks,
+    size,
+    outlierColors,
+    tickFormat,
+  );
+}
+
+export function colorRampLegend(
+  colorScale,
+  valueExtent,
+  label = "",
+  tickValues = null,
+  size = null,
+  outlierColors = [],
+  tickFormat = d => d,
+) {
+  const nGrad = 16;
+  const margin = 20;
+
+  if (size == null) {
+    size = label ? [370 - (outlierColors ? outlierColors.length : 0) * 45, 50] : [370 - outlierColors.length * 45, 30];
+  }
+  const startY = label ? 20 : 0;
+
+  const svg = d3.create("svg").attr("width", size[0]).attr("height", size[1]);
+
+  // Gradient
+
+  // This is a terrible way to generate a unique ID, but it's unlikely to cause a problem.
+  const gradientId = "ramp-gradient-" + Math.floor(Math.random() * 10000000);
+
+  const defs = svg.append("defs");
+  const gradient = defs
+    .append("linearGradient")
+    .attr("id", gradientId)
+    .attr("x1", "0%")
+    .attr("x2", "100%");
+
+  const pScale = d3.scaleLinear().domain([0, nGrad]).range(valueExtent);
+
+  gradient
+    .append("stop")
+    .attr("class", "start")
+    .attr("offset", `0%`)
+    .attr("stop-color", colorScale(valueExtent[0]));
+
+  for (let i = 1; i < nGrad - 1; i++) {
+    gradient
+      .append("stop")
+      .attr("offset", `${(100 * i) / nGrad}%`)
+      .attr("stop-color", colorScale(pScale(i)));
+  }
+
+  gradient
+    .append("stop")
+    .attr("class", "end")
+    .attr("offset", `100%`)
+    .attr("stop-color", colorScale(valueExtent[1]));
+
+  svg
+    .append("rect")
+    .attr("x", margin)
+    .attr("y", startY)
+    .attr("width", size[0] - margin * 2)
+    .attr("height", size[1] - 19 - startY)
+    .attr("fill", `url(#${gradientId})`)
+
+  // Ticks
+
+  const scale = d3
+    .scaleLinear()
+    .domain(valueExtent)
+    .range([0, size[0] - margin * 2]);
+
+  const axis = d3
+    .axisBottom(scale)
+    .tickSize(size[1] - 15 - startY)
+    .tickSizeOuter(0)
+    .tickFormat(d => {
+      return tickFormat(d)
+    });
+
+  if (tickValues != null) {
+    axis.tickValues(tickValues);
+  } else {
+    axis.ticks(5);
+  }
+
+  svg
+    .append("g")
+    .attr("transform", `translate(${margin},${startY})`)
+    .style("font-size", 14)
+    .style("color", "#424242")
+    .style("stroke-width", "1px")
+    .call(axis);
+
+  svg.selectAll(".tick").selectAll("line").attr("stroke", "#424242");
+  const percent = (tickValues[1] * 100) / (tickValues[2] - tickValues[0]);
+  const middleTickValue = Math.trunc(tickValues[1]);
+
+  if (percent < 5) {
+    svg
+      .selectAll(".tick")
+      .selectAll("text")
+      .filter(function () {
+        const text = +d3.select(this).text().replaceAll(",", "");
+        return text >= middleTickValue - 10 && text <= middleTickValue + 10;
+      })
+      .attr(
+        "transform",
+        `translate(${Math.trunc(tickValues[0].toString().length * 8)})`
+      );
+  }
+
+  // Label
+
+  if (label) {
+    svg
+      .append("g")
+      .style("font-family", "sans-serif")
+      .style("font-size", 14)
+      .append("text")
+      .attr("x", margin)
+      .attr("y", 15)
+      .text(label)
+  }
+
+  const legendDiv = document.createElement("div")
+  legendDiv.style.display = "flex"
+  legendDiv.style.alignItems = "end"
+
+  if (outlierColors && outlierColors.length > 1) {
+    legendDiv.appendChild(outlierLabel(outlierColors[0]))
+  }
+
+  legendDiv.appendChild(svg.node())
+
+  if (outlierColors) {
+    legendDiv.appendChild(outlierLabel(outlierColors.at(-1)))
+  }
+
+
+  legendDiv.classList.add("color-scale")
+  return legendDiv;
+}
+
+function outlierLabel(color) {
+  const svg = d3.create("svg")
+    .attr("width", 58)
+    .attr("height", 40)
+
+  var rectWidth = 16
+  var rectHeight = 12
+  var rectColor = color
+
+  var textLabel = "Extreme";
+
+  svg.append("rect")
+    .attr("x", 29 - rectWidth / 2)
+    .attr("y", 10)
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .attr("fill", rectColor)
+    .attr("rx", 3)
+    .attr("ry", 3)
+
+  svg.append("text")
+    .attr("x", 30)
+    .attr("y", 37)
+    .text(textLabel)
+    .attr("fill", "rgb(66, 66, 66)")
+    .attr("text-anchor", "middle")
+    .style("font-size", 14)
+    .style("font-family", "sans-serif")
+
+  return svg.node()
+}
+
+export function numberFormat(d) {
+  if (d < 1000) {
+    return d % 1 ? d3.format(".1f")(d) : d3.format(".0f")(d)
+  } else {
+    return d3.format(".2s")(d)
+  }
+}
+
+export function scaleGradient(colorScale, nStops = 5, width = 140, height = 10) {
+  const svg = d3.create("svg")
+    .attr("width", width)
+    .attr("height", height)
+
+  // This is a terrible way to generate a unique ID, but it's unlikely to cause a problem.
+  const gradientId = "ramp-gradient-" + Math.floor(Math.random() * 10000000)
+
+  const defs = svg.append("defs")
+  const gradient = defs.append("linearGradient")
+    .attr("id", gradientId)
+    .attr("x1", "0%")
+    .attr("x2", "100%")
+
+  gradient.append("stop")
+    .attr("class", "start")
+    .attr("offset", `0%`)
+    .attr("stop-color", colorScale(0))
+
+  for (let i = 1; i < nStops + 1; i++) {
+    gradient.append("stop")
+      .attr("offset", `${100 * i / nStops}%`)
+      .attr("stop-color", colorScale(i / nStops))
+  }
+
+  const margin = 10
+  svg.append("rect")
+    .attr("x", margin)
+    .attr("y", 0)
+    .attr("width", width - margin * 2)
+    .attr("height", height)
+    .attr("fill", `url(#${gradientId})`)
+
+  return svg.node()
+}
+
+export function makeSvgZoomable(svgSelector, groupSelector) {
+  const group = d3.selectAll(groupSelector);
+
+  function handleZoom(e) {
+    group.attr('transform', e.transform);
+  }
+
+  let zoom = d3.zoom()
+    .scaleExtent([0.25, 10])
+    .on('zoom', handleZoom);
+
+  d3.select(svgSelector).call(zoom);
 }

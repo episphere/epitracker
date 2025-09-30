@@ -16,14 +16,14 @@ const names = {
       "name": "Age-Adjusted Mortality Rate (per 100,000)",
       "plot_label": "Age-Adjusted Mortality Rate (per 100,000)",
       "short": "AA Rate",
-      "shortish": "Age-Adjusted Rate",
+      "shortish": "Age-Adjusted Mortality",
       "verbose":  "Age-Adjusted Cancer Mortality Rate (per 100,000)",
     },
     "crude_rate": {
       "name": "Crude Mortality Rate (per 100,000)",
       "plot_label": "Crude Mortality Rate (per 100,000)",
       "short": "Crude Rate",
-      "shortish": "Crude Rate",
+      "shortish": "Crude Mortality",
       "verbose":  "Crude Cancer Mortality Rate (per 100,000)",
     },
     "age_adjusted_rate_ratio_ref_low": {

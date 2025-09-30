@@ -4,6 +4,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin'); 
 
 module.exports = (env, argv) => {
 	const isProduction = argv.mode === 'production';
@@ -23,6 +24,7 @@ module.exports = (env, argv) => {
 		entry: {
 			main: './src/index.js',
 			quantiles: './src/logic/quantilePage.js',
+			maps: "./src/logic/mapsPage.js"
 		},
 
 		/**
@@ -151,16 +153,16 @@ module.exports = (env, argv) => {
 					}
 				},
 
-				{
-          test: /.*/, 
-          include: [
-            path.resolve(__dirname, 'data') 
-          ],
-          type: 'asset/resource', 
-          generator: {
-            filename: 'data/[name][ext]'
-          }
-        }
+				// {
+        //   test: /.*/, 
+        //   include: [
+        //     path.resolve(__dirname, 'data') 
+        //   ],
+        //   type: 'asset/resource', 
+        //   generator: {
+        //     filename: 'data/[name][ext]'
+        //   }
+        // }
 
 				
 			],
@@ -206,7 +208,6 @@ module.exports = (env, argv) => {
 				chunks: ['main', 'maps']
 			}),
 			
-
 			/**
 			 * MiniCssExtractPlugin extracts CSS into separate files for production
 			 * builds. It generates CSS files that are then used by HtmlWebpackPlugin
@@ -215,6 +216,12 @@ module.exports = (env, argv) => {
 			new MiniCssExtractPlugin({
 				filename: '[name].css',
 				chunkFilename: '[id].css',
+			}),
+
+			new CopyPlugin({
+				patterns: [
+					{ from: 'data', to: 'data' },
+				],
 			}),
 		],
 		optimization: isProduction

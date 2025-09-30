@@ -1,4 +1,5 @@
 import './style/index.scss'; 
+import './style/gridette.css';
 // import '@nciocpl/ncids-js/nci-header/extended-with-mega-menu/auto-init';
 import megaMenuHTML from './_includes/_megamenu.html';
 

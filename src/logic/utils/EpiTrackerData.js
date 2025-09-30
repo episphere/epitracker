@@ -34,7 +34,7 @@ export class EpiTrackerData {
     delete query.year;
 
     const data = await this.#smartLoadZipData(
-      `../../data/population/population_data_${year}.csv.zip`,
+      `/data/population/population_data_${year}.csv.zip`,
       `population_data_${year}.csv`
     );
 
@@ -135,9 +135,9 @@ export class EpiTrackerData {
     const year = query.year;
     delete query.year;
 
-    console.time("Query")
+    // console.time("Query")
     let countyMortalityData = await this.#loadCountyMortalityData(year);
-    console.timeEnd("Query")
+    // console.timeEnd("Query")
 
 
     // TODO: Fix this to allow all states
@@ -165,8 +165,8 @@ export class EpiTrackerData {
     ).objects();
 
     if (args?.counties && args?.states) {
-      const statesMap = d3.index(args.states, (d) => d["value"]);
-      let countiesMap = d3.index(args.counties, (d) => d["value"]);
+      // const statesMap = d3.index(args.states, (d) => d["value"]);
+      // let countiesMap = d3.index(args.counties, (d) => d["value"]);
 
       // TODO: Please explain about this
       // if (query.state_fips === "*") {
@@ -178,8 +178,8 @@ export class EpiTrackerData {
 
       return data.map((item) => ({
         ...item,
-        state: statesMap.get(item.state_fips).label,
-        county: countiesMap.get(item.county_fips)?.label,
+        // state: statesMap.get(item.state_fips).label,
+        // county: countiesMap.get(item.county_fips)?.label,
       }));
     }
 
@@ -236,7 +236,7 @@ export class EpiTrackerData {
     // Year currently takes "2018", "2019", "2020", and "2018-2020"
 
     return this.#smartLoadZipData(
-      `../../data/demographic/demographic_data_${year}.csv.zip`,
+      `/data/demographic/demographic_data_${year}.csv.zip`,
       `demographic_data_${year}.csv`
     );
   }
@@ -246,7 +246,7 @@ export class EpiTrackerData {
 
     // let data
     // if (!(data = this.dataMemoryMap.get(`mortality-data-${year}`))) {
-    //   const url = `../../data/geospatial/age_adjusted_data_${year}.csv.zip`
+    //   const url = `/data/geospatial/age_adjusted_data_${year}.csv.zip`
     //   data = await (await fetch(url)).blob()
 
     //   if (this.args.keepInMemory == "zipped") {
@@ -266,7 +266,7 @@ export class EpiTrackerData {
     // }
 
     return this.#smartLoadZipData(
-      `../../data/geospatial/age_adjusted_data_${year}.csv.zip`,
+      `/data/geospatial/age_adjusted_data_${year}.csv.zip`,
       `age_adjusted_data_${year}.csv`
     );
   }
@@ -276,7 +276,7 @@ export class EpiTrackerData {
 
     // let data
     // if (!(data = this.dataMemoryMap.get(`quantile-data-${year}`))) {
-    //   const url = `../../data/quantile/quantile_data_${year}.csv.zip`
+    //   const url = `/data/quantile/quantile_data_${year}.csv.zip`
     //   data = await (await fetch(url)).blob()
 
     //   if (this.args.keepInMemory == "zipped") {
@@ -299,7 +299,7 @@ export class EpiTrackerData {
 
     const filename = `quantile_data_${year}_ref-${quantileYear}_q${nQuantiles}.csv`
     return this.#smartLoadZipData(
-      `../../data/quantile/${filename}.zip`,
+      `/data/quantile/${filename}.zip`,
       filename
     );
   }

@@ -1,6 +1,8 @@
-@use 'uswds-core' with (
+// @use 'uswds-core' with (
+//   $theme-image-path: '@nciocpl/ncids-css/uswds-img',
+// );
+@use "uswds-core" as * with (
   $theme-image-path: '@nciocpl/ncids-css/uswds-img',
-  
 );
 @forward 'uswds-global';
 // @forward 'usa-footer';
@@ -23,6 +25,7 @@
 @forward 'usa-combo-box';
 @forward "usa-checkbox";
 @forward "usa-fieldset";
+@forward "usa-range";
 
 #plot-container {
   width: 100%; 
@@ -39,7 +42,7 @@
   
 
 html {
-  background-color: #00314b;
+  background-color: color("primary-dark");
 }
 
 .epitracker-title {
@@ -58,6 +61,16 @@ html {
 .usa-label-short-margin {
   margin-top: 8px;
 }
+
+.usa-label-mid-margin {
+  margin-top: 0.75rem;
+}
+
+.usa-range {
+  margin-top: 0px;
+  padding: 0.3rem;
+}
+
 
 .settings-button {
   cursor: pointer;
@@ -90,7 +103,7 @@ html {
 }
 
 .dropdown-item:hover {
-  background-color: #f0f0f0;
+  background-color: color("base-lightest");
 }
 
 #main-content {
@@ -110,8 +123,12 @@ html {
   display: none;
   box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
   pointer-events: none;
-  z-index: 300;
   border: 1px solid rgb(47, 47, 47);
+}
+
+.custom-tooltip {
+  z-index: 1100;
+
 }
 
 #table-popup-overlay {
@@ -142,6 +159,24 @@ html {
   z-index: 1000;
   display: flex; 
   flex-direction: column;
+}
+
+#table-container {
+  height: calc(100% - 80px);
+}
+
+#popup-body {
+  max-height: 90vh;
+  max-width: 90vw;
+}
+
+#popup-title {
+  margin-left: 4px;
+  margin-top: 4px;
+}
+
+#popup-content-table {
+  height: 75vh;
 }
 
 #img-template {
@@ -183,9 +218,21 @@ html {
   min-width: 100%;
 }
 
+#img-plot-grid {
+  width: 1600px;
+  height: 900px;
+  display: grid;
+
+}
+
 #img-source {
   font-size: .8em;
   font-style: italic;
+}
+
+.image-map-plot-cell {
+  display: grid;
+  grid-template-rows: 30px 1fr;
 }
 
 #img-maps-container {
@@ -226,148 +273,195 @@ html {
   display: hidden;
 }
 
+.button {
+  color: color("base");
+  cursor: pointer;
+}
+
+.button:hover {
+  color: color("base-light");
+}
+
+#dropdown-content-settings {
+  min-width: 450px;
+}
+
+// =====================================================================================================================
+// === Popup (shared) ==================================================================================================
+// =====================================================================================================================
+
+#popup {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgb(0,0,0,0.7);
+  z-index: 1000;
+}
+
+
 // =====================================================================================================================
 // === Map Page ========================================================================================================
 // =====================================================================================================================
 
+// --- Page and auxillary grid layout ---
+
 #dashboard-container {
   height: 80vh;
-  background-color: beige;
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  grid-template-rows: auto 0px 1fr 30px;
+    align-items: end;
+
+}
+
+#dashboard-topbar {
+  grid-row: 1;
+  grid-column: 1/2;
 }
 
 #grid-container {
   height: 100%;
   padding: 10px;
-  padding-top: 0px;
-  padding-right: 25px;
-  padding-bottom: 25px;
+  grid-row: 3;
+  grid-column: 1;
+
+  .gridette {
+    gap: 10px;
+  }
 }
 
-.plot-grid-add {
-  position: absolute;
+.grid-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 25px;
-  color: #565c65;
+  color: color("base-dark");
   cursor: pointer;
   transition: opacity 0.3s ease;
   z-index: 10;
+
+  &:hover {
+    color: color("base-light");
+  }
 }
 
-.plot-grid-add-col {
-  top: calc(50% - 12px);
-  right: -20px;
-}
-
-.plot-grid-add-row {
-  left: calc(50% - 12px);
-  bottom: -20px;
-}
-
-.plot-grid-item {
+#grid-add-col {
+  grid-column: 2;
+  grid-row: 3;
   height: 100%;
 }
 
-.plot-grid-blank-item {
-  background-color: #f9fbff;
-  border: 2px dashed #71767a;
+#grid-add-row {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+#plot-configurator {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr) auto;
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+}
+
+#button-card-submit {
+  grid-row: 5;
+  grid-column: 1 / 3;
+  
+}
+
+.input-single {
+  width: 15rem;
+}
+
+
+// --- Plot grid elements ---
+
+.plotgrid-item {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plotgrid-blank-item {
+  position: relative;
+  // background-color: color("base-lightest");
+  border: 2px dashed color("base");
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #757575; 
+  color: color("base"); 
   cursor: pointer;
   border-radius: 5px;
   font-size: 20px;
   box-sizing: border-box;
+
+  i {
+    font-size: 30px;
+  }
+
+  // Highlight some blank item elements if the user is hovering over the card but NOT hovering over the delete button.
+  &:hover:not(:has(.plotgrid-blank-delete-button:hover)) {
+    border: 2px dashed color("base-light");
+
+    .plotgrid-blank-plus-button {
+      color: color("base-light");
+    }
+
+    .plotgrid-blank-info {
+      color: color("base-light");
+    }
+  }
 }
 
-.hover .plot-grid-blank-item {
-  border: 2px dashed #abb1b7;
-}
-
-.plot-grid-blank-item i {
-  font-size: 40px;
-}
-
-.plot-grid-blank-plus-button {
-  margin-bottom: 16px;
-}
-
-.hover .plot-grid-blank-plus-button {
-  color: #abb1b7;
-}
-
-.hover .plot-grid-blank-info {
-  color: #abb1b7;
-}
-
-.plot-grid-blank-delete-button {
+.plotgrid-blank-delete-button {
   position: absolute;
   right: 20px;
   top: 20px;
+
+  &:hover {
+    color: color("base-light");
+  }
 }
 
-.plot-grid-blank-delete-button:hover {
-  color: #abb1b7;
-}
-
-// .plot-grid-blank-item .plot-grid-blank-delete-button i {
-//   font-size: 30px;
-//   color: hsl(0, 0%, 83%);
-// }
-
-// .plot-grid-blank-item .plot-grid-blank-delete-button i.hover {
-//   font-size: 30px;
-//   color: hsl(0, 0%, 93%);
-// }
-
-
-
-
-// =====================================================================================================================
-
-.grid-card {
+.plotgrid-card {
   background: white;
   border-radius: 6px;
   box-shadow: 2px 2px 6px 1px rgb(234, 232, 232);
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  .plotgrid-card-topbar {
+    margin: 8px;
+    margin-bottom: 5px;
+  }
+
+  .plotgrid-card-content {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .plotgrid-card-plot {
+    position: absolute;
+  }
 }
 
-.grid-card-content-container {
-  height: 100%;
-  padding: 2%;
-  overflow: auto;
+g[aria-label="geo"] path:hover {
+  stroke: green;
+  stroke-width: 2;
 }
 
-.grid-card-content {
-  height: 100%;
+#color-legend-container {
+  height: 50px;
+  width: 430px;
 }
-
-.grid-stack-item {
-  box-sizing: content-box;
-}
-
-.grid-card-topbar {
-  display: flex;
-  justify-content: space-between;
-}
-
-.grid-card-topbar-buttons {
-  display: flex;
-  gap: 8px;
-  color: #565c65;
-  justify-content: flex-start;
-  flex-direction: row-reverse;
-  padding: 8px;
-}
-
-.grid-card-topbar i {
-  cursor: pointer;
-}
-
-
 
 // =====================================================================================================================
 
@@ -383,22 +477,26 @@ html {
   width: 75%;
 }
 
+.hidden {
+  display: none !important;
+}
+
 // =====================================================================================================================
 
 .tippy-box[data-theme~='dark'] {
-  background-color: #333b4d;
+  background-color: color("base-darker");
 }
 .tippy-box[data-theme~='dark'][data-placement^='top'] > .tippy-arrow::before {
-  border-top-color: #333b4d;
+  border-top-color: color("base-darker");
 }
 .tippy-box[data-theme~='dark'][data-placement^='bottom'] > .tippy-arrow::before {
-  border-bottom-color: #333b4d;
+  border-bottom-color: color("base-darker");
 }
 .tippy-box[data-theme~='dark'][data-placement^='left'] > .tippy-arrow::before {
-  border-left-color: #333b4d;
+  border-left-color: color("base-darker");
 }
 .tippy-box[data-theme~='dark'][data-placement^='right'] > .tippy-arrow::before {
-  border-right-color: #333b4d;
+  border-right-color: color("base-darker");
 }
 
 // =====================================================================================================================
@@ -414,12 +512,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #9ca3af;
+  background: color("base-lighter");
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7b7f84;
+  background: color("base-light");
 }
 
 ::-webkit-scrollbar-button {
