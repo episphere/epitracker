@@ -2,6 +2,8 @@ import jszip from 'jszip';
 import * as aq from 'arquero';
 import * as d3 from 'd3';
 
+const DATA_PATH = "../data";
+
 export class EpiTrackerData {
   constructor(args = {}) {
     this.args = {
@@ -35,7 +37,7 @@ export class EpiTrackerData {
     delete query.year;
 
     let data = await this.#smartLoadZipData(
-      `/data/population/population_data_${year}.csv.zip`,
+      `${DATA_PATH}/population/population_data_${year}.csv.zip`,
       `population_data_${year}.csv`
     );
 
@@ -223,7 +225,7 @@ export class EpiTrackerData {
     // Year currently takes "2018", "2019", "2020", and "2018-2020"
 
     return this.#smartLoadZipData(
-      `/data/demographic/demographic_data_${year}.csv.zip`,
+      `${DATA_PATH}/demographic/demographic_data_${year}.csv.zip`,
       `demographic_data_${year}.csv`
     );
   }
@@ -253,7 +255,7 @@ export class EpiTrackerData {
     // }
 
     return this.#smartLoadZipData(
-      `/data/geospatial/age_adjusted_data_${year}.csv.zip`,
+      `${DATA_PATH}/geospatial/age_adjusted_data_${year}.csv.zip`,
       `age_adjusted_data_${year}.csv`
     );
   }
@@ -286,7 +288,7 @@ export class EpiTrackerData {
 
     const filename = `quantile_data_${year}_ref-${quantileYear}_q${nQuantiles}.csv`
     return this.#smartLoadZipData(
-      `/data/quantile/${filename}.zip`,
+      `${DATA_PATH}/quantile/${filename}.zip`,
       filename
     );
   }
