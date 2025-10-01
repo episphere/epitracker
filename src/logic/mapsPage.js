@@ -30,7 +30,7 @@ const DEFAULT_STATE = {
         year: "2018-2022",
         sex: "All",
         cause: "All",
-        race: "Asian",
+        race: "All",
         areaCounty: "All",
         areaState: "All",
         spatialLevel: "county",
