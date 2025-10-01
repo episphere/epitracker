@@ -10,6 +10,7 @@ import { formatName } from "./nameFormat.js";
 
 Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule]);
 
+
 /**
  * Retrieves DOM elements based on CSS selectors provided in an object.
  * Modifies the input object directly by replacing selector strings with Element objects.
@@ -21,6 +22,7 @@ Tabulator.registerModule([FrozenColumnsModule, SortModule, FormatModule]);
  * Returns the original input unmodified if it's not a valid object.
  */
 export function retrieveElements(elements) {
+
   if (typeof elements !== 'object' || elements === null) {
     console.error('retrieveElements: Input must be a non-null object.');
     return elements;
@@ -69,7 +71,6 @@ function setSelectOptions(select, state, optionsProperty, valueProperty) {
     }
     optionElements.push(optionElement);
   }
-  console.log(optionsProperty, optionElements)
   
   select.replaceChildren(...optionElements);
   return optionElements;
@@ -111,6 +112,7 @@ export function hookComboBox(element, state, valueProperty, optionsProperty, uns
     select = combo.querySelector("select");
     optionElements = setSelectOptions(select, state, optionsProperty, valueProperty);
     comboBox.updateOptions(optionElements);
+    comboBox.setSelectedByValue(state[valueProperty] ?? unselectedValue);
     // comboBox = USAComboBox.create(combo);
   });
 

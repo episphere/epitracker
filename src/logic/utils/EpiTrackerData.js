@@ -27,13 +27,14 @@ export class EpiTrackerData {
 
     args = {
       includeTotals: true,
+      asTable: false,
       ...args,
     };
 
     const year = query.year;
     delete query.year;
 
-    const data = await this.#smartLoadZipData(
+    let data = await this.#smartLoadZipData(
       `/data/population/population_data_${year}.csv.zip`,
       `population_data_${year}.csv`
     );
@@ -49,9 +50,11 @@ export class EpiTrackerData {
     }
 
     const filterString = aqFilter.length > 0 ? `row => ` + aqFilter.join(" && ") : "row => true";
-    return data.filter(filterString).derive({
+    data = data.filter(filterString).derive({
       population: (d) => d.aq.op.parse_int(d.population),
-    }).objects();
+    })
+    
+    return args.asTable ? data : data.objects();
   }
 
   async getQuantileMortalityData(query, args) {
@@ -135,10 +138,7 @@ export class EpiTrackerData {
     const year = query.year;
     delete query.year;
 
-    // console.time("Query")
     let countyMortalityData = await this.#loadCountyMortalityData(year);
-    // console.timeEnd("Query")
-
 
     // TODO: Fix this to allow all states
     const aqFilter = [];
@@ -155,35 +155,22 @@ export class EpiTrackerData {
     const filterString =
       aqFilter.length > 0 ? `row => ` + aqFilter.join(" && ") : "row => true";
 
-    const data = this.postProcessCountyMortalityData(
+    const mortalityData = this.postProcessCountyMortalityData(
       countyMortalityData.filter(filterString).derive({
         deaths: (d) => d.aq.op.parse_float(d.deaths),
         population: (d) => d.aq.op.parse_float(d.population),
         crude_rate: (d) => aq.op.parse_float(d.crude_rate),
         age_adjusted_rate: (d) => aq.op.parse_float(d.age_adjusted_rate),
       })
-    ).objects();
+    );
 
     if (args?.counties && args?.states) {
-      // const statesMap = d3.index(args.states, (d) => d["value"]);
-      // let countiesMap = d3.index(args.counties, (d) => d["value"]);
-
-      // TODO: Please explain about this
-      // if (query.state_fips === "*") {
-      //   const integratedCounties = args.counties.reduce((pv, cv) => {
-      //     return [...pv, ...cv.choices];
-      //   }, []);
-      //   countiesMap = d3.index(integratedCounties, (d) => d["value"]);
-      // }
-
       return data.map((item) => ({
         ...item,
-        // state: statesMap.get(item.state_fips).label,
-        // county: countiesMap.get(item.county_fips)?.label,
       }));
     }
 
-    return data;
+    return mortalityData.objects();
   }
 
   async getDemographicMortalityData(query, args = {}) {

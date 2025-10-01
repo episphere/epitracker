@@ -1,0 +1,18 @@
+ .gridette {
+    display: grid;
+    width: 100%;
+    height: 100%;
+  }
+
+  .gridette-cell {
+    width: 100%;
+    height: 100%;
+  }
+
+  .gridette-cell-dragging-from {
+    background-color: lightgrey;
+  }
+   
+  .gridette-cell-dragging-from > * {
+    visibility: hidden;
+  }

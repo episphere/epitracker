@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport">
+
+  <link crossorigin="anonymous" type="text/css" rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+  <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
+  <link href="/node_modules/gridstack/dist/gridstack.min.css" rel="stylesheet"/>
+  <!-- <script src="assets/uswds/dist/js/uswds-init.min.js"></script> -->
+
+
+  <title>EpiTracker Maps</title>
+</head>
+
+<body>
+  <include src="pages/partials/_header.html"></include>
+
+  <div class="grid-container padding-top-3">
+    <div class="grid-row display-flex flex-column ">
+      <h1 class="margin-0">Interactive Map Dashboard</h1>
+      <p class="font-serif-sm">Configurable grid of maps showing geographic data for cancer mortality rates and population counts. 
+        Maps can show county or state level information. Configure maps by clicking the edit icon on the top left of each card. 
+      Add rows or columns to the map by clicking the plus buttons at the bottom and right respectively.</p>
+    </div>
+  </div>
+
+  <div id="dashboard-container" class="margin-left-3 margin-top-0 margin-right-2 margin-bottom-1">
+    <div id="dashboard-topbar" class="padding-x-1">
+      <div class="grid-row flex-justify margin-right-2">
+        <div id="color-legend-container"></div>
+
+        <div id="maps-title" class="text-bold text-center font-sans-md display-flex flex-align-end">
+        </div>
+
+        <div class="display-flex flex-align-end gap-1 text-base">
+          <i id="button-edit-grid" class="settings-button fa-solid fa-plus" ></i>
+          <i id="button-undo" class="settings-button fa-solid fa-rotate-left" tip="Undo"></i>
+          <i id="button-redo" class="settings-button fa-solid fa-rotate-right" tip="Redo"></i>
+          <i id="button-settings" class="settings-button fa-solid fa-gear" tip="Settings"></i>
+          <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
+          <i id="button-download" class="settings-button fa-solid fa-download" tip="Download data"></i> 
+        </div>
+      </div>
+    </div>
+
+    <!-- <div id="maps-title" class="text-bold text-center font-sans-md">
+      US population, 2018-2022, All races, All sexes
+    </div> -->
+
+    <div id="grid-container"></div>
+    <div id="grid-add-row" class="grid-add">
+      <i class="fa-solid fa-plus"></i>
+    </div>
+    <div id="grid-add-col" class="grid-add">
+      <i class="fa-solid fa-plus"></i>
+    </div>
+  </div>
+
+  <div class="display-none">
+    <div id="plot-configurator" class="popup-content">
+      <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-year">Year</label>
+        <select class="usa-select" name="select-select-year" id="select-select-year" disabled></select>
+      </div>
+    
+      <div id="select-cause-container" class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-cause" id="select-select-cause-label">Cancer Site</label>
+        <div id="combo-select-cause" class="usa-combo-box">
+          <select class="usa-select" name="select-select-cause" id="select-select-cause" disabled></select>
+        </div>
+      </div>
+
+      <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-sex">Sex</label>
+        <select class="usa-select" name="select-select-sex" id="select-select-sex" disabled></select>
+      </div>
+
+      <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-race">Race/Ethnicity</label>
+        <select class="usa-select" name="select-select-race" id="select-select-race" disabled></select>
+      </div>
+
+      <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-state" id="select-select-state-label">US State</label>
+        <div id="combo-select-state" class="usa-combo-box">
+          <select class="usa-select" name="select-select-state" id="select-select-state" disabled></select>
+        </div>
+      </div>
+
+      <!-- <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-county" id="select-select-county-label">US County</label>
+        <div id="combo-select-county" class="usa-combo-box">
+          <select class="usa-select" name="select-select-county" id="select-select-county" disabled></select>
+        </div>
+      </div> -->
+
+      <div class="input-single">
+        <label class="usa-label text-bold usa-label-short-margin" for="select-select-level">Spatial Level</label>
+        <select class="usa-select" name="select-select-level" id="select-select-level" disabled></select>
+      </div>
+
+      <button id="button-card-submit" class="usa-button margin-top-1">Submit</button>
+    </div>
+
+    <div id="dropdown-content-settings">
+      <!-- <div class="font-sans-sm text-bold text-base-darker">Measure</div> -->
+      <label class="usa-label text-bold usa-label-short-margin" for="select-measure">Measure</label>
+      <select class="usa-select" name="select-measure" id="select-measure" disabled></select>
+      
+
+      <!-- <div class="font-sans-sm text-bold text-base-darker margin-top-2">Color settings</div> -->
+      <fieldset class="usa-fieldset">
+        <label class="usa-label text-bold  margin-top-2" for="select-color-scheme">Color Scheme</label>
+        <div id="combo-color-scheme" class="usa-combo-box">
+          <select class="usa-select" name="select-color-scheme" id="select-color-scheme" disabled> </select>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-color-reverse" type="checkbox" name="check-color-reverse" />
+          <label class="usa-checkbox__label" for="check-color-reverse">Reverse</label>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-color-center" type="checkbox" name="check-color-center" />
+          <label class="usa-checkbox__label" for="check-color-center">Center on mean</label>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-color-exclude-extremes" type="checkbox" name="check-color-exclude-extremes" />
+          <label class="usa-checkbox__label" for="check-color-exclude-extremes">Exclude extreme values</label>
+        </div>
+        <label class="usa-label usa-label-mid-margin" for="usa-range">Extreme value cutoff</label>
+        <div id="range-extreme-cutoff-container">
+          <input
+            id="range-extreme-cutoff"
+            class="usa-range"
+            type="range"
+            min="1"
+            max="5"
+            step=".5"
+            value="2.5"
+          />
+        </div>
+       
+      </fieldset>
+<!-- 
+      <form class="usa-form">
+  <label class="usa-label" for="usa-range">Range slider</label>
+  <input
+    id="usa-range"
+    class="usa-range"
+    type="range"
+    min=""
+    max=""
+    step=""
+    value="20"
+  />
+</form> -->
+
+      <fieldset class="usa-fieldset">
+        <label class="usa-label text-bold margin-top-2">Map Outlines</label>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-outline-county" type="checkbox" name="check-outline-county" />
+          <label class="usa-checkbox__label" for="check-outline-county">Show county outlines</label>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-outline-state" type="checkbox" name="check-outline-state" />
+          <label class="usa-checkbox__label" for="check-outline-state">Show state outlines</label>
+        </div>
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-outline-map" type="checkbox" name="check-outline-map" />
+          <label class="usa-checkbox__label" for="check-outline-map">Show full map outlines</label>
+        </div>
+      </fieldset>
+    </div>
+
+
+  </div>
+
+  <!-- <div id="table-test" style="width: 80vw; height: 80vh; background-color: pink; position: absolute; left: 50px; top: 50px; z-index: 1000;">
+
+  </div> -->
+  
+  <div style="position: absolute; left: 0; top:0; opacity: 0; z-index: 1000; pointer-events:none;">
+    <div id="img-template">
+      <div id="img-title"></div>
+      <div id="img-plot-grid"></div>
+      <div id="img-legend"></div>
+      <div id="img-source">Plot Generated by DCEG EpiTracker Cancer</div>
+    </div>
+  </div>
+
+  <template id="template-card-blank">
+    <div class="plotgrid-item plotgrid-blank-item">
+      <i class="plotgrid-blank-plus-button fas fa-plus-square"></i>
+      <span class="plotgrid-blank-info">Add new map card</span>
+      <div class="dropdown plotgrid-blank-delete-button">
+        <i tip="Delete card, row, or column" class="fas fa-trash-alt" data-bs-toggle="dropdown"></i>
+      </div>
+    </div>
+  </template>
+
+  <template id="template-card">
+    <div class="plotgrid-item plotgrid-card">
+      <div class="plotgrid-card-topbar display-flex flex-justify base">
+        <span class="font-sans-md">
+          <i id="button-edit-card" class="fas fa-pen-to-square button"></i>
+        </span>
+        <span id="plotgrid-card-title" class="font-sans-2xs text-bold"></span>
+        <span class="display-flex gap-1 font-sans-sm">
+          <i class="plotgrid-card-handle fa-solid fa-arrows-up-down-left-right button"></i>
+          <i class="plotgrid-card-expand fa-solid fa-expand button"></i>
+          <i class="plotgrid-card-delete fa-solid fa-xmark button"></i>
+        </span>
+      </div>
+      <div class="plotgrid-card-content height-full margin-1">
+      </div>
+      <!-- <div class="plotgrid-card-handle" style="width: 20px; height: 20px; position: absolute; right: 10px; top: 10px; background-color: black;"></div> -->
+    </div>
+  </template>
+
+  <template id="template-image-map-plot-cell">
+    <div class="image-map-plot-cell">
+      <div class="image-map-plot-cell-title text-center text-bold"></div>
+      <div class="image-map-plot-cell-plot"></div>
+    </div>
+  </template>
+
+  <div style="display: none">
+    <div id="map-tooltip" class="display-flex flex-column bg-white padding-1 border radius-sm shadow-2 gap-1">
+      <div id="map-tooltip-topbar" class="display-flex flex-justify gap-1">
+        <div id="map-tooltip-name" class="text-bold"></div>
+        <div id="map-tooltip-value"></div>
+      </div>
+      <div id="map-tooltip-plot"></div>
+    </div>
+  </div>
+  
+
+  <include src="pages/partials/_footer.html"></include>  
+  <include src="pages/partials/_sharedElements.html"></include>  
+
+  <!-- <script src="node_modules/@uswds/uswds/dist/js/uswds.min.js"></script> -->
+</body>
+</html>

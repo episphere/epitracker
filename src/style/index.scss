@@ -71,6 +71,20 @@ html {
   padding: 0.3rem;
 }
 
+.usa-range__wrapper {
+  display: grid;
+  grid-template-columns: 1fr 45px;
+  align-items: center;
+}
+
+#range-extreme-cutoff-container .usa-range__value::before {
+  content: "±";
+}
+#range-extreme-cutoff-container .usa-range__value::after {
+  content: "σ";
+}
+  
+
 
 .settings-button {
   cursor: pointer;
@@ -358,9 +372,10 @@ html {
 #plot-configurator {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 1fr) auto;
+  grid-template-rows: repeat(3, 1fr) 20px;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
+  padding-inline: 10px;
 }
 
 #button-card-submit {
@@ -373,6 +388,9 @@ html {
   width: 15rem;
 }
 
+#plot-configurator .input-single {
+  width: 20rem;
+}
 
 // --- Plot grid elements ---
 
