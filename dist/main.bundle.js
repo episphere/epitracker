@@ -939,6 +939,18 @@ module.exports = __webpack_require__.p + "images/card_quantile.png";
 
 /***/ }),
 
+/***/ "./src/style/gridette.css":
+/*!********************************!*\
+  !*** ./src/style/gridette.css ***!
+  \********************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
 /***/ "./src/style/index.scss":
 /*!******************************!*\
   !*** ./src/style/index.scss ***!
@@ -1050,12 +1062,14 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _style_index_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./style/index.scss */ "./src/style/index.scss");
-/* harmony import */ var _includes_megamenu_html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_includes/_megamenu.html */ "./src/_includes/_megamenu.html");
-/* harmony import */ var _images_card_map_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./images/card_map.png */ "./src/images/card_map.png");
-/* harmony import */ var _images_card_quantile_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./images/card_quantile.png */ "./src/images/card_quantile.png");
-/* harmony import */ var _images_card_demographics_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./images/card_demographics.png */ "./src/images/card_demographics.png");
-/* harmony import */ var _nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @nciocpl/ncids-js/nci-header */ "./node_modules/@nciocpl/ncids-js/lib/esm/components/nci-header/index.js");
+/* harmony import */ var _style_gridette_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./style/gridette.css */ "./src/style/gridette.css");
+/* harmony import */ var _includes_megamenu_html__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_includes/_megamenu.html */ "./src/_includes/_megamenu.html");
+/* harmony import */ var _images_card_map_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./images/card_map.png */ "./src/images/card_map.png");
+/* harmony import */ var _images_card_quantile_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./images/card_quantile.png */ "./src/images/card_quantile.png");
+/* harmony import */ var _images_card_demographics_png__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./images/card_demographics.png */ "./src/images/card_demographics.png");
+/* harmony import */ var _nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @nciocpl/ncids-js/nci-header */ "./node_modules/@nciocpl/ncids-js/lib/esm/components/nci-header/index.js");
  
+
 // import '@nciocpl/ncids-js/nci-header/extended-with-mega-menu/auto-init';
 
 
@@ -1073,7 +1087,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function getTemplateElements() {
   const template = document.createElement("template");
-  template.innerHTML = _includes_megamenu_html__WEBPACK_IMPORTED_MODULE_1__["default"];
+  template.innerHTML = _includes_megamenu_html__WEBPACK_IMPORTED_MODULE_2__["default"];
   const megaMenuElement = template.content.firstElementChild;
   return { megaMenuElement };
 }
@@ -1094,9 +1108,9 @@ class MegaMenuSource {
 // Find the header HTML element.
 const header = document.querySelector('#header-with-mega-menu');
 
-_nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_5__.NCIExtendedHeaderWithMegaMenu.create(header, {
+_nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_6__.NCIExtendedHeaderWithMegaMenu.create(header, {
   megaMenuSource: new MegaMenuSource(),
-  mobileMenuSource: new _nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_5__.DefaultMobileMenuSource(),
+  mobileMenuSource: new _nciocpl_ncids_js_nci_header__WEBPACK_IMPORTED_MODULE_6__.DefaultMobileMenuSource(),
 });
 
 // fetch("./_megamenu.html").then(file => file.text()).then(megaMenuHTML => {
