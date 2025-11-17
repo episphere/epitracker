@@ -1,6 +1,5 @@
 webpack-demo
 .eslintrc.json
-package.json
 node_modules
 package-lock.json
 .DS_STORE

@@ -1,0 +1,56 @@
+{
+  "name": "epitracker",
+  "version": "0.8.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:dev": "webpack --mode development",
+    "build:prod": "webpack --mode production",
+    "build:watch": "webpack watch --mode development"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "copy-webpack-plugin": "^13.0.1",
+    "css-loader": "^6.5.1",
+    "css-minimizer-webpack-plugin": "^3.4.1",
+    "ejs-loader": "^0.5.0",
+    "html-loader": "^5.1.0",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.6.0",
+    "path": "^0.12.7",
+    "postcss-loader": "^4.3.0",
+    "posthtml-include": "^2.0.1",
+    "posthtml-loader": "^2.0.1",
+    "sass": "^1.49.0",
+    "sass-loader": "^10.1.1",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "@nciocpl/ncids-css": "^3.0.0",
+    "@nciocpl/ncids-js": "^3.3.0",
+    "@observablehq/plot": "^0.6.17",
+    "@popperjs/core": "^2.11.8",
+    "@uswds/uswds": "3.13.0",
+    "arquero": "^8.0.1",
+    "d3": "^7.9.0",
+    "gridstack": "^12.2.2",
+    "jszip": "^3.10.1",
+    "modern-screenshot": "^4.6.5",
+    "tabulator-tables": "^6.3.1",
+    "tippy.js": "^6.3.7"
+  },
+  "browserslist": {
+    "production": [
+      ">1%",
+      "last 2 versions",
+      "not dead",
+      "not IE 11"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
