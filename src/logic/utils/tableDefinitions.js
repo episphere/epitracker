@@ -35,3 +35,12 @@ export const mapTableColumns = [
   // { field: "state_fips", formatAs: "measures"},
   // { field: "county_fips", formatAs: "measures"},
 ]
+
+export const populationMapTableColumns = [
+  { field: "state", frozen: true, formatAs: "fields" },
+  { field: "county", frozen: true, formatAs: "fields"},
+  { field: "cause", frozen: true, formatAs: "fields"},
+  { field: "race", frozen: true, maxWidth: 250, formatAs: "fields"},
+  { field: "sex", frozen: true, formatAs: "fields"},
+  { field: "population", formatAs: "measures"},
+];

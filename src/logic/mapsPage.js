@@ -4,7 +4,7 @@ import { addPopperTooltip, colorRampLegendPivot, createDropdown, downloadElement
 import { formatName } from "./utils/nameFormat.js";
 import { ObjectCoder, StateURL } from "./utils/StateURL.js";
 import * as d3 from "d3";
-import { mapTableColumns } from "./utils/tableDefinitions.js";
+import { mapTableColumns, populationMapTableColumns } from "./utils/tableDefinitions.js";
 import { addMapHoverInteraction, addMapTooltip, createChoroplethPlot, createTooltipHistogram } from "./mapPlot.js";
 import Range from "@uswds/uswds/js/usa-range";
 
@@ -13,8 +13,7 @@ import Range from "@uswds/uswds/js/usa-range";
 // TODO: (structural) put table column definitions and other set-up stuff in specific files for each document.
 // TODO: Add select config information to DOM, data attributes
 // TODO: Add proper config for stuff like filepaths
-// TODO: Fix selects searchable in edit card popup
-// TODO: Fix population display
+// TODO: Fix population table display
 // TODO: Move shared state conditionals (and expand to more cancers, e.g. cervical can't be male, etc.).
 
 const STATES_GEOJSON_FILEPATH = "../data/geography/states.geojson";
@@ -903,10 +902,10 @@ class UIManager {
   #updateTable() {
     this.elems.tableTitle.innerText = this.elems.mapsTitle.innerText;
 
+    const columns = this.state.measure == "population" ? populationMapTableColumns : mapTableColumns;
+
     this.#getFlattenedData().then((allData) => {
-      plotDataTable(allData, this.elems.tableContainer, {
-        columns: mapTableColumns
-      });
+      plotDataTable(allData, this.elems.tableContainer, { columns });
     });
 
   }
