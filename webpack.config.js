@@ -24,7 +24,7 @@ module.exports = (env, argv) => {
 		entry: {
 			main: './src/index.js',
 			quantiles: './src/logic/quantilePage.js',
-			maps: "./src/logic/mapsPage.js"
+			maps: "./src/logic/mapsPage.js",
 		},
 
 		/**
@@ -206,6 +206,17 @@ module.exports = (env, argv) => {
 					charset: { charset: 'UTF-8' },
 				},
 				chunks: ['main', 'maps']
+			}),
+
+			new HtmlWebpackPlugin({
+				template: 'src/pages/demographics.html',
+				filename: 'demographics/index.html', 
+				inject: 'head',
+				minify: false,
+				meta: {
+					charset: { charset: 'UTF-8' },
+				},
+				chunks: ['main', 'demographics']
 			}),
 			
 			/**
