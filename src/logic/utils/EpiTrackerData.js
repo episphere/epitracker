@@ -293,6 +293,10 @@ export class EpiTrackerData {
     );
   }
 
+  async getAllQuantileDetails() {
+    return await d3.json(`${DATA_PATH}/quantile/quantile_details.json`);
+  }
+
   async #smartLoadZipData(url, filename) {
     let data;
     if (!(data = this.dataMemoryMap.get(url))) {

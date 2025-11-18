@@ -255,7 +255,7 @@ class DataManager {
   async init() {
     // TODO: Handle initial data query here too
 
-    const allQuantileDetails = await d3.json("../../data/quantile/quantile_details.json");
+    const allQuantileDetails = await this.dataManager.getAllQuantileDetails();
     if (PROPORTIONS_AS_PERCENTAGES) {
       for (const quantileDetails of allQuantileDetails) {
         if (quantileDetails.unit == "Proportion") {
