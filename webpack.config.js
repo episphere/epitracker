@@ -34,7 +34,7 @@ module.exports = (env, argv) => {
 		 */
 		output: {
 			// Absolute path of output directory of generated files.
-			path: path.resolve(__dirname, 'dist'),
+			path: path.resolve(__dirname, 'epitracker'),
 			// Filename pattern for generated javascript bundles.
 			filename: '[name].bundle.js',
 			// Filename pattern for generated assets.
