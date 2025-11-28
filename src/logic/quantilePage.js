@@ -742,9 +742,18 @@ class PlotDrawer {
 
 
     this.drawPlot = (plotContainer) => {
-      const { plot } = plotQuantileScatter(plotContainer, data, plotOptions);
-      plot.style.marginLeft = "auto";
-      plot.style.marginRight = "auto";
+      if (data.length == 0) {
+        const messageDiv = document.createElement("div");
+        messageDiv.innerText = "No data available for current selection.";
+        messageDiv.className = "grid-row flex-align-center flex-justify-center height-full";
+        plotContainer.replaceChildren(messageDiv);
+      } else {
+        const { plot } = plotQuantileScatter(plotContainer, data, plotOptions);
+        plot.style.marginLeft = "auto";
+        plot.style.marginRight = "auto";
+      }
+
+  
     }
   }
 

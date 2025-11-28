@@ -4,7 +4,7 @@ const SET_REGEX = /^\{(.*)\}$/s;
 
 export const SetCoder = {
   encode: (value) => {
-    return `{${[...value].join(",")}}`;
+    return value != null ? `{${[...value].join(",")}}` : "";
   },
   decode: (value) => {
     try {
