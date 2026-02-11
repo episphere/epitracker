@@ -197,6 +197,8 @@ export class EpiTrackerData {
 
     let demographicData = await this.#loadDemographicData(year);
 
+    const testData = await this.#loadDemographicData(year);
+
     // TODO: Fix this to allow all states
     const aqFilter = [];
     for (const [k, v] of Object.entries(query)) {
