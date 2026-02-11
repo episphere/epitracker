@@ -4,21 +4,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport">
-  <title>EpiTracker: Demographics</title>
+
+  <link crossorigin="anonymous" type="text/css" rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" defer />
+  <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_bootstrap5.css" rel="stylesheet">
+
+  <title>EpiTracker Demographics</title>
 </head>
 
+<!--
+TODO: Ensure aria labels are up-to-date.
+TODO: Hookup search, etc. 
+TODO: Get website working on mobile.
+TODO: Re-add "back to top" correctly.
+-->
+
+<!-- NOTE: In comments, square brackets indiciates mobile only, asterisk indicates mobile variant present -->
 
 <body>
+  <!-- Top "Official Site" banner -->
   <include src="pages/partials/_header.html"></include>
 
-  <main class="main-content type">
-    <div class="usa-section">
-      { The demographics page is a work in progress! }
+  <main id="main-content" class="main-content type  padding-y-3">
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="grid-col-auto display-flex flex-column width-card-lg" >  
+          <div class="usa-form-group ">  
+            <h2 class="nci-heading-h2 margin-top-4">Data Options</h2>   
+            
+            <!-- -->
+            
+            <h3 class="nci-heading-h3 margin-top-2">Compare</h3>
+            
+            <label class="usa-label text-bold usa-label-short-margin" for="select-compare-bar">Within Plot</label>
+            <select class="usa-select" name="select-compare-bar" id="select-compare-bar" data-state-key="compareBar" disabled></select>
+
+            <label class="usa-label text-bold usa-label-short-margin" for="select-compare-facet">Between Plot</label>
+            <select class="usa-select" name="select-compare-facet" id="select-compare-facet" data-state-key="compareFacet" disabled></select>
+
+
+            <!-- -->
+
+            <h3 class="nci-heading-h3">Select</h3>
+
+            <label class="usa-label text-bold usa-label-short-margin" for="select-select-sex">Year</label>
+            <select class="usa-select" name="select-select-year" id="select-select-year" data-state-key="year" disabled></select>
+
+            <label class="usa-label text-bold usa-label-short-margin" for="select-select-state">US State</label>
+            <div id="combo-select-state" class="usa-combo-box">
+              <select class="usa-select" name="select-select-state" id="select-select-state" data-state-key="state" disabled>
+              </select>
+            </div>
+  
+         
+            <label class="usa-label text-bold usa-label-short-margin" for="select-select-cause">Cancer Site</label>
+            <div id="combo-select-cause" class="usa-combo-box">
+              <select class="usa-select" name="select-select-cause" id="select-select-cause" data-state-key="cause" disabled>
+              </select>
+            </div>
+  
+            <label class="usa-label text-bold usa-label-short-margin" for="select-select-sex">Sex</label>
+            <select class="usa-select" name="select-select-sex" id="select-select-sex" data-state-key="sex" disabled></select>
+  
+            <label class="usa-label text-bold usa-label-short-margin" for="select-select-race">Race/Ethnicity</label>
+            <select class="usa-select" name="select-select-race" id="select-select-race" data-state-key="race" disabled></select>
+
+             <label class="usa-label text-bold usa-label-short-margin" for="select-select-age">Age Group</label>
+            <select class="usa-select" name="select-select-age" id="select-select-age" data-state-key="age" disabled></select>
+
+
+            <h3 class="nci-heading-h3">Other</h3>
+            <label class="usa-label text-bold usa-label-short-margin" for="select-measure">Measure</label>
+            <select class="usa-select" name="select-measure" id="select-measure" data-state-key="measure" disabled></select>
+          </div>
+        </div>
+
+
+        <div class="grid-col-fill display-flex flex-column padding-left-5 padding-right-0" >
+          <h1 class="margin-0">Demographics Graphs</h1>
+          
+          <div class="display-flex flex-justify gap-3 flex-align-end">
+            <p class="font-serif-sm">Configurable bar charts showing cancer mortality rates (crude or age-adjusted) optionally stratified by age group, race, and sex.</p>
+
+            <div class="display-flex gap-1 text-base">
+              <i id="button-filter" class="settings-button fa-solid fa-filter" tip="Filter"></i>
+              <i id="button-options" class="settings-button fa-solid fa-gear" tip="Plot settings"></i>
+              <i id="button-table" class="settings-button fa-solid fa-table" tip="Show data table"></i>
+              <i id="button-download" class="settings-button fa-solid fa-download" tip="Download data"></i> 
+            </div>
+          </div>
+          
+          
+          <div  id="plot-container-container" class="margin-x-0 margin-y-1 height-full flex display-flex flex-justify-center">
+            <div id="plot-container" style="display: grid; grid-template-rows: auto 1fr; min-height: 550px;">
+               <h3 id="title" class="margin-0 padding-top-2 padding-x-3 text-center"></h3>
+              <div id="plot" style="overflow-x: auto; overflow-y: hidden;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
-  
-  <include src="pages/partials/_footer.html"></include>
 
+
+  <div id="table-popup-overlay">
+    <div id="table-popup">
+      <div class="display-flex flex-justify text-base-darker padding-1">
+        <div id="table-popup-title" class="font-serif-sm text-bold position-relative top-1 left-1">Data Table</div>
+        <div class="popup-buttons margin-left-2 font-sans-md right-1 position-relative  font-sans-2xl">
+          <i id="table-popup-close" class="fas fa-times clickable-button"></i>
+        </div>
+      </div>
+
+      <div class="display-flex flex-column padding-y-0 padding-x-3 height-full">
+        <div class="display-flex flex-justify width-full padding-y-1 ">
+          <span id="table-title"></span>
+          <i id="button-download-data" class="settings-button fa-solid fa-download text-base" tip="Download data/graphs"></i>
+        </div>
+  
+        <div id="table-container" class="width-full display-flex" style="height: calc(100% - 120px)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; top:0; opacity: 0; z-index: 1000; pointer-events:none;">
+    <div id="img-template">
+      <div id="img-title" ></div>
+      <div id="img-plot"></div>
+      <div id="img-legend"></div>
+      <div id="img-source">Plot Generated by DCEG EpiTracker Cancer</div>
+    </div>
+  </div>
+
+  <div style="display: none;">
+    <div id="filter-dropdown-content" class="display-flex gap-3">
+      <div id="filter-compare-bar-container" class="display-flex flex-column">
+        <div class="text-base-darker text-bold">Within Plot</div>
+        <fieldset id="filter-compare-bar" class="filter-fieldset usa-fieldset"></fieldset>
+      </div>
+      <div id="filter-compare-facet-container" class="display-flex flex-column">
+        <div class="text-base-darker text-bold">Between Plot</div>
+        <fieldset id="filter-compare-facet" class="filter-fieldset usa-fieldset"></fieldset>
+      </div>
+    </div>
+
+    <div id="graph-settings-dropdown-content">
+      <fieldset class="usa-fieldset">
+        <div class="usa-checkbox">
+          <input class="usa-checkbox__input" id="check-show-ci" type="checkbox" name="check-show-ci" />
+          <label class="usa-checkbox__label" for="check-show-ci">Show confidence intervals</label>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+  
+
+  <include src="pages/partials/_footer.html"></include>
+  
 </body>
 
 </html>

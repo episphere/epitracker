@@ -25,6 +25,7 @@ module.exports = (env, argv) => {
 			main: './src/index.js',
 			quantiles: './src/logic/quantilePage.js',
 			maps: "./src/logic/mapsPage.js",
+			demographics: './src/logic/demographicsPage.js',
 		},
 
 		/**
