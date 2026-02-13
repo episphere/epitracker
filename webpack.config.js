@@ -188,6 +188,17 @@ module.exports = (env, argv) => {
 			}),
 
 			new HtmlWebpackPlugin({
+				template: 'src/pages/guide.html',
+				filename: 'guide/index.html', 
+				inject: 'head',
+				minify: false,
+				meta: {
+					charset: { charset: 'UTF-8' },
+				},
+				chunks: ['main']
+			}),
+
+			new HtmlWebpackPlugin({
 				template: 'src/pages/quantiles.html',
 				filename: 'quantiles/index.html', 
 				inject: 'head',
